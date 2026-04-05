@@ -1180,15 +1180,17 @@ function submitForm(e) {
 (function hideSplineLogo() {
   const viewer = document.querySelector('spline-viewer');
   if (!viewer) return;
-  const attempt = () => {
+  const inject = () => {
     const root = viewer.shadowRoot;
     if (root) {
-      const logo = root.querySelector('#logo');
-      if (logo) { logo.style.display = 'none'; return; }
+      const s = document.createElement('style');
+      s.textContent = '#logo, .logo, a[href*="spline"]{display:none!important}';
+      root.appendChild(s);
+      return;
     }
-    setTimeout(attempt, 300);
+    setTimeout(inject, 200);
   };
-  attempt();
+  inject();
 })();
 
 function toggleFaq(btn) {
