@@ -170,6 +170,45 @@
     }
     .nav-btn:hover { opacity: .85; transform: translateY(-1px); }
 
+    /* ── HAMBURGER ── */
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      width: 36px; height: 36px; background: none; border: none; cursor: pointer;
+      padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; height: 1.5px; background: var(--text); border-radius: 2px;
+      transition: transform 300ms, opacity 300ms;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .nav-mobile {
+      display: none; position: fixed; top: 68px; left: 0; right: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 5% 2rem;
+      flex-direction: column; gap: 0;
+      z-index: 199;
+      transform: translateY(-8px); opacity: 0;
+      transition: opacity 250ms, transform 250ms;
+      pointer-events: none;
+    }
+    .nav-mobile.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .nav-mobile a {
+      font-size: 1rem; color: var(--text); font-weight: 400;
+      padding: .9rem 0; border-bottom: 1px solid var(--border2);
+      display: block; letter-spacing: .01em;
+    }
+    .nav-mobile a:last-of-type { border-bottom: none; }
+    .nav-mobile .nav-mobile-btn {
+      margin-top: 1.2rem; background: var(--text); color: #fff;
+      padding: .75rem; border-radius: 4px; text-align: center;
+      font-size: .9rem; font-weight: 500; cursor: pointer;
+      border: none; font-family: var(--font-sans); width: 100%;
+    }
+
     /* ── SHARED ── */
     section { padding: 5rem 5%; }
     .container { max-width: 1080px; margin: 0 auto; }
@@ -639,6 +678,9 @@
       .faq-inner { grid-template-columns: 1fr; gap: 3rem; }
       .footer-top { grid-template-columns: 1fr; gap: 2rem; }
       nav .nav-links { display: none; }
+      nav .nav-btn { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile { display: flex; }
       section { padding: 5rem 5%; }
     }
     @media (max-width: 580px) {
@@ -648,8 +690,13 @@
       .form-grid { grid-template-columns: 1fr; }
     }
 
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 600ms ease, transform 600ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+      .reveal { opacity: 1; transform: none; }
     }
   </style>
 </head>
@@ -683,7 +730,19 @@
     <li><a href="#faq">FAQ</a></li>
   </ul>
   <button class="nav-btn" onclick="openModal('Beratung')" type="button">Termin vereinbaren</button>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menü öffnen" aria-expanded="false" type="button">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- MOBILE MENU -->
+<div class="nav-mobile" id="navMobile" role="dialog" aria-label="Mobile Navigation">
+  <a href="#produkte" onclick="closeMobileMenu()">Leistungen</a>
+  <a href="#about" onclick="closeMobileMenu()">Über uns</a>
+  <a href="#prozess" onclick="closeMobileMenu()">Ablauf</a>
+  <a href="#faq" onclick="closeMobileMenu()">FAQ</a>
+  <button class="nav-mobile-btn" onclick="closeMobileMenu(); openModal('Beratung')" type="button">Termin vereinbaren</button>
+</div>
 
 <main id="main-content">
 
@@ -1176,6 +1235,39 @@ function submitForm(e) {
 }
 
 /* ── FAQ ── */
+/* ── HAMBURGER MENU ── */
+const hamburger = document.getElementById('navHamburger');
+const mobileMenu = document.getElementById('navMobile');
+
+function closeMobileMenu() {
+  hamburger.classList.remove('open');
+  mobileMenu.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+
+hamburger.addEventListener('click', () => {
+  const isOpen = mobileMenu.classList.contains('open');
+  if (isOpen) {
+    closeMobileMenu();
+  } else {
+    hamburger.classList.add('open');
+    mobileMenu.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+});
+
+/* ── SCROLL REVEAL ── */
+const revealSections = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealSections.unobserve(e.target); } });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.section-label, .section-title, .section-sub, .divider, .about-quote, .about-name, .about-role, .process-note, .trust-item, .hero-tag, #hero h1, .hero-sub, .hero-actions, .hero-note').forEach(el => {
+  el.classList.add('reveal');
+  revealSections.observe(el);
+});
+
 /* ── SPLINE LOGO HIDE ── */
 (function hideSplineLogo() {
   const viewer = document.querySelector('spline-viewer');
