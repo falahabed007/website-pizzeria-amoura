@@ -690,6 +690,34 @@
       .form-grid { grid-template-columns: 1fr; }
     }
 
+    /* ── CUSTOM CURSOR ── */
+    #cursor-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold);
+      position: fixed; top: 0; left: 0; z-index: 99999;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: transform 80ms linear, opacity 300ms;
+      mix-blend-mode: multiply;
+    }
+    #cursor-ring {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--gold);
+      position: fixed; top: 0; left: 0; z-index: 99998;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: left 180ms ease, top 180ms ease, width 250ms ease, height 250ms ease, opacity 300ms, border-color 250ms;
+      opacity: 0.5;
+    }
+    #cursor-ring.hovering {
+      width: 56px; height: 56px;
+      border-color: var(--text);
+      opacity: 0.15;
+    }
+    @media (hover: none) {
+      #cursor-dot, #cursor-ring { display: none; }
+    }
+
     /* ── SCROLL REVEAL ── */
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 600ms ease, transform 600ms ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -701,6 +729,9 @@
   </style>
 </head>
 <body>
+
+<div id="cursor-dot" aria-hidden="true"></div>
+<div id="cursor-ring" aria-hidden="true"></div>
 
 <div id="preloader" role="status" aria-label="Lädt…">
   <div class="preloader-logo">Flue<span style="color:var(--gold)">Vate</span></div>
@@ -1235,6 +1266,23 @@ function submitForm(e) {
 }
 
 /* ── FAQ ── */
+/* ── CUSTOM CURSOR ── */
+(function() {
+  const dot = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  if (window.matchMedia('(hover: none)').matches) return;
+  document.addEventListener('mousemove', e => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top  = e.clientY + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button, [role="button"], input, select, textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hovering'));
+  });
+})();
+
 /* ── HAMBURGER MENU ── */
 const hamburger = document.getElementById('navHamburger');
 const mobileMenu = document.getElementById('navMobile');
