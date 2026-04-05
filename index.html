@@ -708,6 +708,16 @@
       .products-header { gap: .8rem; }
     }
 
+    /* ── GLOW STRIP ── */
+    .glow-strip {
+      width: 100%; height: 90px;
+      background: #0e0c09;
+      overflow: hidden; position: relative;
+    }
+    #glow-canvas {
+      width: 100%; height: 100%; display: block;
+    }
+
     /* ── CUSTOM CURSOR ── */
     #cursor-dot {
       width: 8px; height: 8px; border-radius: 50%;
@@ -840,6 +850,11 @@
     </div>
   </div>
 </section>
+
+<!-- GLOW STRIP -->
+<div class="glow-strip" aria-hidden="true">
+  <canvas id="glow-canvas"></canvas>
+</div>
 
 <!-- TRUST -->
 <div id="trust" role="region" aria-label="Vertrauensmerkmale">
@@ -1333,6 +1348,70 @@ document.querySelectorAll('.section-label, .section-title, .section-sub, .divide
   el.classList.add('reveal');
   revealSections.observe(el);
 });
+
+/* ── GOLD GLOW SHADER ── */
+(function() {
+  const canvas = document.getElementById('glow-canvas');
+  if (!canvas) return;
+  const gl = canvas.getContext('webgl');
+  if (!gl) return;
+
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vs, `attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}`);
+  gl.compileShader(vs);
+
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fs, `
+    precision highp float;
+    uniform vec2 res;
+    uniform float t;
+    void main(){
+      vec2 p = (gl_FragCoord.xy * 2.0 - res) / min(res.x, res.y);
+      float d = length(p) * 0.04;
+      float rx = p.x * (1.0 + d);
+      float bx = p.x * (1.0 - d);
+      float i1 = 0.04  / abs(p.y + sin((rx + t) * 1.1) * 0.18);
+      float i2 = 0.025 / abs(p.y + sin((p.x + t * 0.8) * 0.9) * 0.22 - 0.06);
+      float i3 = 0.015 / abs(p.y + sin((bx + t * 1.2) * 1.3) * 0.12 + 0.04);
+      vec3 gold  = vec3(0.769, 0.639, 0.353) * i1;
+      vec3 warm  = vec3(0.95,  0.80,  0.40)  * i2;
+      vec3 dark  = vec3(0.55,  0.42,  0.18)  * i3;
+      vec3 col = gold + warm + dark;
+      gl_FragColor = vec4(min(col, vec3(1.0)), 1.0);
+    }
+  `);
+  gl.compileShader(fs);
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+  gl.linkProgram(prog); gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,-1,1,1,-1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const resLoc = gl.getUniformLocation(prog, 'res');
+  const tLoc   = gl.getUniformLocation(prog, 't');
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const start = Date.now();
+  (function loop() {
+    gl.uniform2f(resLoc, canvas.width, canvas.height);
+    gl.uniform1f(tLoc, (Date.now() - start) / 1000 * 0.35);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(loop);
+  })();
+})();
 
 /* ── SPLINE LOGO HIDE ── */
 (function hideSplineLogo() {
