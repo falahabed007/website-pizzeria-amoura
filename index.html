@@ -16,6 +16,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
   <script>
     function loadGA() {
       var s = document.createElement('script');
@@ -264,38 +265,16 @@
     }
     .hero-stat-label { font-size: .75rem; color: var(--muted); margin-top: .3rem; letter-spacing: .04em; }
 
-    /* Right side – elegant card */
-    .hero-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2.5rem;
+    /* Right side – Spline 3D */
+    .hero-spline {
+      width: 100%; height: 520px;
+      position: relative; overflow: hidden;
+      border-radius: 12px;
     }
-    .hero-card-label {
-      font-size: .68rem; font-weight: 500; letter-spacing: .14em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 1.5rem;
+    .hero-spline spline-viewer {
+      width: 100%; height: 100%;
+      display: block;
     }
-    .hero-card-title {
-      font-family: var(--font-serif); font-size: 1.1rem;
-      font-weight: 500; color: var(--text); margin-bottom: .5rem;
-    }
-    .hero-card-sub { font-size: .85rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.6; }
-    .hc-field { margin-bottom: .85rem; }
-    .hc-field label { display: block; font-size: .73rem; font-weight: 500; color: var(--muted); margin-bottom: .3rem; letter-spacing: .04em; }
-    .hc-field input, .hc-field select {
-      width: 100%; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 4px;
-      padding: .6rem .85rem; color: var(--text);
-      font-family: var(--font-sans); font-size: .87rem; outline: none;
-      transition: border-color 150ms;
-    }
-    .hc-field input:focus, .hc-field select:focus { border-color: var(--gold); }
-    .hc-field select option { background: var(--bg); }
-    .hc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
-    .hero-card .btn-dark { width: 100%; justify-content: center; margin-top: .5rem; border-radius: 4px; padding: .75rem; }
-    .hc-privacy { font-size: .72rem; color: var(--muted2); margin-top: .8rem; text-align: center; }
-    .hc-privacy a { text-decoration: underline; text-underline-offset: 2px; color: var(--muted2); }
 
     /* ═══════════════════════════════════════
        TRUST
@@ -648,7 +627,8 @@
        RESPONSIVE
     ═══════════════════════════════════════ */
     @media (max-width: 1024px) {
-      .hero-inner { grid-template-columns: 1fr; gap: 4rem; }
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-right { display: none; }
       .hero-sub { max-width: 100%; }
       .about-inner { grid-template-columns: 1fr; gap: 4rem; }
       .process-steps { grid-template-columns: 1fr 1fr; gap: 2rem; }
@@ -660,7 +640,6 @@
       .footer-top { grid-template-columns: 1fr; gap: 2rem; }
       nav .nav-links { display: none; }
       section { padding: 5rem 5%; }
-      .hc-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 580px) {
       .process-steps { grid-template-columns: 1fr; }
@@ -744,29 +723,11 @@
     </div>
 
     <div class="hero-right">
-      <div class="hero-card">
-        <div class="hero-card-label">Erstgespräch anfragen</div>
-        <div class="hero-card-title">Welche Lösung passt zu Ihrem Unternehmen?</div>
-        <div class="hero-card-sub">Kostenloses Gespräch – wir hören zu und erstellen ein individuelles Angebot.</div>
-        <form class="hero-card-form" onsubmit="submitHeroForm(event)" novalidate>
-          <div class="hc-grid">
-            <div class="hc-field"><label for="h-fname">Vorname *</label><input id="h-fname" type="text" placeholder="Max" required autocomplete="given-name" /></div>
-            <div class="hc-field"><label for="h-lname">Nachname *</label><input id="h-lname" type="text" placeholder="Mustermann" required autocomplete="family-name" /></div>
-          </div>
-          <div class="hc-field"><label for="h-email">E-Mail *</label><input id="h-email" type="email" placeholder="ihre@email.de" required autocomplete="email" /></div>
-          <div class="hc-field">
-            <label for="h-product">Gewünschte Leistung</label>
-            <select id="h-product">
-              <option value="">Bitte wählen…</option>
-              <option value="KI-Chatbot">KI-Chatbot</option>
-              <option value="KI-Voice-Bot">KI-Voice-Bot</option>
-              <option value="Professionelle Webseite">Professionelle Webseite</option>
-              <option value="Alles / Beratung">Erst mal beraten lassen</option>
-            </select>
-          </div>
-          <button type="submit" class="btn-dark">Termin anfragen →</button>
-          <p class="hc-privacy">Mit dem Absenden stimmen Sie unserer <a href="datenschutz.html">Datenschutzerklärung</a> zu.</p>
-        </form>
+      <div class="hero-spline">
+        <spline-viewer
+          url="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
+          loading-anim-type="none"
+        ></spline-viewer>
       </div>
     </div>
   </div>
@@ -1212,22 +1173,6 @@ function submitForm(e) {
     company: form.company.value, product: form.product.value, message: form.msg.value,
   };
   sendEmail(params, showSuccess, () => { btn.textContent = orig; btn.disabled = false; alert('Fehler. Bitte direkt schreiben: abedfalah@aiinovate.onmicrosoft.com'); });
-}
-
-function submitHeroForm(e) {
-  e.preventDefault();
-  const f = e.target, btn = f.querySelector('[type="submit"]'), orig = btn.textContent;
-  if (!f.querySelector('#h-email').value) return;
-  btn.textContent = 'Wird gesendet…'; btn.disabled = true;
-  const params = {
-    from_name: (f.querySelector('#h-fname').value + ' ' + f.querySelector('#h-lname').value).trim(),
-    from_email: f.querySelector('#h-email').value, phone: '–', company: '–',
-    product: f.querySelector('#h-product').value || 'Noch nicht gewählt', message: '–',
-  };
-  sendEmail(params, () => {
-    btn.textContent = '✓ Anfrage gesendet'; btn.style.background = '#2d6a4f';
-    setTimeout(() => { btn.textContent = orig; btn.disabled = false; btn.style.background = ''; f.reset(); }, 4000);
-  }, () => { btn.textContent = orig; btn.disabled = false; alert('Fehler. Bitte direkt schreiben: abedfalah@aiinovate.onmicrosoft.com'); });
 }
 
 /* ── FAQ ── */
