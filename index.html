@@ -243,13 +243,13 @@
 
     .btn-outline {
       display: inline-flex; align-items: center; gap: .5rem;
-      background: transparent; color: var(--text);
+      background: transparent; color: #fff;
       padding: .75rem 1.8rem; border-radius: 4px;
       font-size: .87rem; font-weight: 500; letter-spacing: .02em;
-      border: 1px solid var(--border); cursor: pointer; font-family: var(--font-sans);
+      border: 1px solid rgba(255,255,255,0.2); cursor: pointer; font-family: var(--font-sans);
       transition: border-color 150ms, background 150ms;
     }
-    .btn-outline:hover { border-color: var(--text); background: var(--bg2); }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
 
     /* ═══════════════════════════════════════
        HERO
@@ -258,10 +258,18 @@
       min-height: 100vh;
       display: flex; align-items: center;
       padding: 7rem 5% 5rem;
-      background: var(--bg);
+      background: #0b0905;
       position: relative;
-      border-bottom: 1px solid var(--border2);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
     }
+    #hero-shader {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      display: block; z-index: 0;
+      opacity: 0.85;
+    }
+    .hero-inner { position: relative; z-index: 1; }
 
     .hero-inner {
       max-width: 1080px; margin: 0 auto; width: 100%;
@@ -272,7 +280,7 @@
     .hero-tag {
       display: inline-flex; align-items: center; gap: .6rem;
       font-size: .7rem; font-weight: 500; letter-spacing: .16em;
-      text-transform: uppercase; color: var(--muted);
+      text-transform: uppercase; color: rgba(255,255,255,0.45);
       margin-bottom: 2rem;
     }
     .hero-tag-line { width: 24px; height: 1px; background: var(--gold); }
@@ -281,13 +289,13 @@
       font-family: var(--font-serif);
       font-size: clamp(2rem, 3.5vw, 3rem);
       font-weight: 400; line-height: 1.18;
-      color: var(--text); margin-bottom: 1.4rem;
+      color: #fff; margin-bottom: 1.4rem;
       letter-spacing: -.01em;
     }
     #hero h1 em { font-style: italic; color: var(--gold); }
 
     .hero-sub {
-      font-size: 1rem; color: var(--muted); line-height: 1.8;
+      font-size: 1rem; color: rgba(255,255,255,0.5); line-height: 1.8;
       max-width: 420px; margin-bottom: 2.5rem; font-weight: 300;
     }
 
@@ -295,14 +303,14 @@
 
     .hero-note {
       margin-top: 2rem; padding-top: 1.5rem;
-      border-top: 1px solid var(--border2);
+      border-top: 1px solid rgba(255,255,255,0.08);
       display: flex; gap: 2rem; flex-wrap: wrap;
     }
     .hero-stat-num {
       font-family: var(--font-serif); font-size: 1.6rem; font-weight: 600;
-      color: var(--text); line-height: 1;
+      color: #fff; line-height: 1;
     }
-    .hero-stat-label { font-size: .75rem; color: var(--muted); margin-top: .3rem; letter-spacing: .04em; }
+    .hero-stat-label { font-size: .75rem; color: rgba(255,255,255,0.4); margin-top: .3rem; letter-spacing: .04em; }
 
     /* Right side – Spline 3D */
     .hero-spline {
@@ -708,16 +716,6 @@
       .products-header { gap: .8rem; }
     }
 
-    /* ── GLOW STRIP ── */
-    .glow-strip {
-      width: 100%; height: 90px;
-      background: #0e0c09;
-      overflow: hidden; position: relative;
-    }
-    #glow-canvas {
-      width: 100%; height: 100%; display: block;
-    }
-
     /* ── CUSTOM CURSOR ── */
     #cursor-dot {
       width: 8px; height: 8px; border-radius: 50%;
@@ -807,6 +805,7 @@
 
 <!-- HERO -->
 <section id="hero" aria-labelledby="hero-heading">
+  <canvas id="hero-shader" aria-hidden="true"></canvas>
   <div class="hero-inner">
     <div class="hero-left">
       <div class="hero-tag">
@@ -850,11 +849,6 @@
     </div>
   </div>
 </section>
-
-<!-- GLOW STRIP -->
-<div class="glow-strip" aria-hidden="true">
-  <canvas id="glow-canvas"></canvas>
-</div>
 
 <!-- TRUST -->
 <div id="trust" role="region" aria-label="Vertrauensmerkmale">
@@ -1351,7 +1345,7 @@ document.querySelectorAll('.section-label, .section-title, .section-sub, .divide
 
 /* ── GOLD GLOW SHADER ── */
 (function() {
-  const canvas = document.getElementById('glow-canvas');
+  const canvas = document.getElementById('hero-shader');
   if (!canvas) return;
   const gl = canvas.getContext('webgl');
   if (!gl) return;
