@@ -16,14 +16,9 @@ app.get('/', (req, res) => {
   res.send(html);
 });
 
-// Alle anderen Seiten normal ausliefern
+// Alle anderen Routen → index.html
 app.get('*', (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-    res.sendFile(filePath);
-  } else {
-    res.sendFile(path.join(__dirname, 'index.html'));
-  }
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
