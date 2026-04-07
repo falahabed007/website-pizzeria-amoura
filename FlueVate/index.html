@@ -34,7 +34,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"LocalBusiness","name":"FlueVate","legalName":"Abed Rachman Falah / FlueVate","description":"Individuelle KI-Chatbots, Voice-Bots und professionelle Webseiten für Unternehmen.","url":"https://www.fluevate.de","email":"abedfalah@aiinovate.onmicrosoft.com","address":{"@type":"PostalAddress","streetAddress":"Zur Goldbrede 30","addressLocality":"Beckum","postalCode":"59269","addressCountry":"DE"},"areaServed":"DE"}
+  {"@context":"https://schema.org","@type":"LocalBusiness","name":"FlueVate","legalName":"Abed Rachman Falah / FlueVate","description":"Individuelle KI-Chatbots, Voice-Bots und professionelle Webseiten für Unternehmen.","url":"https://www.fluevate.de","email":"AbedFalah@Fluevate.onmicrosoft.com","address":{"@type":"PostalAddress","streetAddress":"Zur Goldbrede 30","addressLocality":"Beckum","postalCode":"59269","addressCountry":"DE"},"areaServed":"DE"}
   </script>
 
   <style>
@@ -1086,7 +1086,7 @@
         <li><a href="#about">Über uns</a></li>
         <li><a href="#prozess">Ablauf</a></li>
         <li><a href="#faq">FAQ</a></li>
-        <li><a href="mailto:abedfalah@aiinovate.onmicrosoft.com">Kontakt</a></li>
+        <li><a href="mailto:AbedFalah@Fluevate.onmicrosoft.com">Kontakt</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -1240,7 +1240,7 @@ function sendEmail(params, onSuccess, onError) {
     emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params).then(onSuccess).catch(onError);
   } else {
     const body = encodeURIComponent(`Name: ${params.from_name}\nE-Mail: ${params.from_email}\nTelefon: ${params.phone||'–'}\nUnternehmen: ${params.company||'–'}\nLeistung: ${params.product}\nNachricht: ${params.message||'–'}`);
-    window.location.href = `mailto:abedfalah@aiinovate.onmicrosoft.com?subject=Anfrage%20–%20${encodeURIComponent(params.product)}&body=${body}`;
+    window.location.href = `mailto:AbedFalah@Fluevate.onmicrosoft.com?subject=Anfrage%20–%20${encodeURIComponent(params.product)}&body=${body}`;
     onSuccess();
   }
 }
@@ -1260,7 +1260,7 @@ function submitForm(e) {
     from_email: form.email.value, phone: form.phone.value,
     company: form.company.value, product: form.product.value, message: form.msg.value,
   };
-  sendEmail(params, showSuccess, () => { btn.textContent = orig; btn.disabled = false; alert('Fehler. Bitte direkt schreiben: abedfalah@aiinovate.onmicrosoft.com'); });
+  sendEmail(params, showSuccess, () => { btn.textContent = orig; btn.disabled = false; alert('Fehler. Bitte direkt schreiben: AbedFalah@Fluevate.onmicrosoft.com'); });
 }
 
 /* ── FAQ ── */
