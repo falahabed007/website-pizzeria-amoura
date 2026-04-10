@@ -302,6 +302,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
         <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()" title="Automatik nach Öffnungszeiten">🕐 Auto</span>
       </div>
+      <span id="printerStatus" title="Drucker-Status" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:default;white-space:nowrap;">🖨️ Getrennt</span>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>
@@ -1019,6 +1020,8 @@ function initDashboard() {
   // Datum-Picker auf heute setzen
   document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
   if(Notification&&Notification.permission==='default') Notification.requestPermission();
+  checkBgate();
+  setInterval(checkBgate, 30000); // alle 30s prüfen
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1138,7 +1141,7 @@ async function confirmOrder() {
     const orderToPrint = currentPending; // vor closePendingModal speichern!
     closePendingModal();
     showToast(`✅ Bestellung #${orderToPrint.orderNum} bestätigt – ${selectedTime} Min. · E-Mail & Bondruck`);
-    doBrowserPrint(orderToPrint); // 🖨️ AUTO-DRUCK
+    smartPrint(orderToPrint); // 🖨️ AUTO-DRUCK
     await loadOrders();
   } catch(e) { btn.disabled=false; btn.textContent='✅ Annehmen'; }
 }
@@ -1295,8 +1298,8 @@ async function printOrder(e, id) {
   if (!order) return;
   // Backend print trigger
   fetch(`${API_BASE}/admin/orders/${id}/print`,{method:'POST',headers:apiHeaders()}).catch(()=>{});
-  // Browser print
-  doBrowserPrint(order);
+  // Drucker
+  smartPrint(order);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1687,7 +1690,7 @@ async function submitPOS() {
     await loadOrders();
     // 🖨️ AUTO-DRUCK: gespeicherte Bestellung aus allOrders holen oder aus payload aufbauen
     const savedOrder = allOrders.find(o=>o.orderNum===d.orderNum) || {...payload, orderNum:d.orderNum, _id:d._id||'', createdAt:new Date().toISOString()};
-    doBrowserPrint(savedOrder);
+    smartPrint(savedOrder);
   } catch(e) { showToast('❌ Fehler beim Speichern'); btn.disabled=false; btn.textContent='✅ Bestellung speichern & drucken'; }
 }
 
@@ -1755,6 +1758,122 @@ async function loadRestaurantStatus() {
 // ═══════════════════════════════════════════════════════════════
 // BROWSER PRINT
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// B-GATE DRUCKER (BIXOLON SRP-380)
+// ═══════════════════════════════════════════════════════════════
+const BGATE_URL = 'http://127.0.0.1:18080';
+let bgateConnected = false;
+
+function escposBuilder() {
+  const b = [];
+  const enc = new TextEncoder();
+  const api = {
+    init()       { b.push(0x1B,0x40); return api; },
+    cut()        { b.push(0x1D,0x56,0x41,0x03); return api; },
+    feed(n=1)    { for(let i=0;i<n;i++) b.push(0x0A); return api; },
+    bold(on)     { b.push(0x1B,0x45,on?1:0); return api; },
+    align(a)     { b.push(0x1B,0x61,a==='center'?1:a==='right'?2:0); return api; },
+    size(dbl)    { b.push(0x1D,0x21,dbl?0x11:0x00); return api; },
+    text(t)      { enc.encode(t).forEach(x=>b.push(x)); return api; },
+    line(t)      { return api.text(t).feed(); },
+    divider()    { return api.line('--------------------------------'); },
+    b64()        { return btoa(String.fromCharCode(...b)); }
+  };
+  return api;
+}
+
+function updatePrinterStatus() {
+  const el = document.getElementById('printerStatus');
+  if (!el) return;
+  if (bgateConnected) {
+    el.textContent = '🖨️ Drucker OK';
+    el.style.color = 'var(--green)';
+    el.style.borderColor = 'var(--green)';
+  } else {
+    el.textContent = '🖨️ Getrennt';
+    el.style.color = 'var(--muted)';
+    el.style.borderColor = 'var(--border)';
+  }
+}
+
+async function checkBgate() {
+  try {
+    const r = await fetch(`${BGATE_URL}/status`, { signal: AbortSignal.timeout(2000) });
+    bgateConnected = r.ok || r.status < 500;
+  } catch { bgateConnected = false; }
+  updatePrinterStatus();
+}
+
+async function bgaPrint(order) {
+  const isD = order.mode === 'lieferung';
+  const ep  = escposBuilder();
+
+  ep.init()
+    .align('center').size(true).bold(true).line('PIZZERIA AMOURA').size(false).bold(false)
+    .line('Oststrasse 48 - 59269 Beckum')
+    .line('02521 / 829 06 00')
+    .feed().divider()
+    .bold(true).size(true).line(`#${order.orderNum}`).size(false).bold(false)
+    .line(new Date(order.createdAt).toLocaleString('de-DE'))
+    .feed()
+    .bold(true).line(isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***').bold(false)
+    .divider();
+
+  ep.align('left');
+  ep.line(`${order.customer?.first||''} ${order.customer?.last||''}`);
+  if (order.customer?.phone) ep.line(order.customer.phone);
+  if (isD) {
+    ep.line(`${order.customer?.street||''} ${order.customer?.house||''}`);
+    ep.line(order.customer?.city||'');
+  }
+  ep.divider();
+
+  for (const i of (order.items||[])) {
+    const label = `${i.qty}x ${i.name}`.slice(0,24);
+    const price = `${(i.price*i.qty).toFixed(2)} EUR`;
+    ep.line(`${label.padEnd(24)}${price.padStart(10)}`);
+    if (i.note) ep.line(`  -> ${i.note}`);
+  }
+
+  ep.divider()
+    .line(`Zwischensumme:  ${String((order.subtotal||0).toFixed(2)+' EUR').padStart(14)}`);
+  if (order.deliveryFee>0)
+    ep.line(`Liefergebuehr:  ${String(order.deliveryFee.toFixed(2)+' EUR').padStart(14)}`);
+  ep.line(`Servicegebuehr: ${String((order.serviceFee||0.99).toFixed(2)+' EUR').padStart(14)}`);
+  ep.bold(true)
+    .line(`GESAMT:         ${String((order.total||0).toFixed(2)+' EUR').padStart(14)}`)
+    .bold(false).divider();
+
+  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
+  ep.line(`Zahlung: ${zahlung}`);
+  ep.line(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
+  if (order.prepTime) ep.line(`Wartezeit: ca. ${order.prepTime} Minuten`);
+  if (order.note) ep.line(`Anm.: ${order.note}`);
+  ep.feed().align('center').line('Vielen Dank fuer Ihre Bestellung!').feed(3).cut();
+
+  try {
+    const res = await fetch(`${BGATE_URL}/print`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: ep.b64(), printerType: 'BIXOLON' }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (res.ok) { bgateConnected = true; updatePrinterStatus(); return true; }
+  } catch(e) { /* B-gate nicht erreichbar */ }
+  bgateConnected = false;
+  updatePrinterStatus();
+  return false;
+}
+
+async function smartPrint(order) {
+  if (bgateConnected) {
+    const ok = await bgaPrint(order);
+    if (ok) return;
+  }
+  // Fallback: Browser-Druckdialog
+  doBrowserPrint(order);
+}
+
 function doBrowserPrint(order) {
   const isD = order.mode==='lieferung';
   const addr = isD?`${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}`:'Abholung';
