@@ -235,7 +235,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       items, subtotal, deliveryFee, serviceFee, total,
       customer, mode, note, orderNum,
       payment: 'stripe', paymentStatus: 'pending',
-      stripeSessionId: session.id, status: 'pending'
+      stripeSessionId: session.id, status: 'awaiting_payment'
     });
     await order.save();
     res.json({ url: session.url, orderNum });
