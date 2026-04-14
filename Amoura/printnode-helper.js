@@ -88,7 +88,7 @@ function buildReceipt(order) {
   // Artikel
   (order.items || []).forEach(item => {
     const name = item.name.substring(0, 22);
-    const price = (item.price * item.qty).toFixed(2).replace('.', ',') + ' EUR';
+    const price = (item.price === 0) ? 'GRATIS' : (item.price * item.qty).toFixed(2).replace('.', ',') + ' EUR';
     const line = `${item.qty}x ${name}`;
     const spaces = 32 - line.length - price.length;
     receipt += BOLD_ON + line + ' '.repeat(Math.max(1, spaces)) + price + LF + BOLD_OFF;

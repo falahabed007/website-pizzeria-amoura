@@ -193,7 +193,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
     const { items, subtotal, deliveryFee, serviceFee, total, customer, mode, note } = req.body;
     const orderNum = await getNextOrderNum();
 
-    const lineItems = items.map(i => ({
+    const lineItems = items.filter(i => i.price > 0).map(i => ({
       price_data: { currency:'eur',
         product_data: { name: `${i.qty}× ${i.name}${i.note?' ('+i.note+')':''}` },
         unit_amount: Math.round(i.price * 100) },
