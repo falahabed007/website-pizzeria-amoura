@@ -1847,15 +1847,14 @@ function showPromotionBanner() {
 
 function addFreePizzaIfNeeded() {
   if (!isPromotionActive()) return;
-  // Prüfe ob Pizza bereits im Warenkorb
-  const hasPizza = warenkorb.some(item => item.name.includes('Kleine Pizza Margherita') && item.isFree);
-  if (!hasPizza) {
-    warenkorb.push({
-      id: Date.now(),
-      name: 'Kleine Pizza Margherita (GRATIS)',
-      preis: 0,
-      isFree: true
-    });
+  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : b.preis), 0);
+  const hasPizza = warenkorb.some(item => item.isFree);
+  if (summe >= 15 && !hasPizza) {
+    warenkorb.push({ id: Date.now(), name: 'Kleine Pizza Margherita (GRATIS)', preis: 0, isFree: true });
+  } else if (summe < 15 && hasPizza) {
+    // Warenkorb wieder unter 15€ → Gratis-Pizza entfernen
+    const idx = warenkorb.findIndex(item => item.isFree);
+    if (idx !== -1) warenkorb.splice(idx, 1);
   }
 }
 
@@ -1941,12 +1940,7 @@ function speiseInWarenkorb() {
 function artikelLoeschen(index) {
     if (warenkorb[index] && warenkorb[index].isFree) return; // Gratis-Artikel nicht löschbar
     warenkorb.splice(index, 1);
-    // Falls keine bezahlten Artikel mehr übrig, Gratis-Pizza entfernen
-    const hasPaidItems = warenkorb.some(item => !item.isFree);
-    if (!hasPaidItems) {
-        const freeIdx = warenkorb.findIndex(item => item.isFree);
-        if (freeIdx !== -1) warenkorb.splice(freeIdx, 1);
-    }
+    addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 15€, sonst Gratis-Pizza entfernen
     renderWarenkorb();
 }
 
