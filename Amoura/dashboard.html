@@ -265,9 +265,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 /* PRINT */
 @media print{
   @page { size: 80mm auto; margin: 0mm; }
+  html,body { background: white !important; color: black !important; }
   body *{visibility:hidden;}
   #printArea,#printArea *{visibility:visible;}
-  #printArea{position:fixed;left:0;top:0;width:80mm;font-family:monospace;font-size:11px;}
+  #printArea{position:fixed;left:0;top:0;width:80mm;font-family:monospace;font-size:11px;background:white;color:black;}
 }
 
 @media(max-width:900px){.main-area{grid-template-columns:1fr;}.sidebar-col{display:none;}.stats-bar{grid-template-columns:repeat(3,1fr);}}
@@ -1956,19 +1957,21 @@ async function rawbtPrint(order) {
 }
 
 async function smartPrint(order) {
-  // 1. Fully Kiosk Browser (höchste Priorität auf Android)
-  if (window.fully) {
-    fullyPrint(order);
-    return;
+  // 1. RawBT HTTP API (ESC/POS – korrekte Thermodruck-Qualität, RawBT Pro)
+  if (rawbtConnected) {
+    const ok = await rawbtPrint(order);
+    if (ok) return;
   }
-  // 2. B-Gate (BIXOLON, Windows PC)
+  // 2. B-Gate (BIXOLON, Windows PC per ESC/POS)
   if (bgateConnected) {
     const ok = await bgaPrint(order);
     if (ok) return;
   }
-  // 3. RawBT HTTP API (nur RawBT Pro)
-  const okRawbt = await rawbtPrint(order);
-  if (okRawbt) return;
+  // 3. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
+  if (window.fully) {
+    fullyPrint(order);
+    return;
+  }
   // 4. Fallback: Browser-Popup
   doBrowserPrint(order);
 }
@@ -1991,7 +1994,7 @@ function buildBonHtml(order) {
   const isD = order.mode==='lieferung';
   const addr = isD?`${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}`:'Abholung';
   const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${i.name}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €'}</td></tr>`).join('');
-  return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;">
+  return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;background:white;color:black;">
   <h2 style="text-align:center;margin-bottom:4px;">PIZZERIA AMOURA</h2>
   <p style="text-align:center;margin:2px 0;">Oststraße 48 · 59269 Beckum</p>
   <p style="text-align:center;margin:2px 0;">02521 / 829 06 00</p>
