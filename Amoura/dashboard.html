@@ -1870,49 +1870,66 @@ async function smartPrint(order) {
     const ok = await bgaPrint(order);
     if (ok) return;
   }
-  // Fallback: Browser-Druckdialog
+  // Fully Kiosk Browser: fully.print() druckt die aktuelle Seite
+  if (window.fully) {
+    fullyPrint(order);
+    return;
+  }
+  // Fallback: Browser-Druckdialog (neues Fenster)
   doBrowserPrint(order);
 }
 
-function doBrowserPrint(order) {
+function fullyPrint(order) {
+  const bonHtml = buildBonHtml(order);
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = bonHtml;
+  printArea.style.display = 'block';
+  setTimeout(() => {
+    window.fully.print();
+    setTimeout(() => {
+      printArea.innerHTML = '';
+      printArea.style.display = 'none';
+    }, 3000);
+  }, 200);
+}
+
+function buildBonHtml(order) {
   const isD = order.mode==='lieferung';
   const addr = isD?`${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}`:'Abholung';
-  const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${i.name}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${(i.price*i.qty).toFixed(2).replace('.',',')} €</td></tr>`).join('');
-  const w = window.open('','_blank','width=400,height=600');
-  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${order.orderNum}</title>
-  <style>body{font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;}
-  h2{text-align:center;margin-bottom:4px;}p{text-align:center;margin:2px 0;}
-  hr{border:none;border-top:1px dashed #000;margin:8px 0;}
-  table{width:100%;border-collapse:collapse;}td{padding:2px 0;}
-  .total{font-weight:bold;font-size:14px;border-top:1px solid #000;padding-top:4px;}
-  </style></head><body>
-  <h2>PIZZERIA AMOURA</h2>
-  <p>Oststraße 48 · 59269 Beckum</p>
-  <p>02521 / 829 06 00</p>
-  <hr>
+  const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${i.name}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €'}</td></tr>`).join('');
+  return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;">
+  <h2 style="text-align:center;margin-bottom:4px;">PIZZERIA AMOURA</h2>
+  <p style="text-align:center;margin:2px 0;">Oststraße 48 · 59269 Beckum</p>
+  <p style="text-align:center;margin:2px 0;">02521 / 829 06 00</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <h3 style="text-align:center">BESTELLUNG #${order.orderNum}</h3>
-  <p>${new Date(order.createdAt).toLocaleString('de-DE')}</p>
-  <p><strong>${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}</strong></p>
-  <hr>
-  <p>${order.customer?.first||''} ${order.customer?.last||''}</p>
-  <p>${order.customer?.phone||''}</p>
-  <p>${addr}</p>
-  <hr>
-  <table>${rows}</table>
-  <hr>
-  <table>
+  <p style="text-align:center;margin:2px 0;">${new Date(order.createdAt).toLocaleString('de-DE')}</p>
+  <p style="text-align:center;margin:2px 0;"><strong>${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}</strong></p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
+  <p style="text-align:center;margin:2px 0;">${order.customer?.first||''} ${order.customer?.last||''}</p>
+  <p style="text-align:center;margin:2px 0;">${order.customer?.phone||''}</p>
+  <p style="text-align:center;margin:2px 0;">${addr}</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
+  <table style="width:100%;border-collapse:collapse;">${rows}</table>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
+  <table style="width:100%;border-collapse:collapse;">
     <tr><td>Zwischensumme</td><td style="text-align:right">${(order.subtotal||0).toFixed(2).replace('.',',')} €</td></tr>
     ${order.deliveryFee>0?`<tr><td>Liefergebühr</td><td style="text-align:right">${order.deliveryFee.toFixed(2).replace('.',',')} €</td></tr>`:''}
     <tr><td>Servicegebühr</td><td style="text-align:right">${(order.serviceFee||0.99).toFixed(2).replace('.',',')} €</td></tr>
-    <tr class="total"><td>GESAMT</td><td style="text-align:right">${(order.total||0).toFixed(2).replace('.',',')} €</td></tr>
+    <tr style="font-weight:bold;font-size:14px;border-top:1px solid #000;"><td>GESAMT</td><td style="text-align:right">${(order.total||0).toFixed(2).replace('.',',')} €</td></tr>
   </table>
-  <hr>
-  <p>Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
-  <p>${order.paymentStatus==='paid'?'✅ BEZAHLT':'!!! BITTE KASSIEREN !!!'}</p>
-  <hr>
-  <p>Vielen Dank!</p>
-  ${order.prepTime?`<p>~${order.prepTime} Minuten</p>`:''}
-  </body></html>`);
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
+  <p style="text-align:center;margin:2px 0;">Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
+  <p style="text-align:center;margin:2px 0;">${order.paymentStatus==='paid'?'✅ BEZAHLT':'!!! BITTE KASSIEREN !!!'}</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
+  <p style="text-align:center;margin:2px 0;">Vielen Dank!</p>
+  ${order.prepTime?`<p style="text-align:center;margin:2px 0;">~${order.prepTime} Minuten</p>`:''}
+  </div>`;
+}
+
+function doBrowserPrint(order) {
+  const w = window.open('','_blank','width=400,height=600');
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${order.orderNum}</title></head><body>${buildBonHtml(order)}</body></html>`);
   w.document.close();
   setTimeout(()=>w.print(),500);
 }
