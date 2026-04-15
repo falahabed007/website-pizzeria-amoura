@@ -7,15 +7,21 @@ const cron       = require('node-cron');
 const PDFDocument = require('pdfkit');
 require('dotenv').config();
 
-const app    = express();
-const resend = new Resend(process.env.RESEND_API_KEY);
-const PORT   = process.env.PORT || 3001;
+const app  = express();
+const PORT = process.env.PORT || 3001;
 
-// Stripe lazy – liest Key bei jedem Aufruf (Test & Live kompatibel)
+// Stripe lazy – liest Key bei jedem Aufruf
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY nicht gesetzt in Render Environment');
+  if (!key) throw new Error('STRIPE_SECRET_KEY nicht gesetzt');
   return Stripe(key);
+}
+
+// Resend lazy – kein Crash beim Start wenn Key fehlt
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) { console.warn('⚠️  RESEND_API_KEY fehlt – E-Mails werden nicht gesendet'); return null; }
+  return new Resend(key);
 }
 
 // ─── CORS ────────────────────────────────────────────────────────
@@ -422,7 +428,7 @@ async function sendConfirmationEmail(order, mins) {
     `<tr><td style="padding:4px 8px">${i.qty}×</td><td style="padding:4px 8px">${i.name}${i.note?' <em>('+i.note+')</em>':''}</td><td style="padding:4px 8px;text-align:right">${(i.price*i.qty).toFixed(2).replace('.',',')} €</td></tr>`
   ).join('');
   try {
-    await resend.emails.send({
+    await getResend()?.emails.send({
       from: process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
       to:   order.customer.email,
       subject: `✅ Bestellung #${order.orderNum} bestätigt – Pizzeria Amoura`,
@@ -466,7 +472,7 @@ async function sendRestaurantEmail(order) {
   if (!process.env.RESTAURANT_EMAIL) return;
   const items = (order.items||[]).map(i=>`${i.qty}× ${i.name}${i.note?' ('+i.note+')':''}`).join('\n');
   try {
-    await resend.emails.send({
+    await getResend()?.emails.send({
       from: process.env.EMAIL_FROM||'bestellungen@pizzeria-amoura.de',
       to:   process.env.RESTAURANT_EMAIL,
       subject: `🔔 Bestellung #${order.orderNum} – ${order.mode==='lieferung'?'Lieferung':'Abholung'}`,
@@ -499,7 +505,7 @@ async function sendCancellationEmail(order, reason, refundStatus) {
         <span style="font-size:13px;color:#555">Der Betrag von ${(order.total||0).toFixed(2).replace('.',',')} € wird in 5–10 Werktagen zurückgebucht.</span>
        </div>` : '';
   try {
-    await resend.emails.send({
+    await getResend()?.emails.send({
       from: process.env.EMAIL_FROM||'bestellungen@pizzeria-amoura.de',
       to:   order.customer.email,
       subject: `❌ Bestellung #${order.orderNum} storniert – Pizzeria Amoura`,
@@ -779,7 +785,7 @@ cron.schedule('59 23 * * 0', async () => {
 </div>`;
 
     if (process.env.RESTAURANT_EMAIL) {
-      await resend.emails.send({
+      await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.RESTAURANT_EMAIL,
         subject: `📊 Wochenbericht KW ${kw} / ${now.getFullYear()} · Pizzeria Amoura`,
@@ -789,7 +795,7 @@ cron.schedule('59 23 * * 0', async () => {
 
     // ── E-Mail 2: Owner bekommt beide PDFs als Anhang ─────────────
     if (process.env.OWNER_EMAIL) {
-      await resend.emails.send({
+      await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `🧾 ${rechnungNr} + Wochenbericht KW ${kw} · Pizzeria Amoura`,
@@ -942,7 +948,7 @@ cron.schedule('58 23 * * *', async () => {
     });
 
     if (process.env.OWNER_EMAIL) {
-      await resend.emails.send({
+      await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
