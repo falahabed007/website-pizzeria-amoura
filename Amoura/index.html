@@ -643,9 +643,9 @@
             <div id="cart-delivery-info" style="margin-top:10px;">
                 <select id="cart-stadt" onchange="updateCartSummary()"
                     style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; font-size:13px; cursor:pointer;">
-                    <option value="beckum">Beckum (MBW: 15,00€ | +1,50€ Gebühr)</option>
-                    <option value="roland">Roland (MBW: 15,00€ | +2,00€ Gebühr)</option>
-                    <option value="vellern">Vellern (MBW: 15,00€ | +2,00€ Gebühr)</option>
+                    <option value="beckum">Beckum (MBW: 15,00€ | +2,50€ Gebühr)</option>
+                    <option value="roland">Roland (MBW: 15,00€ | +3,00€ Gebühr)</option>
+                    <option value="vellern">Vellern (MBW: 15,00€ | +3,00€ Gebühr)</option>
                 </select>
             </div>
 
@@ -709,7 +709,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Alle Gebiete ab 15€ Mindestbestellwert · Beckum +1,50€, Roland/Vellern +2,00€ Liefergebühr</p>
+                    <p>Alle Gebiete ab 15€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
                 </div>
             </div>
             
@@ -2031,9 +2031,9 @@ function toggleMobileMenu() {
             
             <div style="margin-bottom:5px; font-size:12px; color:#666;">Liefergebiet wählen:</div>
             <select id="c-stadt" onchange="updateSummary()" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;">
-                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 1,50€)</option>
-                <option value="roland">Roland (MBW: 20,00€ | Gebühr: 2,00€)</option>
-                <option value="vellern">Vellern (MBW: 20,00€ | Gebühr: 2,00€)</option>
+                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 2,50€)</option>
+                <option value="roland">Roland (MBW: 15,00€ | Gebühr: 3,00€)</option>
+                <option value="vellern">Vellern (MBW: 15,00€ | Gebühr: 3,00€)</option>
             </select>
         </div>
         
@@ -2098,9 +2098,9 @@ function updateBestellBtn() {
 
 <script>
 const AREA_CONFIG = {
-    "beckum": { min: 15.00, fee: 1.50, label: "Beckum" },
-    "roland": { min: 15.00, fee: 2.00, label: "Roland" },
-    "vellern": { min: 15.00, fee: 2.00, label: "Vellern" }
+    "beckum": { min: 15.00, fee: 2.50, label: "Beckum" },
+    "roland": { min: 15.00, fee: 3.00, label: "Roland" },
+    "vellern": { min: 15.00, fee: 3.00, label: "Vellern" }
 };
 const SERVICE_FEE = 0.99;
 
@@ -3340,7 +3340,7 @@ LEGAL.impressum = {
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>Samstag</td><td>17:00 &ndash; 22:00 Uhr</td></tr>"
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>So &amp; Feiertage</td><td>12:00 &ndash; 14:00 Uhr &amp; 16:00 &ndash; 22:00 Uhr</td></tr>"
        + "</table>"
-       + "<p style='margin-top:20px;font-size:.84rem'>Liefergebiet: Beckum (1,50 &euro;) &middot; Roland &amp; Vellern (2,00 &euro;)</p>"
+       + "<p style='margin-top:20px;font-size:.84rem'>Liefergebiet: Beckum (2,50 &euro;) &middot; Roland &amp; Vellern (3,00 &euro;)</p>"
        + "<h3 style='color:#8b1d1d;margin:20px 0 8px'>EU-Streitschlichtung</h3>"
        + "<p>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:<br>"
        + "<a href='https://ec.europa.eu/consumers/odr/' target='_blank' style='color:#8b1d1d'>ec.europa.eu/consumers/odr</a></p>"
@@ -3390,9 +3390,9 @@ LEGAL.agb = {
        + "<p>Alle Preise inkl. MwSt. (7&nbsp;% auf Speisen, 19&nbsp;% auf Getr&auml;nke). F&uuml;r die Nutzung der Online-Bestellplattform wird eine <strong>Servicegeb&uuml;hr von 0,99&nbsp;&euro;</strong> pro Bestellung erhoben (gem. &sect;&nbsp;312a BGB). Diese z&auml;hlt nicht zum Mindestbestellwert.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;4 Lieferung &amp; Mindestbestellwerte</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
-       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 1,50&nbsp;&euro;</li>"
-       + "<li>Roland: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,00&nbsp;&euro;</li>"
-       + "<li>Vellern: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,00&nbsp;&euro;</li>"
+       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
+       + "<li>Roland: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Vellern: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
        + "</ul>"
        + "<p>Lieferzeiten sind Sch&auml;tzwerte und nicht verbindlich.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;5 Widerrufsrecht</h4>"

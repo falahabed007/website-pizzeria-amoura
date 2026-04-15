@@ -421,9 +421,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
               </div>
               <div class="pos-field"><div class="pos-label">Ort</div>
                 <select class="pos-input" id="posCity" onchange="renderPOSTotals()">
-                  <option value="Beckum">Beckum (+1,50 €)</option>
-                  <option value="Roland">Roland (+2,00 €)</option>
-                  <option value="Vellern">Vellern (+2,00 €)</option>
+                  <option value="Beckum">Beckum (+2,50 €)</option>
+                  <option value="Roland">Roland (+3,00 €)</option>
+                  <option value="Vellern">Vellern (+3,00 €)</option>
                 </select>
               </div>
             </div>
@@ -771,7 +771,7 @@ const API_BASE        = 'https://website-pizzeria-amoura.onrender.com/api';
 const DASHBOARD_PW    = 'Amoura2025Admin!';
 const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025xyzABCDEFGHIJKLMN';
 const SERVICE_FEE     = 0.99;
-const DELIVERY_FEES   = { Beckum:1.50, Roland:2.00, Vellern:2.00 };
+const DELIVERY_FEES   = { Beckum:2.50, Roland:3.00, Vellern:3.00 };
 
 let token       = sessionStorage.getItem('amouraToken') || '';
 let orders      = [];
