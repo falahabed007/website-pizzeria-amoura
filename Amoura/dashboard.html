@@ -1814,9 +1814,13 @@ async function checkBgate() {
 
 async function checkRawbt() {
   try {
-    const r = await fetch(RAWBT_URL, { method: 'GET', signal: AbortSignal.timeout(2000) });
-    rawbtConnected = r.status < 500;
-  } catch { rawbtConnected = false; }
+    // RawBT antwortet nur auf POST – jede Antwort (auch 4xx) = verbunden
+    await fetch(RAWBT_URL, { method: 'POST', body: new Uint8Array([0]), signal: AbortSignal.timeout(2000) });
+    rawbtConnected = true;
+  } catch(e) {
+    // Nur "connection refused" / Timeout = wirklich getrennt
+    rawbtConnected = e.message?.includes('NetworkError') || e.name === 'TypeError' ? false : true;
+  }
   updatePrinterStatus();
 }
 
