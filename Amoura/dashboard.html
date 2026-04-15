@@ -1946,8 +1946,8 @@ function fullyPrint(order) {
 
 function buildBonHtml(order) {
   const isD = order.mode==='lieferung';
-  const addr = isD?`${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}`:'Abholung';
-  const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${i.name}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €'}</td></tr>`).join('');
+  const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
+  const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${cleanName(i.name)}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €'}</td></tr>`).join('');
   return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;background:white;color:black;">
   <h2 style="text-align:center;margin-bottom:4px;">PIZZERIA AMOURA</h2>
   <p style="text-align:center;margin:2px 0;">Oststraße 48 · 59269 Beckum</p>
@@ -1959,7 +1959,7 @@ function buildBonHtml(order) {
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <p style="text-align:center;font-size:15px;font-weight:bold;margin:4px 0;">${order.customer?.first||''} ${order.customer?.last||''}</p>
   <p style="text-align:center;margin:2px 0;">${order.customer?.phone||''}</p>
-  ${isD?`<p style="text-align:center;font-size:14px;font-weight:bold;margin:6px 0;padding:4px;border:2px solid #000;">${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}</p>`:'<p style="text-align:center;margin:2px 0;font-weight:bold;">ABHOLUNG</p>'}
+  ${isD?`<p style="text-align:center;font-size:14px;font-weight:bold;margin:6px 0;padding:4px;border:2px solid #000;">${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}</p>`:''}
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <table style="width:100%;border-collapse:collapse;">${rows}</table>
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
