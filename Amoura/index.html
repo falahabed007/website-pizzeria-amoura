@@ -3928,6 +3928,9 @@ body.modal-open {
         hideClosedBanner();
       }
     } catch(e) {
+      // Backend nicht erreichbar → sicher auf geschlossen setzen
+      showClosedBanner('geschlossen');
+      blockPopups('geschlossen');
       console.warn('Status-Check fehlgeschlagen:', e);
     }
 
