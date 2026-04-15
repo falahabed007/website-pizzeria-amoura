@@ -1026,9 +1026,8 @@ function initDashboard() {
   // Datum-Picker auf heute setzen
   document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
   if(Notification&&Notification.permission==='default') Notification.requestPermission();
-  checkBgate();
   checkRawbt();
-  setInterval(() => { checkBgate(); checkRawbt(); }, 30000); // alle 30s prüfen
+  setInterval(() => { checkRawbt(); }, 30000); // alle 30s prüfen
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1768,9 +1767,7 @@ async function loadRestaurantStatus() {
 // ═══════════════════════════════════════════════════════════════
 // B-GATE DRUCKER (BIXOLON SRP-380)
 // ═══════════════════════════════════════════════════════════════
-const BGATE_URL  = 'http://127.0.0.1:18080';
-const RAWBT_URL  = 'http://127.0.0.1:19100'; // RawBT App auf Android
-let bgateConnected  = false;
+const RAWBT_URL  = 'http://127.0.0.1:19100'; // RawBT Pro App auf Android
 let rawbtConnected  = false;
 
 function escposBuilder() {
@@ -1795,11 +1792,7 @@ function escposBuilder() {
 function updatePrinterStatus() {
   const el = document.getElementById('printerStatus');
   if (!el) return;
-  if (bgateConnected) {
-    el.textContent = '🖨️ B-Gate OK';
-    el.style.color = 'var(--green)';
-    el.style.borderColor = 'var(--green)';
-  } else if (rawbtConnected) {
+  if (rawbtConnected) {
     el.textContent = '🖨️ RawBT OK';
     el.style.color = 'var(--green)';
     el.style.borderColor = 'var(--green)';
@@ -1808,18 +1801,10 @@ function updatePrinterStatus() {
     el.style.color = 'var(--green)';
     el.style.borderColor = 'var(--green)';
   } else {
-    el.textContent = '🖨️ Manuell';
-    el.style.color = 'var(--gold)';
-    el.style.borderColor = 'var(--gold)';
+    el.textContent = '🖨️ Getrennt';
+    el.style.color = 'var(--red)';
+    el.style.borderColor = 'var(--red)';
   }
-}
-
-async function checkBgate() {
-  try {
-    const r = await fetch(`${BGATE_URL}/status`, { signal: AbortSignal.timeout(2000) });
-    bgateConnected = r.ok || r.status < 500;
-  } catch { bgateConnected = false; }
-  updatePrinterStatus();
 }
 
 async function checkRawbt() {
@@ -1832,67 +1817,6 @@ async function checkRawbt() {
     rawbtConnected = e.message?.includes('NetworkError') || e.name === 'TypeError' ? false : true;
   }
   updatePrinterStatus();
-}
-
-async function bgaPrint(order) {
-  const isD = order.mode === 'lieferung';
-  const ep  = escposBuilder();
-
-  ep.init()
-    .align('center').size(true).bold(true).line('PIZZERIA AMOURA').size(false).bold(false)
-    .line('Oststrasse 48 - 59269 Beckum')
-    .line('02521 / 829 06 00')
-    .feed().divider()
-    .bold(true).size(true).line(`#${order.orderNum}`).size(false).bold(false)
-    .line(new Date(order.createdAt).toLocaleString('de-DE'))
-    .feed()
-    .bold(true).line(isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***').bold(false)
-    .divider();
-
-  ep.align('left');
-  ep.line(`${order.customer?.first||''} ${order.customer?.last||''}`);
-  if (order.customer?.phone) ep.line(order.customer.phone);
-  if (isD) {
-    ep.line(`${order.customer?.street||''} ${order.customer?.house||''}`);
-    ep.line(order.customer?.city||'');
-  }
-  ep.divider();
-
-  for (const i of (order.items||[])) {
-    const label = `${i.qty}x ${i.name}`.slice(0,24);
-    const price = `${(i.price*i.qty).toFixed(2)} EUR`;
-    ep.line(`${label.padEnd(24)}${price.padStart(10)}`);
-    if (i.note) ep.line(`  -> ${i.note}`);
-  }
-
-  ep.divider()
-    .line(`Zwischensumme:  ${String((order.subtotal||0).toFixed(2)+' EUR').padStart(14)}`);
-  if (order.deliveryFee>0)
-    ep.line(`Liefergebuehr:  ${String(order.deliveryFee.toFixed(2)+' EUR').padStart(14)}`);
-  ep.line(`Servicegebuehr: ${String((order.serviceFee||0.99).toFixed(2)+' EUR').padStart(14)}`);
-  ep.bold(true)
-    .line(`GESAMT:         ${String((order.total||0).toFixed(2)+' EUR').padStart(14)}`)
-    .bold(false).divider();
-
-  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
-  ep.line(`Zahlung: ${zahlung}`);
-  ep.line(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
-  if (order.prepTime) ep.line(`Wartezeit: ca. ${order.prepTime} Minuten`);
-  if (order.note) ep.line(`Anm.: ${order.note}`);
-  ep.feed().align('center').line('Vielen Dank fuer Ihre Bestellung!').feed(3).cut();
-
-  try {
-    const res = await fetch(`${BGATE_URL}/print`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: ep.b64(), printerType: 'BIXOLON' }),
-      signal: AbortSignal.timeout(5000)
-    });
-    if (res.ok) { bgateConnected = true; updatePrinterStatus(); return true; }
-  } catch(e) { /* B-gate nicht erreichbar */ }
-  bgateConnected = false;
-  updatePrinterStatus();
-  return false;
 }
 
 async function rawbtPrint(order) {
@@ -1958,21 +1882,14 @@ async function rawbtPrint(order) {
 
 async function smartPrint(order) {
   // 1. RawBT HTTP API (ESC/POS – korrekte Thermodruck-Qualität, RawBT Pro)
-  if (rawbtConnected) {
-    const ok = await rawbtPrint(order);
-    if (ok) return;
-  }
-  // 2. B-Gate (BIXOLON, Windows PC per ESC/POS)
-  if (bgateConnected) {
-    const ok = await bgaPrint(order);
-    if (ok) return;
-  }
-  // 3. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
+  const ok = await rawbtPrint(order);
+  if (ok) return;
+  // 2. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
   if (window.fully) {
     fullyPrint(order);
     return;
   }
-  // 4. Fallback: Browser-Popup
+  // 3. Fallback: Browser-Popup
   doBrowserPrint(order);
 }
 
