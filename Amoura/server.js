@@ -55,7 +55,7 @@ const orderSchema = new mongoose.Schema({
   orderNum:             { type: Number, unique: true },
   mode:                 { type: String, enum: ['lieferung','abholung'], required: true },
   status:               { type: String, default: 'pending',
-                          enum: ['pending','confirmed','preparing','ready','delivered','cancelled'] },
+                          enum: ['awaiting_payment','pending','confirmed','preparing','ready','delivered','cancelled'] },
   payment:              { type: String, enum: ['bar','stripe','karte'], required: true },
   paymentStatus:        { type: String, default: 'unpaid', enum: ['unpaid','paid','pending','refunded'] },
   source:               { type: String, default: 'web', enum: ['web','pos'] },
@@ -285,7 +285,7 @@ app.get('/api/admin/orders/pending', auth, async (req, res) => {
 // ── Alle Bestellungen ────────────────────────────────────────────
 app.get('/api/admin/orders', auth, async (req, res) => {
   try {
-    const orders  = await Order.find({ status:{ $nin:['pending'] } }).sort({ createdAt:-1 }).limit(300);
+    const orders  = await Order.find({ status:{ $nin:['pending','awaiting_payment'] } }).sort({ createdAt:-1 }).limit(300);
     const pending = await Order.find({ status:'pending' }).sort({ createdAt:1 });
     const today   = new Date(); today.setHours(0,0,0,0);
     const tod     = orders.filter(o => new Date(o.createdAt) >= today);
