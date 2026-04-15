@@ -1974,12 +1974,12 @@ function fullyPrint(order) {
   printArea.innerHTML = bonHtml;
   printArea.style.display = 'block';
   setTimeout(() => {
-    window.fully.print();
+    try { window.fully.print(); } catch(e) { window.print(); }
     setTimeout(() => {
       printArea.innerHTML = '';
       printArea.style.display = 'none';
     }, 3000);
-  }, 200);
+  }, 300);
 }
 
 function buildBonHtml(order) {
