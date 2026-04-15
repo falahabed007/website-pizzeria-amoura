@@ -1765,7 +1765,7 @@ async function loadRestaurantStatus() {
 // BROWSER PRINT
 // ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
-// B-GATE DRUCKER (BIXOLON SRP-380)
+// DRUCKER (MUNBYN Thermodrucker)
 // ═══════════════════════════════════════════════════════════════
 const RAWBT_URL  = 'http://127.0.0.1:19100'; // RawBT Pro App auf Android
 let rawbtConnected  = false;
@@ -1866,15 +1866,32 @@ async function rawbtPrint(order) {
   if (order.note) ep.line(`Anm.: ${order.note}`);
   ep.feed().align('center').line('Vielen Dank fuer Ihre Bestellung!').feed(3).cut();
 
+  const bytes = ep.bytes();
+
+  // 1. HTTP API (RawBT Pro mit aktivierter REST API)
   try {
     const res = await fetch(RAWBT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream' },
-      body: ep.bytes(),
+      body: bytes,
       signal: AbortSignal.timeout(5000)
     });
     if (res.ok) { rawbtConnected = true; updatePrinterStatus(); return true; }
-  } catch(e) { /* RawBT nicht erreichbar */ }
+  } catch(e) { /* HTTP nicht verfügbar */ }
+
+  // 2. rawbt:// Intent URL – schickt ESC/POS direkt an RawBT App (kein Dialog)
+  if (window.fully || /Android/i.test(navigator.userAgent)) {
+    const b64 = btoa(String.fromCharCode(...bytes));
+    const a = document.createElement('a');
+    a.href = 'rawbt://print?base64=' + encodeURIComponent(b64);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    rawbtConnected = true;
+    updatePrinterStatus();
+    return true;
+  }
+
   rawbtConnected = false;
   updatePrinterStatus();
   return false;
