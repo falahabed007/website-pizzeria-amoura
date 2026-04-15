@@ -1038,6 +1038,7 @@ function initDashboard() {
   pollPending();
   loadSoldOut();
   loadRestaurantStatus();
+  setInterval(loadRestaurantStatus, 30000); // alle 30s Status-Badge aktualisieren
   // Datum-Picker auf heute setzen
   document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
   if(Notification&&Notification.permission==='default') Notification.requestPermission();
@@ -1756,17 +1757,16 @@ async function setMode(mode) {
 }
 
 async function toggleAuto() {
-  const newManual = !manualOverride ? true : false; // toggle
   const newManualOverride = !manualOverride;
-  // Wenn Auto ein → manuell aus
   try {
     await fetch(API_BASE + '/admin/status', {
       method: 'PATCH',
       headers: { ...apiHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ manualOverride: newManualOverride })
     });
-    applyModeUI(currentMode, newManualOverride);
     showToast(newManualOverride ? '🔒 Automatik deaktiviert' : '🕐 Automatik aktiviert');
+    // Sofort vom Server nachladen – bei Auto-Aktivierung zeigt er den berechneten Modus
+    await loadRestaurantStatus();
   } catch(e) { showToast('❌ Fehler'); }
 }
 

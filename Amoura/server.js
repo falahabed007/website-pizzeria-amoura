@@ -150,6 +150,10 @@ app.patch('/api/admin/status', auth, async (req, res) => {
     const update = {};
     if (mode !== undefined)           update.mode           = mode;
     if (manualOverride !== undefined) update.manualOverride = manualOverride;
+    // Auto-Modus: sofort berechnen wenn manualOverride auf false gesetzt wird
+    if (manualOverride === false && mode === undefined) {
+      update.mode = calcAutoMode();
+    }
     update.isOpen = (update.mode || mode) === 'online';
     const s = await Settings.findByIdAndUpdate('restaurant', update, { upsert: true, new: true });
     const icons = { online:'✅ ONLINE', geschlossen:'❌ GESCHLOSSEN', neutral:'⚪ NEUTRAL' };
