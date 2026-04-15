@@ -1957,9 +1957,9 @@ function buildBonHtml(order) {
   <p style="text-align:center;margin:2px 0;">${new Date(order.createdAt).toLocaleString('de-DE')}</p>
   <p style="text-align:center;margin:2px 0;"><strong>${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}</strong></p>
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
-  <p style="text-align:center;margin:2px 0;">${order.customer?.first||''} ${order.customer?.last||''}</p>
+  <p style="text-align:center;font-size:15px;font-weight:bold;margin:4px 0;">${order.customer?.first||''} ${order.customer?.last||''}</p>
   <p style="text-align:center;margin:2px 0;">${order.customer?.phone||''}</p>
-  <p style="text-align:center;margin:2px 0;">${addr}</p>
+  ${isD?`<p style="text-align:center;font-size:14px;font-weight:bold;margin:6px 0;padding:4px;border:2px solid #000;">${order.customer?.street||''} ${order.customer?.house||''}<br>${order.customer?.city||''}</p>`:'<p style="text-align:center;margin:2px 0;font-weight:bold;">ABHOLUNG</p>'}
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <table style="width:100%;border-collapse:collapse;">${rows}</table>
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
