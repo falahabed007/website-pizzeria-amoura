@@ -763,6 +763,21 @@ function closeFamPopup(){document.getElementById('famPizzaPopup').style.display=
 <!-- PRINT AREA (hidden) -->
 <div id="printArea" style="display:none"></div>
 
+<!-- BON MODAL -->
+<div id="bonModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#1e1e2e;border-radius:12px;max-width:420px;width:95%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="padding:16px 20px;border-bottom:1px solid #333;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:700;font-size:16px;color:#fff;">🧾 Bon Vorschau</span>
+      <button onclick="closeBonModal()" style="background:none;border:none;color:#888;font-size:22px;cursor:pointer;line-height:1;">×</button>
+    </div>
+    <div id="bonModalContent" style="overflow-y:auto;padding:20px;flex:1;"></div>
+    <div style="padding:14px 20px;border-top:1px solid #333;display:flex;gap:10px;">
+      <button onclick="bonModalPrint()" style="flex:1;padding:10px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">🖨️ Drucken</button>
+      <button onclick="bonModalPDF()" style="flex:1;padding:10px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">📄 Als PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
 // CONFIG
@@ -1253,6 +1268,7 @@ function renderOrders() {
         <div class="oc-actions">
           ${next?`<button class="oc-btn next" onclick="nextStatus(event,'${o._id}','${next}')">${nextLabel}</button>`:''}
           <button class="oc-btn" onclick="printOrder(event,'${o._id}')">🖨️</button>
+          <button class="oc-btn" onclick="showBonModal(event,'${o._id}')" title="Bon anzeigen">📄</button>
           ${o.status!=='cancelled'?`<button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})">✕</button>`:''}
         </div>
       </div>
@@ -1367,6 +1383,7 @@ function renderDetail(c) {
     <div class="detail-btns">
       ${next?`<button class="detail-btn primary" onclick="changeStatus('${o._id}','${next}')">➡️ ${nextLabel}</button>`:'<div style="flex:1"></div>'}
       <button class="detail-btn" onclick="printOrder({stopPropagation:()=>{}},'${o._id}')">🖨️ Drucken</button>
+      <button class="detail-btn" onclick="showBonModal({stopPropagation:()=>{}},'${o._id}')">📄 Bon</button>
       ${o.status!=='cancelled'?`<button class="detail-btn danger" onclick="doCancel({stopPropagation:()=>{}}, '${o._id}',${o.orderNum})">✕ Storno</button>`:''}
     </div>`;
 }
@@ -1967,6 +1984,44 @@ function doBrowserPrint(order) {
   w.document.close();
   setTimeout(()=>w.print(),500);
 }
+
+let bonModalOrder = null;
+
+function showBonModal(e, id) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  const order = allOrders.find(o=>o._id===id);
+  if (!order) return;
+  bonModalOrder = order;
+  document.getElementById('bonModalContent').innerHTML = buildBonHtml(order);
+  const modal = document.getElementById('bonModal');
+  modal.style.display = 'flex';
+}
+
+function closeBonModal() {
+  document.getElementById('bonModal').style.display = 'none';
+  bonModalOrder = null;
+}
+
+function bonModalPrint() {
+  if (!bonModalOrder) return;
+  smartPrint(bonModalOrder);
+}
+
+function bonModalPDF() {
+  if (!bonModalOrder) return;
+  const order = bonModalOrder;
+  const w = window.open('','_blank','width=420,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${order.orderNum}</title><style>
+    @page{size:80mm auto;margin:0mm;}
+    body{margin:0;padding:0;background:white;}
+  </style></head><body>${buildBonHtml(order)}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{ w.print(); }, 400);
+}
+
+document.getElementById('bonModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBonModal();
+});
 
 async function printDayReport() {
   const dateInput = document.getElementById('reportDate');
