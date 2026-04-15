@@ -302,7 +302,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
         <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()" title="Automatik nach Öffnungszeiten">🕐 Auto</span>
       </div>
-      <span id="printerStatus" title="Drucker-Status" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:default;white-space:nowrap;">🖨️ Getrennt</span>
+      <span id="printerStatus" title="Drucker-Status" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:default;white-space:nowrap;">🖨️ Prüfe...</span>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>
@@ -1797,10 +1797,14 @@ function updatePrinterStatus() {
     el.textContent = '🖨️ RawBT OK';
     el.style.color = 'var(--green)';
     el.style.borderColor = 'var(--green)';
+  } else if (window.fully) {
+    el.textContent = '🖨️ Fully OK';
+    el.style.color = 'var(--green)';
+    el.style.borderColor = 'var(--green)';
   } else {
-    el.textContent = '🖨️ Getrennt';
-    el.style.color = 'var(--muted)';
-    el.style.borderColor = 'var(--border)';
+    el.textContent = '🖨️ Manuell';
+    el.style.color = 'var(--gold)';
+    el.style.borderColor = 'var(--gold)';
   }
 }
 
@@ -2127,6 +2131,9 @@ async function sendTestOrder() {
 // ── Auto-start wenn Token vorhanden ──
 if (token) showApp();
 else { document.getElementById('loginPw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); }); }
+
+// Drucker-Status sofort beim Laden prüfen (auch vor Login)
+updatePrinterStatus();
 </script>
 </body>
 </html>
