@@ -645,8 +645,8 @@
                 <select id="cart-stadt" onchange="updateCartSummary()"
                     style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; font-size:13px; cursor:pointer;">
                     <option value="beckum">Beckum (MBW: 15,00€ | +1,50€ Gebühr)</option>
-                    <option value="roland">Roland (MBW: 20,00€ | +2,00€ Gebühr)</option>
-                    <option value="vellern">Vellern (MBW: 20,00€ | +2,00€ Gebühr)</option>
+                    <option value="roland">Roland (MBW: 15,00€ | +2,00€ Gebühr)</option>
+                    <option value="vellern">Vellern (MBW: 15,00€ | +2,00€ Gebühr)</option>
                 </select>
             </div>
 
@@ -710,7 +710,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Beckum ab 15€ (+ 1,50€ Fahrt), Vellern, Roland ab 20€ + (2,00€ Fahrt)</p>
+                    <p>Alle Gebiete ab 15€ Mindestbestellwert · Beckum +1,50€, Roland/Vellern +2,00€ Liefergebühr</p>
                 </div>
             </div>
             
@@ -730,6 +730,17 @@
 
 
 
+
+    <!-- ═══ AKTIONS-BANNER ═══ -->
+    <div id="aktionsBanner" style="display:none; background: linear-gradient(135deg, #d4a76a, #c35a44); color: white; text-align: center; padding: 14px 20px; font-size: 15px; font-weight: bold; line-height: 1.5;">
+        🍕 <span style="font-size:17px;">Kleine Pizza Margherita GRATIS!</span> 🍕<br>
+        <span style="font-size: 13px; opacity: 0.92; font-weight: normal;">Ab 15€ Mindestbestellwert · Gültig 15.04 – 15.05 · Wird automatisch in den Warenkorb gelegt</span>
+    </div>
+    <script>
+        if (typeof isPromotionActive === 'function' && isPromotionActive()) {
+            document.getElementById('aktionsBanner').style.display = 'block';
+        }
+    </script>
 
     <!-- ═══ STICKY KATEGORIE-NAVIGATION ═══ -->
     <div class="cat-nav-wrap" id="catNavWrap">
