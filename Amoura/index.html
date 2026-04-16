@@ -2017,6 +2017,7 @@ function toggleMobileMenu() {
             <input type="text" id="c-vorname" placeholder="Vorname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
             <input type="text" id="c-nachname" placeholder="Nachname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
         </div>
+        <input type="tel" id="c-telefon" placeholder="Telefonnummer *" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         <input type="email" id="c-email" placeholder="E-Mail (für Bestellbestätigung)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         
         <div id="address-fields">
@@ -2214,11 +2215,17 @@ async function processOrder() {
     const summeWaren = warenkorb.reduce((a, b) => a + b.preis, 0);
     const vorname = document.getElementById('c-vorname').value.trim();
     const nachname = document.getElementById('c-nachname').value.trim();
+    const telefon = document.getElementById('c-telefon').value.trim();
     const email = document.getElementById('c-email').value.trim();
     const zahlung = document.getElementById('c-zahlung').value;
 
     if (!vorname || !nachname) {
         alert("Bitte gib Vor- und Nachnamen ein.");
+        return;
+    }
+    if (!telefon) {
+        alert("Bitte gib deine Telefonnummer ein.");
+        document.getElementById('c-telefon').focus();
         return;
     }
     if (!email || !email.includes('@')) {
@@ -2297,7 +2304,7 @@ async function processOrder() {
                         first:  vorname,
                         last:   nachname,
                         email:  email,
-                        phone:  '',
+                        phone:  telefon,
                         street: strasse,
                         house:  hausnr,
                         city:   cityLabel
@@ -2335,7 +2342,7 @@ async function processOrder() {
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
-                customer: { first: vorname, last: nachname, email: email, phone: '', street: strasse2, house: hausnr2, city: cityLabel2 }
+                customer: { first: vorname, last: nachname, email: email, phone: telefon, street: strasse2, house: hausnr2, city: cityLabel2 }
             })
         });
         if (barResp.ok) {
