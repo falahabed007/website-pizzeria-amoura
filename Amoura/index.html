@@ -2382,15 +2382,30 @@ function showDankeModal(orderId) {
 }
 
 // Zahlung erfolgreich erkennen (Stripe & PayPal Rückleitung)
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('orderId');
     const orderNum = params.get('order');
+    const sessionId = params.get('session_id');
+
     if (orderId || orderNum) {
         warenkorb = [];
         renderWarenkorb();
         showDankeModal(orderNum ? '#' + orderNum : orderId);
         window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Stripe-Zahlung serverseitig bestätigen (Fallback falls Webhook fehlschlägt)
+        if (sessionId) {
+            try {
+                await fetch(`${BACKEND_URL}/api/verify-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+            } catch(e) {
+                console.warn('verify-payment fehlgeschlagen:', e.message);
+            }
+        }
     }
 });
 </script>

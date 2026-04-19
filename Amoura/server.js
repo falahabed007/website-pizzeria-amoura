@@ -289,6 +289,35 @@ app.post('/api/stripe-webhook', async (req, res) => {
   res.json({ received: true });
 });
 
+// ── Zahlungsverifikation (Fallback falls Webhook fehlschlägt) ──
+app.post('/api/verify-payment', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) return res.status(400).json({ ok: false, message: 'sessionId fehlt' });
+
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== 'paid') {
+      return res.json({ ok: false, message: 'Noch nicht bezahlt' });
+    }
+
+    const order = await Order.findOne({ stripeSessionId: sessionId });
+    if (!order) return res.status(404).json({ ok: false, message: 'Bestellung nicht gefunden' });
+
+    if (order.status === 'awaiting_payment') {
+      order.paymentStatus = 'paid';
+      order.status = 'pending';
+      order.stripePaymentIntentId = session.payment_intent;
+      await order.save();
+      console.log(`✅ Zahlung verifiziert (Fallback): #${order.orderNum}`);
+    }
+
+    res.json({ ok: true, orderNum: order.orderNum });
+  } catch(e) {
+    console.error('verify-payment Fehler:', e.message);
+    res.status(500).json({ ok: false, message: e.message });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════
 // ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════
