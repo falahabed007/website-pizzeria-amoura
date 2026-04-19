@@ -48,6 +48,17 @@ app.options('*', cors());
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
+// ─── Statische HTML-Dateien (kein Cache) ─────────────────────────
+const path = require('path');
+app.use(express.static(path.join(__dirname), {
+  etag: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    }
+  }
+}));
+
 // ─── MongoDB ─────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB verbunden'))
