@@ -318,6 +318,32 @@ app.post('/api/verify-payment', async (req, res) => {
   }
 });
 
+// ── Stripe-Bestellungen nachträglich einbuchen (Admin) ──────────
+app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
+  try {
+    const stuck = await Order.find({ status: 'awaiting_payment', payment: 'stripe' });
+    const recovered = [];
+    for (const order of stuck) {
+      try {
+        const session = await getStripe().checkout.sessions.retrieve(order.stripeSessionId);
+        if (session.payment_status === 'paid') {
+          order.paymentStatus = 'paid';
+          order.status = 'pending';
+          order.stripePaymentIntentId = session.payment_intent;
+          await order.save();
+          recovered.push(order.orderNum);
+          console.log(`🔁 Nachträglich eingebucht: #${order.orderNum}`);
+        }
+      } catch(e) {
+        console.warn(`Stripe-Abfrage für #${order.orderNum} fehlgeschlagen:`, e.message);
+      }
+    }
+    res.json({ recovered, total: stuck.length });
+  } catch(e) {
+    res.status(500).json({ message: e.message });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════
 // ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════

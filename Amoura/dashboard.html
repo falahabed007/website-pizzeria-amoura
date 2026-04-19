@@ -353,6 +353,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen">
+          <button class="day-btn" onclick="recoverStripeOrders()" id="btnRecover" style="white-space:nowrap;">🔁 Stripe-Einbuchung</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
       </div>
@@ -2042,6 +2043,29 @@ function bonModalPDF() {
 document.getElementById('bonModal').addEventListener('click', function(e) {
   if (e.target === this) closeBonModal();
 });
+
+async function recoverStripeOrders() {
+  const btn = document.getElementById('btnRecover');
+  btn.disabled = true;
+  btn.textContent = '⏳ Prüfe…';
+  try {
+    const r = await fetch(`${API}/api/admin/recover-stripe-orders`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await r.json();
+    if (data.recovered && data.recovered.length > 0) {
+      alert(`✅ ${data.recovered.length} Bestellung(en) eingebucht: #${data.recovered.join(', #')}`);
+      fetchOrders();
+    } else {
+      alert(`Keine offenen Stripe-Zahlungen gefunden (${data.total} geprüft).`);
+    }
+  } catch(e) {
+    alert('Fehler: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '🔁 Stripe-Einbuchung';
+}
 
 async function printDayReport() {
   const dateInput = document.getElementById('reportDate');
