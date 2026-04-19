@@ -1877,6 +1877,10 @@ function speiseInWarenkorb() {
         name = document.getElementById('modalPizzaName').innerText;
         const priceElement = document.querySelector('#pizzaPopup #finalPriceDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
+        // Größe hinzufügen
+        const activeSize = document.querySelector('.size-btn.active');
+        if (activeSize) extras.push(activeSize.innerText.replace(/\(.*\)/, '').trim());
+        // Extras hinzufügen
         document.querySelectorAll('#pizzaPopup input[type="checkbox"]:checked').forEach(box => {
             extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
         });
@@ -1904,12 +1908,20 @@ function speiseInWarenkorb() {
         name = document.getElementById('pbName').innerText;
         const priceElement = document.querySelector('#pbPopup #pbTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
+        // Zutaten hinzufügen
+        document.querySelectorAll('.pb-check:checked').forEach(box => extras.push(box.value));
+        // Dips hinzufügen
+        if (pbDips.knobi > 0) extras.push(`${pbDips.knobi}× Knoblauch-Dip`);
+        if (pbDips.kraeuter > 0) extras.push(`${pbDips.kraeuter}× Kräuter-Dip`);
     }
     else if (document.getElementById('dipPopup').style.display === 'flex') {
         activePopupId = 'dipPopup';
         name = document.getElementById('dipName').innerText;
         const priceElement = document.querySelector('#dipPopup #dipTotalDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
+        // Dips hinzufügen
+        if (dipCounts.knobi > 0) extras.push(`${dipCounts.knobi}× Knoblauch-Dip`);
+        if (dipCounts.kraeuter > 0) extras.push(`${dipCounts.kraeuter}× Kräuter-Dip`);
     }
     else if (document.getElementById('quickPopup').style.display === 'flex') {
         activePopupId = 'quickPopup';
@@ -2456,7 +2468,8 @@ const pizzaExtrasList = [
 ];
 
 function openPizza(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     pizzaBasePrice = parseFloat(priceTxt.replace(/[€()]/g, '').replace(',', '.').trim());
@@ -2577,7 +2590,8 @@ function closePizzaPopup() {
 let pastaBasePrice = 0;
 
 function openPasta(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const desc = element.querySelector('p').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
@@ -2699,7 +2713,8 @@ const saladExtrasList = [
 ];
 
 function openSalad(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const desc = element.querySelector('p').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
@@ -2790,7 +2805,8 @@ function closeSaladPopup() {
 
 <script>
 function openQuickAdd(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const descElement = element.querySelector('p');
     const desc = descElement ? descElement.innerText : "";
     const priceTxt = element.querySelector('.price').innerText;
@@ -2889,7 +2905,8 @@ let pbBasePrice = 0;
 let pbDips = { knobi: 0, kraeuter: 0 };
 
 function openPbCustom(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     pbBasePrice = parseFloat(priceTxt.replace('€', '').replace('(', '').replace(')', '').replace(',', '.').trim());
@@ -2975,7 +2992,8 @@ let dipBasePrice = 0;
 let dipCounts = { knobi: 0, kraeuter: 0 };
 
 function openDipPopup(element) {
-    const name = element.querySelector('h3').innerText;
+    const num = element.dataset.itemNum;
+    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     dipBasePrice = parseFloat(priceTxt.replace('€', '').replace('(', '').replace(')', '').replace(',', '.').trim());
@@ -3679,6 +3697,8 @@ document.readyState === 'loading'
         numBadge.textContent = m[1].padStart(2, '0');
         // Remove number from h3 text
         h3.childNodes[0].textContent = h3.childNodes[0].textContent.replace(/^\d+\s*/, '');
+        // Store number on element so open* functions can use it
+        el.dataset.itemNum = m[1];
       }
     }
 

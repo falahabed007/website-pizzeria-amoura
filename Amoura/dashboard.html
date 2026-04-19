@@ -105,6 +105,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .b-del{background:rgba(156,39,176,.18);color:var(--s-del);}
 .b-cancel{background:rgba(229,57,53,.18);color:var(--s-cancel);}
 .b-pending{background:rgba(232,160,32,.18);color:var(--s-new);}
+.b-stripe-wait{background:rgba(255,193,7,.25);color:#f5a623;font-weight:600;}
 .b-paid{background:rgba(76,175,80,.15);color:#66bb6a;cursor:pointer;}
 .b-unpaid{background:rgba(229,57,53,.15);color:#ef5350;cursor:pointer;}
 .oc-items{padding:0 12px 7px;font-size:.77rem;color:var(--muted);}
@@ -345,6 +346,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <span class="pill" onclick="setFilter('fertig',this)">Fertig</span>
           <span class="pill" onclick="setFilter('geliefert',this)">Geliefert</span>
           <span class="pill" onclick="setFilter('storniert',this)">Storniert</span>
+          <span class="pill" id="pillStripe" onclick="setFilter('stripe_wait',this)" style="display:none">💳 Stripe</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen">
@@ -1108,7 +1110,7 @@ function showPendingModal(order) {
     ? `${order.customer?.street||''} ${order.customer?.house||''}, ${order.customer?.city||''}`
     : 'Abholung im Lokal';
   const items = (order.items||[]).map(i=>
-    `<div class="il-item"><span>${i.qty}× ${i.name}</span><span>${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`
+    `<div class="il-item"><span>${i.qty}× ${cleanName(i.name)}</span><span>${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`
   ).join('');
   const bezahlt = order.paymentStatus==='paid'?'✅ Online bezahlt':'💵 Bei Übergabe';
   document.getElementById('pendingModalBody').innerHTML = `
@@ -1215,11 +1217,13 @@ async function loadOrders() {
 
 function getDisplayStatus(s) {
   return {confirmed:'Neu',preparing:'In Zubereitung',ready:'Fertiggestellt',
-          delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend'}[s]||s;
+          delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend',
+          awaiting_payment:'💳 Stripe ausstehend'}[s]||s;
 }
 function getStatusClass(s) {
   return {confirmed:'b-new',preparing:'b-prep',ready:'b-ready',
-          delivered:'b-del',cancelled:'b-cancel',pending:'b-pending'}[s]||'b-new';
+          delivered:'b-del',cancelled:'b-cancel',pending:'b-pending',
+          awaiting_payment:'b-stripe-wait'}[s]||'b-new';
 }
 function getNextStatus(s) {
   return {confirmed:'preparing',preparing:'ready',ready:'delivered'}[s]||null;
@@ -1240,24 +1244,30 @@ function renderOrders() {
     if (filter==='fertig')      return o.status==='ready';
     if (filter==='geliefert')   return o.status==='delivered';
     if (filter==='storniert')   return o.status==='cancelled';
+    if (filter==='stripe_wait') return o.status==='awaiting_payment';
     return true;
   });
   if (q) list = list.filter(o =>
     String(o.orderNum).includes(q) ||
     `${o.customer?.first} ${o.customer?.last}`.toLowerCase().includes(q)
   );
+  // Stripe-Pill einblenden wenn awaiting_payment vorhanden
+  const hasStripeWait = allOrders.some(o => o.status==='awaiting_payment' && new Date(o.createdAt) >= todayStart);
+  const pillStripe = document.getElementById('pillStripe');
+  if (pillStripe) pillStripe.style.display = hasStripeWait ? '' : 'none';
+
   const el = document.getElementById('ordersList');
   if (!list.length) { el.innerHTML='<div class="empty-state">📭<br>Keine Bestellungen</div>'; return; }
   el.innerHTML = list.map(o => {
     const next      = getNextStatus(o.status);
     const nextLabel = getNextLabel(o.status);
-    const items     = (o.items||[]).slice(0,3).map(i=>`${i.qty}× ${i.name}`).join(', ');
+    const items     = (o.items||[]).slice(0,3).map(i=>`${i.qty}× ${cleanName(i.name)}`).join(', ');
     const moreItems = (o.items||[]).length > 3 ? ` +${o.items.length-3} weitere` : '';
     return `<div class="order-card${selOrder?._id===o._id?' selected':''}" onclick="selectOrder('${o._id}')">
       <div class="oc-top">
         <span class="oc-num">#${o.orderNum}</span>
         <span class="oc-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
-        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''}</span>
+        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''} ${o.payment==='stripe'?'💳':o.payment==='karte'?'💳 EC':'💵'}</span>
         <div class="oc-badges">
           <span class="badge ${getStatusClass(o.status)}">${getDisplayStatus(o.status)}</span>
           <span class="badge ${o.paymentStatus==='paid'?'b-paid':'b-unpaid'}" onclick="togglePaid(event,'${o._id}',${o.paymentStatus==='paid'})">${o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen'}</span>
@@ -1349,7 +1359,7 @@ function setSideTab(tab, el) {
 function renderDetail(c) {
   if (!selOrder) { c.innerHTML='<div class="no-sel">📋<br>Bestellung auswählen</div>'; return; }
   const o = selOrder;
-  const rows = (o.items||[]).map(i=>`<div class="detail-item"><span class="di-name">${i.qty}× ${i.name}${i.note?' <em style=\'font-size:.75rem;color:var(--muted)\'>('+i.note+')</em>':''}</span><span class="di-price">${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`).join('');
+  const rows = (o.items||[]).map(i=>`<div class="detail-item"><span class="di-name">${i.qty}× ${cleanName(i.name)}${i.note?' <em style=\'font-size:.75rem;color:var(--muted)\'>('+i.note+')</em>':''}</span><span class="di-price">${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`).join('');
   const next = getNextStatus(o.status); const nextLabel = getNextLabel(o.status);
   c.innerHTML = `
     <div class="detail-num">#${o.orderNum}</div>
@@ -1379,6 +1389,10 @@ function renderDetail(c) {
       <div class="paid-row" onclick="togglePaidDetail('${o._id}',${o.paymentStatus==='paid'})">
         <span style="color:var(--muted);font-size:.8rem">Bezahlt</span>
         <span style="font-weight:700;color:${o.paymentStatus==='paid'?'var(--green)':'#ef5350'}">${o.paymentStatus==='paid'?'✅ Ja':'❌ Nein'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.8rem;">
+        <span style="color:var(--muted)">Zahlungsart</span>
+        <span style="font-weight:700;">${o.payment==='stripe'?'💳 Kreditkarte (Stripe)':o.payment==='karte'?'💳 EC-Karte':'💵 Barzahlung'}</span>
       </div>
     </div>
     <div class="detail-btns">
@@ -1861,7 +1875,7 @@ async function rawbtPrint(order) {
   ep.divider();
 
   for (const i of (order.items||[])) {
-    const label = `${i.qty}x ${i.name}`.slice(0,24);
+    const label = `${i.qty}x ${cleanName(i.name)}`.slice(0,24);
     const price = i.price === 0 ? '  GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
     ep.line(`${label.padEnd(24)}${price.padStart(10)}`);
     if (i.note) ep.line(`  -> ${i.note}`);
@@ -1944,9 +1958,12 @@ function fullyPrint(order) {
   }, 300);
 }
 
+function cleanName(n) {
+  return n.replace(/[A-Z0-9](,[A-Z0-9])+/g, '').replace(/\s+/g, ' ').trim();
+}
+
 function buildBonHtml(order) {
   const isD = order.mode==='lieferung';
-  const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
   const rows = (order.items||[]).map(i=>`<tr><td>${i.qty}×</td><td>${cleanName(i.name)}${i.note?' ('+i.note+')':''}</td><td style="text-align:right">${i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €'}</td></tr>`).join('');
   return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;background:white;color:black;">
   <h2 style="text-align:center;margin-bottom:4px;">PIZZERIA AMOURA</h2>

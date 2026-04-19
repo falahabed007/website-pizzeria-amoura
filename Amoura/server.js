@@ -295,7 +295,7 @@ app.get('/api/admin/orders/pending', auth, async (req, res) => {
 // ── Alle Bestellungen ────────────────────────────────────────────
 app.get('/api/admin/orders', auth, async (req, res) => {
   try {
-    const orders  = await Order.find({ status:{ $nin:['pending','awaiting_payment'] } }).sort({ createdAt:-1 }).limit(300);
+    const orders  = await Order.find({ status:{ $nin:['pending'] } }).sort({ createdAt:-1 }).limit(300);
     const pending = await Order.find({ status:'pending' }).sort({ createdAt:1 });
     const today   = new Date(); today.setHours(0,0,0,0);
     const tod     = orders.filter(o => new Date(o.createdAt) >= today);
@@ -612,6 +612,138 @@ async function getNextRechnungNum() {
   const year = new Date().getFullYear();
   return `RE-${year}-${String(c.seq).padStart(4,'0')}`;
 }
+
+// TAGESBERICHT (täglich um 23:00 Uhr)
+cron.schedule('0 23 * * *', async () => {
+  try {
+    const now   = new Date();
+    const start = new Date(now); start.setHours(0,0,0,0);
+    const end   = new Date(now); end.setHours(23,59,59,999);
+    const label = now.toLocaleDateString('de-DE', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $nin: ['cancelled','awaiting_payment'] }
+    }).sort({ orderNum: 1 });
+
+    if (orders.length === 0) {
+      console.log('[Tagesbericht] Keine Bestellungen heute – kein PDF versendet.');
+      return;
+    }
+
+    const total      = orders.reduce((s,o) => s + (o.total||0), 0);
+    const totalBar   = orders.filter(o=>o.payment==='bar').reduce((s,o)=>s+(o.total||0),0);
+    const totalStripe= orders.filter(o=>o.payment==='stripe').reduce((s,o)=>s+(o.total||0),0);
+    const nLief      = orders.filter(o=>o.mode==='lieferung').length;
+    const nAbh       = orders.filter(o=>o.mode==='abholung').length;
+
+    const tagespdf = await generatePdf(doc => {
+      const W = 495;
+      const fmt = n => n.toFixed(2).replace('.',',')+' €';
+
+      // Header
+      doc.rect(0,0,595,70).fill('#8b1d1d');
+      doc.fontSize(22).font('Helvetica-Bold').fillColor('#fff').text('Tagesbericht', 50, 16);
+      doc.fontSize(10).font('Helvetica').fillColor('rgba(255,255,255,0.8)')
+        .text(`Pizzeria Amoura  ·  ${label}`, 50, 44);
+
+      doc.moveDown(3.5);
+
+      // Zusammenfassung
+      const sumRows = [
+        ['Bestellungen gesamt', `${orders.length}`, false],
+        ['davon Lieferung', `${nLief}`, true],
+        ['davon Abholung', `${nAbh}`, false],
+        ['Umsatz Barzahlung', fmt(totalBar), true],
+        ['Umsatz Kreditkarte (Stripe)', fmt(totalStripe), false],
+      ];
+      sumRows.forEach(([label, val, shade]) => {
+        const y = doc.y;
+        if (shade) doc.rect(50,y,W,26).fill('#f5f5f5');
+        doc.font('Helvetica').fontSize(11).fillColor('#222').text(label, 58, y+7);
+        doc.text(val, 50, y+7, { width: W-8, align:'right' });
+        doc.y = y+26;
+      });
+
+      // Gesamtumsatz
+      const ty = doc.y;
+      doc.rect(50,ty,W,36).fill('#8b1d1d');
+      doc.font('Helvetica-Bold').fontSize(14).fillColor('#fff')
+        .text('GESAMTUMSATZ', 58, ty+11);
+      doc.text(fmt(total), 50, ty+11, { width:W-8, align:'right' });
+      doc.y = ty+50;
+
+      doc.moveDown(1);
+
+      // Bestelldetails
+      doc.font('Helvetica-Bold').fontSize(13).fillColor('#8b1d1d').text('Alle Bestellungen');
+      doc.moveDown(0.4);
+
+      orders.forEach((o, i) => {
+        if (doc.y > 730) doc.addPage();
+        const rowY = doc.y;
+        const shade = i % 2 === 0;
+        if (shade) doc.rect(50,rowY,W,0).fill('#f9f9f9');
+
+        const kunde    = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
+        const telefon  = o.customer?.phone || '–';
+        const email    = o.customer?.email || '–';
+        const adresse  = o.mode==='lieferung'
+          ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
+          : 'Abholung';
+        const zahlung  = o.payment==='stripe'?'Kreditkarte':o.payment==='karte'?'EC-Karte':'Bar';
+        const bezahlt  = o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen';
+        const items    = (o.items||[]).map(it=>`${it.qty}× ${it.name}${it.note?' ('+it.note+')':''}`).join(', ');
+
+        // Trennlinie
+        doc.rect(50, rowY, W, 0.5).fill('#e0e0e0');
+
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#8b1d1d')
+          .text(`#${o.orderNum}  ${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}  ${o.mode==='lieferung'?'LIEFERUNG':'ABHOLUNG'}`, 50, rowY+6, { width: W/2 });
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#222')
+          .text(fmt(o.total||0), 50, rowY+6, { width:W, align:'right' });
+
+        doc.font('Helvetica').fontSize(9).fillColor('#333')
+          .text(`Kunde: ${kunde}  |  Tel: ${telefon}  |  ${email}`, 50, rowY+20, { width: W });
+        doc.text(`Adresse: ${adresse}  |  Zahlung: ${zahlung}  |  ${bezahlt}`, 50, rowY+32, { width: W });
+        doc.text(`Artikel: ${items}`, 50, rowY+44, { width: W });
+
+        doc.y = rowY + 60;
+      });
+
+      // Footer
+      doc.fontSize(8).fillColor('#aaa')
+        .text(`Pizzeria Amoura  ·  Tagesbericht ${label}  ·  Erstellt: ${now.toLocaleTimeString('de-DE')}`, 50, 790, { width: W, align:'center' });
+    });
+
+    if (process.env.RESTAURANT_EMAIL) {
+      await getResend()?.emails.send({
+        from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
+        to: process.env.RESTAURANT_EMAIL,
+        subject: `📋 Tagesbericht ${label} · Pizzeria Amoura`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#222">
+          <div style="background:#8b1d1d;padding:22px 28px;color:#fff">
+            <h2 style="margin:0;font-size:20px">Tagesbericht</h2>
+            <p style="margin:4px 0 0;opacity:.8;font-size:13px">${label}</p>
+          </div>
+          <div style="padding:24px 28px">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
+              <tr><td style="padding:8px">davon Lieferung</td><td style="padding:8px;text-align:right">${nLief}</td></tr>
+              <tr style="background:#f5f5f5"><td style="padding:8px">davon Abholung</td><td style="padding:8px;text-align:right">${nAbh}</td></tr>
+              <tr><td style="padding:8px">Umsatz Barzahlung</td><td style="padding:8px;text-align:right">${totalBar.toFixed(2).replace('.',',')} €</td></tr>
+              <tr style="background:#f5f5f5"><td style="padding:8px">Umsatz Kreditkarte (Stripe)</td><td style="padding:8px;text-align:right">${totalStripe.toFixed(2).replace('.',',')} €</td></tr>
+              <tr style="background:#8b1d1d"><td style="padding:10px;font-weight:bold;color:#fff;font-size:15px">Gesamtumsatz</td><td style="padding:10px;text-align:right;font-weight:bold;color:#fff;font-size:15px">${total.toFixed(2).replace('.',',')} €</td></tr>
+            </table>
+            <p style="font-size:12px;color:#888;margin-top:12px">Die vollständige Bestellliste mit Kundendaten finden Sie im beigefügten PDF.</p>
+          </div>
+        </div>`,
+        attachments: [{ filename: `Tagesbericht_${now.toISOString().slice(0,10)}.pdf`, content: tagespdf.toString('base64') }]
+      });
+    }
+    console.log(`📋 Tagesbericht versendet: ${orders.length} Bestellungen, ${total.toFixed(2)} €`);
+  } catch(e) { console.error('Tagesbericht Fehler:', e); }
+});
 
 cron.schedule('59 23 * * 0', async () => {
   try {
