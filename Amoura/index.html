@@ -2065,6 +2065,8 @@ function toggleMobileMenu() {
             <option value="bar">Barzahlung bei Übergabe</option>
         </select>
 
+        <textarea id="c-notiz" placeholder="📝 Anmerkungen zur Bestellung (z.B. Nr. 53 ohne Spinat)" maxlength="300" style="width:100%; padding:12px; margin-bottom:14px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; font-family:inherit; font-size:14px; resize:vertical; min-height:70px;"></textarea>
+
         <div id="final-summary" style="background:#f9f9f9;padding:14px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.8;border:1px dashed #ddd;"></div>
 
         <!-- AGB + Datenschutz Pflicht-Checkboxen -->
@@ -2245,6 +2247,7 @@ async function processOrder() {
     const telefon = document.getElementById('c-telefon').value.trim();
     const email = document.getElementById('c-email').value.trim();
     const zahlung = document.getElementById('c-zahlung').value;
+    const notiz = document.getElementById('c-notiz').value.trim();
 
     if (!vorname || !nachname) {
         alert("Bitte gib Vor- und Nachnamen ein.");
@@ -2326,7 +2329,7 @@ async function processOrder() {
                     serviceFee:  SERVICE_FEE,
                     total:       finalTotal,
                     mode:        currentSelection === 'delivery' ? 'lieferung' : 'abholung',
-                    note:        '',
+                    note:        notiz,
                     customer: {
                         first:  vorname,
                         last:   nachname,
@@ -2369,6 +2372,7 @@ async function processOrder() {
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
+                note: notiz,
                 customer: { first: vorname, last: nachname, email: email, phone: telefon, street: strasse2, house: hausnr2, city: cityLabel2 }
             })
         });

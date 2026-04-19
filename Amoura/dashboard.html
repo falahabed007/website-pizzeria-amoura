@@ -1130,6 +1130,7 @@ function showPendingModal(order) {
     <div class="items-list">
       ${items}
       <div class="il-total"><span>Gesamt</span><span>${(order.total||0).toFixed(2).replace('.',',')} €</span></div>
+      ${order.note ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(255,193,7,.12);border-left:3px solid #f5a623;border-radius:4px;font-size:.82rem;color:#f5a623;"><strong>📝 Kundennotiz:</strong> ${order.note}</div>` : ''}
     </div>
     <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;font-weight:600;">⏱ Voraussichtliche Zeit wählen:</div>
     <div class="time-btns">
@@ -1279,6 +1280,7 @@ function renderOrders() {
         </div>
       </div>
       <div class="oc-items">${items}${moreItems}</div>
+      ${o.note ? `<div style="font-size:.75rem;color:#f5a623;padding:4px 8px 2px;"><strong>📝</strong> ${o.note}</div>` : ''}
       <div class="oc-bottom">
         <span class="oc-price">${(o.total||0).toFixed(2).replace('.',',')} €</span>
         <div class="oc-actions">
@@ -2018,6 +2020,7 @@ function buildBonHtml(order) {
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <p style="text-align:center;margin:2px 0;">Vielen Dank!</p>
   ${order.prepTime?`<p style="text-align:center;margin:2px 0;">~${order.prepTime} Minuten</p>`:''}
+  ${order.note?`<hr style="border:none;border-top:1px dashed #000;margin:8px 0;"><p style="margin:4px 0;font-weight:bold;">📝 Kundennotiz:</p><p style="margin:2px 0;">${order.note}</p>`:''}
   </div>`;
 }
 
