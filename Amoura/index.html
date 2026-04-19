@@ -1777,11 +1777,17 @@ function renderWarenkorb() {
         gesamt += item.preis;
         const priceDisplay = item.isFree ? '<span style="color:#2e7d32;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
         const deleteBtn = item.isFree ? '' : `<span onclick="artikelLoeschen(${index})" style="color:#8b1d1d; cursor:pointer; font-weight:bold; font-size:16px;">✕</span>`;
+        const extrasHtml = (item.extraDetails||[]).filter(e=>e.name).map(e =>
+            `<div style="font-size:12px;color:#888;padding-left:8px;">+ ${e.name}${e.price>0?' ('+e.price.toFixed(2).replace('.',',')+'€)':''}</div>`
+        ).join('');
         html += `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
+            <div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="flex:1; padding-right:10px; font-size:14px; line-height:1.2;">${item.name}</span>
                 <span style="font-weight:bold; margin-right:10px; white-space:nowrap; font-size:14px;">${priceDisplay}</span>
                 ${deleteBtn}
+              </div>
+              ${extrasHtml}
             </div>
         `;
     });
@@ -1876,7 +1882,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function speiseInWarenkorb() {
     let name = "";
     let preis = 0;
-    let extras = [];
+    let extraDetails = []; // [{name, price}]
     let activePopupId = "";
 
     if (document.getElementById('pizzaPopup').style.display === 'flex') {
@@ -1884,21 +1890,23 @@ function speiseInWarenkorb() {
         name = document.getElementById('modalPizzaName').innerText;
         const priceElement = document.querySelector('#pizzaPopup #finalPriceDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        // Größe hinzufügen
+        // Größe
         const activeSize = document.querySelector('.size-btn.active');
-        if (activeSize) extras.push(activeSize.innerText.replace(/\(.*\)/, '').trim());
-        // Extras hinzufügen
+        if (activeSize) extraDetails.push({ name: activeSize.innerText.replace(/\(.*\)/, '').trim(), price: sizeSurcharge });
+        // Extras
         document.querySelectorAll('#pizzaPopup input[type="checkbox"]:checked').forEach(box => {
-            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
+            const p = parseFloat(box.getAttribute('data-price') || '0');
+            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: p });
         });
-    } 
+    }
     else if (document.getElementById('pastaPopup').style.display === 'flex') {
         activePopupId = 'pastaPopup';
         name = document.getElementById('pastaName').innerText;
         const priceElement = document.querySelector('#pastaPopup #pastaTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
         document.querySelectorAll('#pastaPopup input[type="checkbox"]:checked').forEach(box => {
-            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
+            const m = box.closest('label').innerText.match(/\+\s*([\d,]+)\s*€/);
+            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: m ? parseFloat(m[1].replace(',','.')) : 0 });
         });
     }
     else if (document.getElementById('saladPopup').style.display === 'flex') {
@@ -1907,7 +1915,8 @@ function speiseInWarenkorb() {
         const priceElement = document.querySelector('#saladPopup #saladTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
         document.querySelectorAll('#saladPopup input[type="checkbox"]:checked').forEach(box => {
-            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
+            const m = box.closest('label').innerText.match(/\+\s*([\d,]+)\s*€/);
+            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: m ? parseFloat(m[1].replace(',','.')) : 0 });
         });
     }
     else if (document.getElementById('pbPopup').style.display === 'flex') {
@@ -1915,20 +1924,17 @@ function speiseInWarenkorb() {
         name = document.getElementById('pbName').innerText;
         const priceElement = document.querySelector('#pbPopup #pbTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        // Zutaten hinzufügen
-        document.querySelectorAll('.pb-check:checked').forEach(box => extras.push(box.value));
-        // Dips hinzufügen
-        if (pbDips.knobi > 0) extras.push(`${pbDips.knobi}× Knoblauch-Dip`);
-        if (pbDips.kraeuter > 0) extras.push(`${pbDips.kraeuter}× Kräuter-Dip`);
+        document.querySelectorAll('.pb-check:checked').forEach(box => extraDetails.push({ name: box.value, price: 0 }));
+        if (pbDips.knobi > 0) extraDetails.push({ name: `${pbDips.knobi}× Knoblauch-Dip`, price: pbDips.knobi * 0.50 });
+        if (pbDips.kraeuter > 0) extraDetails.push({ name: `${pbDips.kraeuter}× Kräuter-Dip`, price: pbDips.kraeuter * 0.50 });
     }
     else if (document.getElementById('dipPopup').style.display === 'flex') {
         activePopupId = 'dipPopup';
         name = document.getElementById('dipName').innerText;
         const priceElement = document.querySelector('#dipPopup #dipTotalDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        // Dips hinzufügen
-        if (dipCounts.knobi > 0) extras.push(`${dipCounts.knobi}× Knoblauch-Dip`);
-        if (dipCounts.kraeuter > 0) extras.push(`${dipCounts.kraeuter}× Kräuter-Dip`);
+        if (dipCounts.knobi > 0) extraDetails.push({ name: `${dipCounts.knobi}× Knoblauch-Dip`, price: dipCounts.knobi * 0.50 });
+        if (dipCounts.kraeuter > 0) extraDetails.push({ name: `${dipCounts.kraeuter}× Kräuter-Dip`, price: dipCounts.kraeuter * 0.50 });
     }
     else if (document.getElementById('quickPopup').style.display === 'flex') {
         activePopupId = 'quickPopup';
@@ -1941,15 +1947,17 @@ function speiseInWarenkorb() {
         name = document.getElementById('famPizzaName').innerText;
         const priceElement = document.getElementById('famTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
+        let freeSlots = FREE_EXTRAS;
         document.querySelectorAll('#famPizzaPopup .fam-check:checked').forEach(box => {
             const zutatName = box.nextElementSibling.innerText.trim();
-            extras.push(zutatName);
+            const p = freeSlots > 0 ? 0 : EXTRA_PRICE_FLAT;
+            freeSlots--;
+            extraDetails.push({ name: zutatName, price: p });
         });
     }
 
     if (activePopupId !== "") {
-        const vollerName = extras.length > 0 ? `${name} (${extras.join(', ')})` : name;
-        warenkorb.push({ id: Date.now(), name: vollerName, preis: preis });
+        warenkorb.push({ id: Date.now(), name: name, preis: preis, extraDetails: extraDetails });
         addFreePizzaIfNeeded();
         renderWarenkorb();
         document.getElementById(activePopupId).style.display = 'none';
@@ -2283,7 +2291,7 @@ async function processOrder() {
         status: 'neu',
         type: currentSelection,
         customer: { name: `${vorname} ${nachname}`, address: address },
-        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extras: [] })),
+        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extraDetails: item.extraDetails||[] })),
         subtotal: summeWaren,
         fee: fee,
         total: finalTotal,
@@ -2311,7 +2319,7 @@ async function processOrder() {
                         name:  i.name,
                         price: i.preis,
                         qty:   1,
-                        note:  (i.extras || []).join(', ')
+                        extraDetails: i.extraDetails || []
                     })),
                     subtotal:    summeWaren,
                     deliveryFee: fee,
@@ -2357,7 +2365,7 @@ async function processOrder() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, note: (i.extras||[]).join(', ') })),
+                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, extraDetails: i.extraDetails||[] })),
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
