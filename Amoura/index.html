@@ -1555,7 +1555,7 @@
                 <div class="product-info"><h3>Mineralwasser</h3><p>spritzig</p></div>
                 <div class="price">2,50 €</div>
             </div>
-            <div class="product-item" onclick="openQuickAdd(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openQuickAdd(this)" style="cursor: pointer;" data-hide-when-unavailable="1">
                 <div class="product-info"><h3>Test</h3><p>Nur zum Testen</p></div>
                 <div class="price">0,10 €</div>
             </div>
@@ -3916,6 +3916,12 @@ body.modal-open {
       if (!h3) return;
       const name = h3.textContent.trim();
       if (!disabledNames.some(d => name.startsWith(d))) return;
+
+      // Komplett verstecken wenn gewünscht
+      if (el.getAttribute('data-hide-when-unavailable') === '1') {
+        el.style.display = 'none';
+        return;
+      }
 
       // Schon markiert? Überspringen
       if (el.getAttribute('data-sold-out') === '1') return;
