@@ -234,7 +234,6 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
     const appFee = Math.round((serviceFee + (subtotal * 0.05)) * 100) + stripeFee;
 
     const sessionOpts = {
-      payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
       ...(customer.email ? { customer_email: customer.email } : {}),
@@ -246,10 +245,16 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
 
     // Stripe Connect wenn konfiguriert
     if (process.env.STRIPE_CONNECT_ACCOUNT) {
+      // Mit Connect: payment_method_types explizit (Klarna nicht mit Connect kompatibel)
+      sessionOpts.payment_method_types = ['card'];
       sessionOpts.payment_intent_data = {
         application_fee_amount: appFee,
         transfer_data: { destination: process.env.STRIPE_CONNECT_ACCOUNT }
       };
+    } else {
+      // Ohne Connect: alle im Stripe-Dashboard aktivierten Methoden erlauben
+      // (Karte, Apple Pay, Google Pay, Klarna, etc.)
+      sessionOpts.automatic_payment_methods = { enabled: true };
     }
 
     const session = await getStripe().checkout.sessions.create(sessionOpts);
