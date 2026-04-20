@@ -681,8 +681,8 @@ async function getNextRechnungNum() {
   return `RE-${year}-${String(c.seq).padStart(4,'0')}`;
 }
 
-// TAGESBERICHT (täglich um 23:00 Uhr)
-cron.schedule('0 23 * * *', async () => {
+// TAGESBERICHT (täglich um 22:00 Uhr)
+cron.schedule('0 22 * * *', async () => {
   try {
     const now   = new Date();
     const start = new Date(now); start.setHours(0,0,0,0);
