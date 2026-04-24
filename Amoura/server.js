@@ -84,7 +84,7 @@ const orderSchema = new mongoose.Schema({
     first: String, last: String, email: String,
     phone: String, city: String, street: String, house: String
   },
-  items:       [{ name: String, price: Number, qty: Number, note: String }],
+  items:       [{ name: String, price: Number, qty: Number, note: String, extraDetails: [{ name: String, price: Number }] }],
   subtotal:    Number,
   deliveryFee: { type: Number, default: 0 },
   serviceFee:  { type: Number, default: 0.99 },
@@ -501,9 +501,10 @@ async function sendConfirmationEmail(order, mins) {
   const addr = order.mode==='lieferung'
     ? `${order.customer.street} ${order.customer.house}, ${order.customer.city}`
     : 'Oststraße 48, 59269 Beckum';
-  const rows = (order.items||[]).map(i =>
-    `<tr><td style="padding:4px 8px">${i.qty}×</td><td style="padding:4px 8px">${i.name}${i.note?' <em>('+i.note+')</em>':''}</td><td style="padding:4px 8px;text-align:right">${(i.price*i.qty).toFixed(2).replace('.',',')} €</td></tr>`
-  ).join('');
+  const rows = (order.items||[]).map(i => {
+    const extras = (i.extraDetails||[]).map(e => `<div style="font-size:11px;color:#888;padding-left:8px">↳ ${e.name}${e.price>0?' (+'+e.price.toFixed(2).replace('.',',')+'€)':''}</div>`).join('');
+    return `<tr><td style="padding:4px 8px;vertical-align:top">${i.qty}×</td><td style="padding:4px 8px">${cleanName(i.name)}${i.note?' <em>('+i.note+')</em>':''}${extras}</td><td style="padding:4px 8px;text-align:right;vertical-align:top">${(i.price*i.qty).toFixed(2).replace('.',',')} €</td></tr>`;
+  }).join('');
   try {
     await getResend()?.emails.send({
       from: process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
@@ -547,7 +548,11 @@ async function sendConfirmationEmail(order, mins) {
 
 async function sendRestaurantEmail(order) {
   if (!process.env.RESTAURANT_EMAIL) return;
-  const items = (order.items||[]).map(i=>`${i.qty}× ${i.name}${i.note?' ('+i.note+')':''}`).join('\n');
+  const items = (order.items||[]).map(i=>{
+    const base = `${i.qty}× ${cleanName(i.name)}${i.note?' ('+i.note+')':''}`;
+    const extras = (i.extraDetails||[]).map(e=>`   ↳ ${e.name}${e.price>0?' (+'+e.price.toFixed(2)+'€)':''}`).join('\n');
+    return extras ? base+'\n'+extras : base;
+  }).join('\n');
   try {
     await getResend()?.emails.send({
       from: process.env.EMAIL_FROM||'bestellungen@pizzeria-amoura.de',
@@ -766,7 +771,10 @@ cron.schedule('0 22 * * *', async () => {
           : 'Abholung';
         const zahlung  = o.payment==='stripe'?'Kreditkarte':o.payment==='karte'?'EC-Karte':'Bar';
         const bezahlt  = o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen';
-        const items    = (o.items||[]).map(it=>`${it.qty}× ${it.name}${it.note?' ('+it.note+')':''}`).join(', ');
+        const items    = (o.items||[]).map(it=>{
+          const extras = (it.extraDetails||[]).map(e=>e.name).filter(Boolean).join(', ');
+          return `${it.qty}× ${cleanName(it.name)}${extras?' ['+extras+']':''}${it.note?' ('+it.note+')':''}`;
+        }).join(', ');
 
         // Trennlinie
         doc.rect(50, rowY, W, 0.5).fill('#e0e0e0');
