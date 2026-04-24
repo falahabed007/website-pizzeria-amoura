@@ -228,10 +228,9 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
     });
 
     // Stripe Connect: Provision berechnen
-    // serviceFee(0,99€) + 5% vom subtotal + Stripe-Transaktionsgebühr (1,5% + 0,25€)
-    // Stripe-Gebühr wird in die appFee eingerechnet → geht vom Restaurant-Anteil ab, nicht von FlueVate
-    const stripeFee = Math.round((total * 0.015 + 0.25) * 100);
-    const appFee = Math.round((serviceFee + (subtotal * 0.05)) * 100) + stripeFee;
+    // serviceFee(0,99€) + 5% vom subtotal
+    // Stripe-Transaktionsgebühren trägt die Gastro (werden von Stripe automatisch vom Transfer abgezogen)
+    const appFee = Math.round((serviceFee + (subtotal * 0.05)) * 100);
 
     const sessionOpts = {
       line_items: lineItems,
