@@ -495,6 +495,8 @@ app.get('/api/admin/finance', auth, async (req, res) => {
 // E-MAIL FUNKTIONEN
 // ═══════════════════════════════════════════════════════════════
 
+const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
+
 async function sendConfirmationEmail(order, mins) {
   if (!process.env.RESEND_API_KEY || !order.customer?.email) return;
   const m    = mins || order.prepTime || (order.mode==='lieferung'?45:20);
