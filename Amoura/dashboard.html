@@ -2082,8 +2082,8 @@ async function smartPrint(order) {
   // 2. RawBT (HTTP API oder Broadcast Intent)
   const ok = await rawbtPrint(order);
   if (ok) return;
-  // 3. Fully Kiosk HTML-Druck (Android print dialog → RawBT als Druckdienst)
-  fullyPrint(order);
+  // 3. Popup-Druck (genau wie "Als PDF" – funktioniert in Fully Kiosk)
+  doBrowserPrint(order);
 }
 
 function fullyPrint(order) {
