@@ -2087,22 +2087,15 @@ async function smartPrint(order) {
 }
 
 function fullyPrint(order) {
-  // Bon-Modal schließen damit printArea sichtbar wird
-  closeBonModal();
   const bonHtml = buildBonHtml(order);
-  const printArea = document.getElementById('printArea');
-  printArea.innerHTML = bonHtml;
-  printArea.style.display = 'block';
-  setTimeout(() => {
-    try {
-      if (window.fully) window.fully.print();
-      else window.print();
-    } catch(e) { window.print(); }
-    setTimeout(() => {
-      printArea.innerHTML = '';
-      printArea.style.display = 'none';
-    }, 3000);
-  }, 400);
+  const w = window.open('', '_blank');
+  if (!w) return;
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${order.orderNum}</title>
+    <style>body{margin:0;padding:8px;font-family:monospace;font-size:12px;background:white;color:black;}
+    @page{size:80mm auto;margin:0;}</style>
+    </head><body>${bonHtml}</body></html>`);
+  w.document.close();
+  setTimeout(() => { w.print(); setTimeout(() => w.close(), 1000); }, 500);
 }
 
 function cleanName(n) {
