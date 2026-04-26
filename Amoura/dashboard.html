@@ -2109,6 +2109,8 @@ async function rawbtPrint(order) {
 }
 
 async function testEposDirect() {
+  const el = document.getElementById('printerStatus');
+  el.textContent = '🖨️ Teste...';
   const url = getEposUrl();
   try {
     const res = await fetch(url, {
@@ -2117,9 +2119,11 @@ async function testEposDirect() {
       body: '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"><text>TEST</text></epos-print></s:Body></s:Envelope>',
       signal: AbortSignal.timeout(5000)
     });
-    alert('ePOS Antwort: ' + res.status + ' ' + res.statusText);
+    el.textContent = 'ePOS: ' + res.status + ' ' + res.statusText;
+    el.style.color = res.ok ? 'var(--green)' : 'orange';
   } catch(e) {
-    alert('ePOS Fehler: ' + e.name + ' - ' + e.message);
+    el.textContent = 'ERR: ' + e.name;
+    el.style.color = 'var(--red)';
   }
 }
 
