@@ -2109,6 +2109,8 @@ async function rawbtPrint(order) {
 }
 
 async function smartPrint(order) {
+  const ok = await eposPrint(order);
+  if (ok) return;
   await rawbtPrint(order);
 }
 
