@@ -2079,7 +2079,18 @@ async function rawbtPrint(order) {
     }
   } catch(e) { /* Mixed Content blockiert oder RawBT nicht erreichbar */ }
 
-  // Versuch 2: rawbt: URL scheme via <a> click (navigiert nicht weg vom Dashboard)
+  // Versuch 2: Fully Kiosk loadURL (öffnet rawbt: App und kommt zurück)
+  if (window.fully) {
+    try {
+      window.fully.loadURL('rawbt:print?text=' + encodeURIComponent(txt));
+      setTimeout(() => window.fully.loadURL(window.location.href), 2500);
+      rawbtConnected = true;
+      updatePrinterStatus();
+      return true;
+    } catch(e) {}
+  }
+
+  // Versuch 3: rawbt: URL scheme via <a> click
   try {
     const a = document.createElement('a');
     a.href = 'rawbt:print?text=' + encodeURIComponent(txt);
@@ -2090,7 +2101,7 @@ async function rawbtPrint(order) {
     rawbtConnected = true;
     updatePrinterStatus();
     return true;
-  } catch(e) { /* URL scheme auch blockiert */ }
+  } catch(e) {}
 
   rawbtConnected = false;
   updatePrinterStatus();
