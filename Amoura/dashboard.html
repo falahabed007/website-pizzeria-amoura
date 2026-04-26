@@ -2019,7 +2019,7 @@ async function checkRawbt() {
   updatePrinterStatus();
 }
 
-async function rawbtPrint(order) {
+function buildBonText(order) {
   const isD = order.mode === 'lieferung';
   const sep = '--------------------------------';
   let txt = '';
@@ -2058,11 +2058,43 @@ async function rawbtPrint(order) {
   if (order.note) txt += `Notiz: ${order.note}\n`;
   txt += sep + '\n';
   txt += 'Vielen Dank!\n\n\n';
+  return txt;
+}
 
-  window.location.href = 'rawbt:print?text=' + encodeURIComponent(txt);
-  rawbtConnected = true;
+async function rawbtPrint(order) {
+  const txt = buildBonText(order);
+
+  // Versuch 1: RawBT HTTP API (funktioniert wenn Fully Kiosk "Allow Mixed Content" aktiviert hat)
+  try {
+    const res = await fetch('http://127.0.0.1:19100/rawbt', {
+      method: 'POST',
+      body: new TextEncoder().encode(txt),
+      headers: { 'Content-Type': 'application/octet-stream' },
+      signal: AbortSignal.timeout(4000)
+    });
+    if (res.ok || res.status < 500) {
+      rawbtConnected = true;
+      updatePrinterStatus();
+      return true;
+    }
+  } catch(e) { /* Mixed Content blockiert oder RawBT nicht erreichbar */ }
+
+  // Versuch 2: rawbt: URL scheme via <a> click (navigiert nicht weg vom Dashboard)
+  try {
+    const a = document.createElement('a');
+    a.href = 'rawbt:print?text=' + encodeURIComponent(txt);
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { try { document.body.removeChild(a); } catch(e){} }, 1000);
+    rawbtConnected = true;
+    updatePrinterStatus();
+    return true;
+  } catch(e) { /* URL scheme auch blockiert */ }
+
+  rawbtConnected = false;
   updatePrinterStatus();
-  return true;
+  return false;
 }
 
 async function smartPrint(order) {
