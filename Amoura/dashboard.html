@@ -2068,12 +2068,9 @@ async function rawbtPrint(order) {
     return true;
   }
 
-  // 3. rawbt:// URL (Fully Kiosk öffnet RawBT als Android Intent – Dashboard bleibt offen)
-  const b64 = btoa(String.fromCharCode(...bytes));
-  window.location.href = 'rawbt://print?base64=' + encodeURIComponent(b64);
-  rawbtConnected = true;
+  rawbtConnected = false;
   updatePrinterStatus();
-  return true;
+  return false;
 }
 
 async function smartPrint(order) {
