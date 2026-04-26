@@ -322,7 +322,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
         <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()" title="Automatik nach Öffnungszeiten">🕐 Auto</span>
       </div>
-      <span id="printerStatus" title="Drucker-Status" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:default;white-space:nowrap;">🖨️ Prüfe...</span>
+      <span id="printerStatus" title="Drucker-Status" onclick="testEposDirect()" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;white-space:nowrap;">🖨️ Prüfe...</span>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>
@@ -2106,6 +2106,21 @@ async function rawbtPrint(order) {
   rawbtConnected = false;
   updatePrinterStatus();
   return false;
+}
+
+async function testEposDirect() {
+  const url = getEposUrl();
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+      body: '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"><text>TEST</text></epos-print></s:Body></s:Envelope>',
+      signal: AbortSignal.timeout(5000)
+    });
+    alert('ePOS Antwort: ' + res.status + ' ' + res.statusText);
+  } catch(e) {
+    alert('ePOS Fehler: ' + e.name + ' - ' + e.message);
+  }
 }
 
 async function smartPrint(order) {
