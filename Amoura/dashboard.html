@@ -109,6 +109,22 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .b-cancel{background:rgba(229,57,53,.18);color:var(--s-cancel);}
 .b-pending{background:rgba(232,160,32,.18);color:var(--s-new);}
 .b-stripe-wait{background:rgba(255,193,7,.25);color:#f5a623;font-weight:600;}
+
+/* ── STRIPE-PANEL ──────────────────────────────────────────── */
+.stripe-panel{border-bottom:1px solid var(--border);background:#110c04;display:none;flex-shrink:0;}
+.stripe-panel.open{display:block;}
+.stripe-panel-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #2a1f08;}
+.stripe-panel-title{font-size:.78rem;font-weight:700;color:#f5a623;display:flex;align-items:center;gap:7px;}
+.stripe-cnt{background:#f5a623;color:#1a0a00;border-radius:50px;padding:1px 7px;font-size:.68rem;font-weight:700;}
+.stripe-panel-body{max-height:220px;overflow-y:auto;padding:6px 10px;}
+.stripe-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--bg3);border:1px solid #2a1f08;margin-bottom:5px;font-size:.8rem;cursor:pointer;transition:border .15s;}
+.stripe-row:hover{border-color:#f5a623;}
+.stripe-row .sr-num{color:#f5a623;font-weight:700;min-width:38px;}
+.stripe-row .sr-name{flex:1;color:var(--text);}
+.stripe-row .sr-time{color:var(--muted);font-size:.72rem;min-width:40px;}
+.stripe-row .sr-price{font-weight:700;color:var(--text);min-width:60px;text-align:right;}
+.stripe-empty{text-align:center;padding:16px;color:var(--muted);font-size:.8rem;}
+.stripe-btn-badge{background:#f5a623;color:#1a0a00;border-radius:50px;padding:1px 6px;font-size:.65rem;font-weight:700;margin-left:5px;}
 .b-paid{background:rgba(76,175,80,.15);color:#66bb6a;cursor:pointer;}
 .b-unpaid{background:rgba(229,57,53,.15);color:#ef5350;cursor:pointer;}
 .oc-items{padding:0 12px 7px;font-size:.77rem;color:var(--muted);}
@@ -349,14 +365,28 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <span class="pill" onclick="setFilter('fertig',this)">Fertig</span>
           <span class="pill" onclick="setFilter('geliefert',this)">Geliefert</span>
           <span class="pill" onclick="setFilter('storniert',this)">Storniert</span>
-          <span class="pill" id="pillStripe" onclick="setFilter('stripe_wait',this)" style="display:none">💳 Stripe</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen">
-          <button class="day-btn" onclick="recoverStripeOrders()" id="btnRecover" style="white-space:nowrap;">🔁 Stripe-Einbuchung</button>
+          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="loadOrders()">
+          <button class="day-btn" onclick="toggleStripePanel()" id="btnStripePanel" style="white-space:nowrap;">💳 Stripe-Einbuchung</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
       </div>
+
+      <!-- ── STRIPE PENDING PANEL ─────────────────────────────── -->
+      <div id="stripePanel" class="stripe-panel">
+        <div class="stripe-panel-head">
+          <div class="stripe-panel-title">
+            💳 Ausstehende Stripe-Zahlungen
+            <span id="stripePanelCount" class="stripe-cnt">0</span>
+          </div>
+          <button class="oc-btn" onclick="doRecoverStripe()" id="btnRecoverAction" style="white-space:nowrap;">🔁 Bei Stripe prüfen</button>
+        </div>
+        <div id="stripePanelList" class="stripe-panel-body">
+          <div class="stripe-empty">Keine ausstehenden Zahlungen</div>
+        </div>
+      </div>
+
       <div class="orders-list" id="ordersList">
         <div class="empty-state">⏳ Bestellungen werden geladen…</div>
       </div>
@@ -1205,17 +1235,39 @@ function closePendingModal() {
 // ═══════════════════════════════════════════════════════════════
 async function loadOrders() {
   try {
-    const r = await fetch(API_BASE+'/admin/orders',{headers:apiHeaders()});
+    const reportDateVal = document.getElementById('reportDate')?.value || '';
+    const todayStr = new Date().toISOString().slice(0,10);
+    const isToday = !reportDateVal || reportDateVal === todayStr;
+
+    const url = isToday
+      ? `${API_BASE}/admin/orders`
+      : `${API_BASE}/admin/orders?date=${reportDateVal}`;
+
+    const r = await fetch(url,{headers:apiHeaders()});
     const d = await r.json();
     allOrders = d.orders || [];
-    // Stats updaten
-    const s = d.stats || {};
-    document.getElementById('sRevenue').textContent   = (s.todayRevenue||0).toFixed(2).replace('.',',') + ' €';
-    document.getElementById('sTodayCount').textContent = (s.todayCount||0) + ' Bestellungen';
-    document.getElementById('sActive').textContent    = s.active||0;
-    document.getElementById('sDone').textContent      = s.done||0;
-    document.getElementById('sCancelled').textContent = s.cancelled||0;
-    document.getElementById('sUnpaid').textContent    = s.unpaid||0;
+
+    if (isToday) {
+      // Stats vom Server – wie bisher
+      const s = d.stats || {};
+      document.getElementById('sRevenue').textContent   = (s.todayRevenue||0).toFixed(2).replace('.',',') + ' €';
+      document.getElementById('sTodayCount').textContent = (s.todayCount||0) + ' Bestellungen';
+      document.getElementById('sActive').textContent    = s.active||0;
+      document.getElementById('sDone').textContent      = s.done||0;
+      document.getElementById('sCancelled').textContent = s.cancelled||0;
+      document.getElementById('sUnpaid').textContent    = s.unpaid||0;
+    } else {
+      // Stats aus den geladenen Bestellungen berechnen
+      const valid = allOrders.filter(o => o.status !== 'cancelled' && o.status !== 'awaiting_payment');
+      const revenue = valid.reduce((sum,o) => sum + (o.total||0), 0);
+      document.getElementById('sRevenue').textContent   = revenue.toFixed(2).replace('.',',') + ' €';
+      document.getElementById('sTodayCount').textContent = allOrders.length + ' Bestellungen';
+      document.getElementById('sActive').textContent    = allOrders.filter(o=>['confirmed','preparing','ready'].includes(o.status)).length;
+      document.getElementById('sDone').textContent      = allOrders.filter(o=>o.status==='delivered').length;
+      document.getElementById('sCancelled').textContent = allOrders.filter(o=>o.status==='cancelled').length;
+      document.getElementById('sUnpaid').textContent    = allOrders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length;
+    }
+
     renderOrders();
     if (sideTab==='stats') renderStats();
     if (sideTab==='history') renderHistory();
@@ -1241,27 +1293,31 @@ function getNextLabel(s) {
 
 function renderOrders() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const reportDateVal = document.getElementById('reportDate')?.value || '';
+  const todayStr = new Date().toISOString().slice(0,10);
+  const isViewingToday = !reportDateVal || reportDateVal === todayStr;
 
   let list = allOrders.filter(o => {
-    // Standardmäßig nur heutige Bestellungen in der Hauptliste
-    if (!q && new Date(o.createdAt) < todayStart) return false;
+    // Datumsfilter: nur bei heutigem Datum nötig (Vergangenheits-Abfragen kommen
+    // bereits vorgefiltert vom Server)
+    if (isViewingToday && !q) {
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      if (new Date(o.createdAt) < todayStart) return false;
+    }
+    if (filter==='stripe_wait') return o.status==='awaiting_payment';
     if (filter==='neu')         return o.status==='confirmed';
     if (filter==='zubereitung') return o.status==='preparing';
     if (filter==='fertig')      return o.status==='ready';
     if (filter==='geliefert')   return o.status==='delivered';
     if (filter==='storniert')   return o.status==='cancelled';
-    if (filter==='stripe_wait') return o.status==='awaiting_payment';
-    return true;
+    // 'Alle'-Filter: Stripe-ausstehend ausblenden – sichtbar nur über Stripe-Einbuchung
+    return o.status !== 'awaiting_payment';
   });
   if (q) list = list.filter(o =>
     String(o.orderNum).includes(q) ||
     `${o.customer?.first} ${o.customer?.last}`.toLowerCase().includes(q)
   );
-  // Stripe-Pill einblenden wenn awaiting_payment vorhanden
-  const hasStripeWait = allOrders.some(o => o.status==='awaiting_payment' && new Date(o.createdAt) >= todayStart);
-  const pillStripe = document.getElementById('pillStripe');
-  if (pillStripe) pillStripe.style.display = hasStripeWait ? '' : 'none';
+  renderStripePanel();
 
   const el = document.getElementById('ordersList');
   if (!list.length) { el.innerHTML='<div class="empty-state">📭<br>Keine Bestellungen</div>'; return; }
@@ -2129,8 +2185,59 @@ document.getElementById('bonModal').addEventListener('click', function(e) {
   if (e.target === this) closeBonModal();
 });
 
-async function recoverStripeOrders() {
-  const btn = document.getElementById('btnRecover');
+// ── STRIPE PANEL ────────────────────────────────────────────
+let stripePanelOpen = false;
+
+function toggleStripePanel() {
+  stripePanelOpen = !stripePanelOpen;
+  document.getElementById('stripePanel').classList.toggle('open', stripePanelOpen);
+  renderStripePanel();
+}
+
+function renderStripePanel() {
+  const pending = allOrders.filter(o => o.status === 'awaiting_payment');
+
+  // Badge auf dem Button aktualisieren
+  const btn = document.getElementById('btnStripePanel');
+  if (btn) {
+    const old = btn.querySelector('.stripe-btn-badge');
+    if (old) old.remove();
+    if (pending.length > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'stripe-btn-badge';
+      badge.textContent = pending.length;
+      btn.appendChild(badge);
+    }
+  }
+
+  // Zähler im Panel-Kopf
+  const countEl = document.getElementById('stripePanelCount');
+  if (countEl) countEl.textContent = pending.length;
+
+  // Liste nur rendern wenn Panel offen
+  if (!stripePanelOpen) return;
+  const listEl = document.getElementById('stripePanelList');
+  if (!listEl) return;
+
+  if (!pending.length) {
+    listEl.innerHTML = '<div class="stripe-empty">✓ Keine ausstehenden Zahlungen</div>';
+    return;
+  }
+
+  listEl.innerHTML = pending.map(o => `
+    <div class="stripe-row" onclick="selectOrder('${o._id}')">
+      <span class="sr-num">#${o.orderNum}</span>
+      <span>${o.mode==='lieferung'?'🛵':'🏃'}</span>
+      <span class="sr-name">${o.customer?.first||''} ${o.customer?.last||''}</span>
+      <span class="sr-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="sr-price">${(o.total||0).toFixed(2).replace('.',',')} €</span>
+      <button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})" style="font-size:.7rem;padding:2px 7px;">✕</button>
+    </div>
+  `).join('');
+}
+
+async function doRecoverStripe() {
+  const btn = document.getElementById('btnRecoverAction');
   btn.disabled = true;
   btn.textContent = '⏳ Prüfe…';
   try {
@@ -2140,16 +2247,16 @@ async function recoverStripeOrders() {
     });
     const data = await r.json();
     if (data.recovered && data.recovered.length > 0) {
-      alert(`✅ ${data.recovered.length} Bestellung(en) eingebucht: #${data.recovered.join(', #')}`);
-      fetchOrders();
+      showToast(`✅ ${data.recovered.length} Bestellung(en) eingebucht: #${data.recovered.join(', #')}`);
+      await loadOrders();
     } else {
-      alert(`Keine offenen Stripe-Zahlungen gefunden (${data.total} geprüft).`);
+      showToast(`Keine offenen Stripe-Zahlungen gefunden (${data.total} geprüft).`);
     }
   } catch(e) {
-    alert('Fehler: ' + e.message);
+    showToast('❌ Fehler: ' + e.message);
   }
   btn.disabled = false;
-  btn.textContent = '🔁 Stripe-Einbuchung';
+  btn.textContent = '🔁 Bei Stripe prüfen';
 }
 
 async function printDayReport() {
