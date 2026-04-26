@@ -2068,9 +2068,48 @@ async function rawbtPrint(order) {
     return true;
   }
 
-  // 3. rawbt:// URL – hat vorher funktioniert
-  const b64 = btoa(String.fromCharCode(...bytes));
-  window.location.href = 'rawbt://print?base64=' + encodeURIComponent(b64);
+  // 3. rawbt:print?text= (plain text, einfacher und zuverlässiger)
+  const isD = order.mode === 'lieferung';
+  const sep = '--------------------------------';
+  let txt = '';
+  txt += 'PIZZERIA AMOURA\n';
+  txt += 'Oststrasse 48 - 59269 Beckum\n';
+  txt += '02521 / 829 06 00\n';
+  txt += sep + '\n';
+  txt += `BESTELLUNG #${order.orderNum}\n`;
+  txt += new Date(order.createdAt).toLocaleString('de-DE') + '\n';
+  txt += (isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***') + '\n';
+  txt += sep + '\n';
+  txt += `${order.customer?.first||''} ${order.customer?.last||''}\n`;
+  if (order.customer?.phone) txt += order.customer.phone + '\n';
+  if (isD) {
+    txt += `${order.customer?.street||''} ${order.customer?.house||''}\n`;
+    txt += (order.customer?.city||'') + '\n';
+  }
+  txt += sep + '\n';
+  for (const i of (order.items||[])) {
+    const name = cleanName(i.name).slice(0,22);
+    const price = i.price===0 ? 'GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
+    txt += `${i.qty}x ${name.padEnd(22)} ${price}\n`;
+    const extras = i.extraDetails||[];
+    if (extras.length) extras.forEach(e => { if(e.name) txt += `  ${e.name}\n`; });
+    else if (i.note) txt += `  ${i.note}\n`;
+  }
+  txt += sep + '\n';
+  txt += `Zwischensumme:     ${(order.subtotal||0).toFixed(2)} EUR\n`;
+  if ((order.deliveryFee||0)>0) txt += `Liefergebuehr:     ${order.deliveryFee.toFixed(2)} EUR\n`;
+  txt += `Servicegebuehr:    ${(order.serviceFee||0.99).toFixed(2)} EUR\n`;
+  txt += sep + '\n';
+  txt += `GESAMT:            ${(order.total||0).toFixed(2)} EUR\n`;
+  txt += sep + '\n';
+  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
+  txt += `Zahlung: ${zahlung}\n`;
+  txt += (order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!') + '\n';
+  if (order.note) txt += `Notiz: ${order.note}\n`;
+  txt += sep + '\n';
+  txt += 'Vielen Dank!\n\n\n';
+
+  window.location.href = 'rawbt:print?text=' + encodeURIComponent(txt);
   rawbtConnected = true;
   updatePrinterStatus();
   return true;
