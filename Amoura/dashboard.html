@@ -1952,6 +1952,7 @@ async function eposPrint(order) {
 }
 
 async function checkEpos() {
+  const el = document.getElementById('printerStatus');
   try {
     const res = await fetch(getEposUrl(), {
       method: 'POST',
@@ -1960,8 +1961,12 @@ async function checkEpos() {
       signal: AbortSignal.timeout(3000)
     });
     eposConnected = true;
+    if (el) el.title = 'ePOS: ' + res.status + ' ' + res.statusText;
   } catch(e) {
     eposConnected = false;
+    if (el) { el.textContent = 'ERR:' + e.name; el.style.color = 'orange'; }
+    setTimeout(() => updatePrinterStatus(), 4000);
+    return;
   }
   updatePrinterStatus();
 }
