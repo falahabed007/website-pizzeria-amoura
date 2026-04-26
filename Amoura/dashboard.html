@@ -1967,88 +1967,6 @@ async function checkRawbt() {
 
 async function rawbtPrint(order) {
   const isD = order.mode === 'lieferung';
-  const ep  = escposBuilder();
-  const W   = 32;
-  const padR = (l, v) => l + String(v).padStart(W - l.length);
-
-  // ── Header ──────────────────────────────────────────
-  ep.init()
-    .align('center')
-    .size(true).bold(true).line('PIZZERIA AMOURA').size(false).bold(false)
-    .line('Oststrasse 48 · 59269 Beckum')
-    .line('02521 / 829 06 00')
-    .divider()
-    .size(true).bold(true).line(`BESTELLUNG #${order.orderNum}`).size(false).bold(false)
-    .line(new Date(order.createdAt).toLocaleString('de-DE'))
-    .bold(true).line(isD ? '** LIEFERUNG **' : '** ABHOLUNG **').bold(false)
-    .divider();
-
-  // ── Kunde ────────────────────────────────────────────
-  ep.align('left');
-  ep.bold(true).line(`${order.customer?.first||''} ${order.customer?.last||''}`).bold(false);
-  if (order.customer?.phone) ep.line(order.customer.phone);
-  if (isD) {
-    ep.line(`${order.customer?.street||''} ${order.customer?.house||''}`);
-    ep.line(order.customer?.city||'');
-  }
-  ep.divider();
-
-  // ── Artikel ──────────────────────────────────────────
-  for (const i of (order.items||[])) {
-    const name  = cleanName(i.name).slice(0, 21);
-    const price = i.price === 0 ? 'GRATIS' : `${(i.price*i.qty).toFixed(2)}EUR`;
-    const label = `${i.qty}x ${name}`;
-    ep.bold(true).line(`${label.padEnd(23)}${price.padStart(9)}`).bold(false);
-    // Extras (Groesse, Zutaten etc.) – nur Name, kein Preis
-    const extras = i.extraDetails || [];
-    if (extras.length) {
-      extras.forEach(e => {
-        if (!e.name) return;
-        ep.line(`  ${e.name}`);
-      });
-    } else if (i.note) {
-      ep.line(`  ${i.note}`);
-    }
-  }
-
-  // ── Preise ───────────────────────────────────────────
-  ep.divider();
-  ep.line(padR('Zwischensumme:', (order.subtotal||0).toFixed(2)+' EUR'));
-  if ((order.deliveryFee||0) > 0)
-    ep.line(padR('Liefergebuehr:', order.deliveryFee.toFixed(2)+' EUR'));
-  ep.line(padR('Servicegebuehr:', (order.serviceFee||0.99).toFixed(2)+' EUR'));
-  ep.divider();
-  ep.bold(true).size(true)
-    .line(padR('GESAMT:', (order.total||0).toFixed(2)+' EUR'))
-    .size(false).bold(false);
-  ep.divider();
-
-  // ── Zahlung ──────────────────────────────────────────
-  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
-  ep.line(`Zahlung: ${zahlung}`);
-  if (order.paymentStatus === 'paid') {
-    ep.bold(true).line('BEZAHLT').bold(false);
-  } else {
-    ep.bold(true).line('!!! BITTE KASSIEREN !!!').bold(false);
-  }
-  if (order.prepTime) ep.line(`Wartezeit: ca. ${order.prepTime} Min.`);
-
-  // ── Kundennotiz ──────────────────────────────────────
-  if (order.note) {
-    ep.divider();
-    ep.bold(true).line('KUNDENNOTIZ:').bold(false);
-    ep.line(order.note);
-  }
-
-  // ── Footer ───────────────────────────────────────────
-  ep.divider()
-    .align('center')
-    .line('Vielen Dank fuer Ihren Besuch!')
-    .feed(3).cut();
-
-  const bytes = ep.bytes();
-
-  // rawbt:print?text= direkt – ohne Umwege
   const sep = '--------------------------------';
   let txt = '';
   txt += 'PIZZERIA AMOURA\n';
@@ -2081,8 +1999,7 @@ async function rawbtPrint(order) {
   txt += sep + '\n';
   txt += `GESAMT:            ${(order.total||0).toFixed(2)} EUR\n`;
   txt += sep + '\n';
-  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
-  txt += `Zahlung: ${zahlung}\n`;
+  txt += `Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}\n`;
   txt += (order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!') + '\n';
   if (order.note) txt += `Notiz: ${order.note}\n`;
   txt += sep + '\n';
