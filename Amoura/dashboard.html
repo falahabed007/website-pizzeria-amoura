@@ -2059,17 +2059,10 @@ async function rawbtPrint(order) {
     if (res.ok) { rawbtConnected = true; updatePrinterStatus(); return true; }
   } catch(e) { /* HTTP nicht verfügbar */ }
 
-  // 2. Broadcast Intent (Fully Kiosk → RawBT, bleibt im Dashboard)
-  if (window.fully || /Android/i.test(navigator.userAgent)) {
+  // 2. Broadcast Intent (Fully Kiosk → RawBT Pro)
+  if (window.fully && typeof window.fully.sendBroadcastIntent === 'function') {
     const b64 = btoa(String.fromCharCode(...bytes));
-    if (window.fully && typeof window.fully.sendBroadcastIntent === 'function') {
-      window.fully.sendBroadcastIntent('ru.a402d.rawbtprinter.action.PRINT_TAG', 'DATA', b64);
-      rawbtConnected = true;
-      updatePrinterStatus();
-      return true;
-    }
-    // Fallback: rawbt:// URL direkt
-    window.location.href = 'rawbt://print?base64=' + encodeURIComponent(b64);
+    window.fully.sendBroadcastIntent('ru.a402d.rawbtprinter.action.PRINT_TAG', 'DATA', b64);
     rawbtConnected = true;
     updatePrinterStatus();
     return true;
@@ -2081,33 +2074,35 @@ async function rawbtPrint(order) {
 }
 
 async function smartPrint(order) {
-  // 1. Epson ePOS direkt über Netzwerk (TM-M30II)
-  const epok = await eposPrint(order);
-  if (epok) return;
-  // 2. RawBT HTTP API (Fallback)
+  // 1. Epson ePOS direkt – nur wenn bereits verbunden (kein langer Timeout)
+  if (eposConnected) {
+    const epok = await eposPrint(order);
+    if (epok) return;
+  }
+  // 2. RawBT (HTTP API oder Broadcast Intent)
   const ok = await rawbtPrint(order);
   if (ok) return;
-  // 3. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
-  if (window.fully) {
-    fullyPrint(order);
-    return;
-  }
-  // 4. Fallback: Browser-Popup
-  doBrowserPrint(order);
+  // 3. Fully Kiosk HTML-Druck (Android print dialog → RawBT als Druckdienst)
+  fullyPrint(order);
 }
 
 function fullyPrint(order) {
+  // Bon-Modal schließen damit printArea sichtbar wird
+  closeBonModal();
   const bonHtml = buildBonHtml(order);
   const printArea = document.getElementById('printArea');
   printArea.innerHTML = bonHtml;
   printArea.style.display = 'block';
   setTimeout(() => {
-    try { window.fully.print(); } catch(e) { window.print(); }
+    try {
+      if (window.fully) window.fully.print();
+      else window.print();
+    } catch(e) { window.print(); }
     setTimeout(() => {
       printArea.innerHTML = '';
       printArea.style.display = 'none';
     }, 3000);
-  }, 300);
+  }, 400);
 }
 
 function cleanName(n) {
