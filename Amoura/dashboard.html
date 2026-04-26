@@ -1049,8 +1049,9 @@ function initDashboard() {
   // Datum-Picker auf heute setzen
   document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
   if(Notification&&Notification.permission==='default') Notification.requestPermission();
+  checkEpos();
   checkRawbt();
-  setInterval(() => { checkRawbt(); }, 30000); // alle 30s prüfen
+  setInterval(() => { checkEpos(); checkRawbt(); }, 30000); // alle 30s prüfen
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1803,10 +1804,113 @@ async function loadRestaurantStatus() {
 // BROWSER PRINT
 // ═══════════════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════════════
-// DRUCKER (MUNBYN Thermodrucker)
+// DRUCKER (Epson TM-M30II – direkt über Netzwerk)
 // ═══════════════════════════════════════════════════════════════
-const RAWBT_URL  = 'http://127.0.0.1:19100'; // RawBT Pro App auf Android
+const RAWBT_URL  = 'http://127.0.0.1:19100'; // RawBT (Fallback)
 let rawbtConnected  = false;
+
+// Epson ePOS direkt
+let eposConnected = false;
+function getEposUrl() {
+  const ip = localStorage.getItem('epos_ip') || '192.168.2.174';
+  return `http://${ip}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+}
+
+function xmlEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function eposPrint(order) {
+  const isD = order.mode === 'lieferung';
+  const time = new Date(order.createdAt).toLocaleString('de-DE');
+
+  const x = (t, attr='') => `<text${attr}>${xmlEsc(t)}&#10;</text>`;
+  const div = () => `<text>--------------------------------&#10;</text>`;
+
+  let body = '';
+  // Header
+  body += `<text align="center" dh="true" dw="true" em="true">PIZZERIA AMOURA&#10;</text>`;
+  body += `<text align="center">Oststrasse 48 - 59269 Beckum&#10;</text>`;
+  body += `<text align="center">02521 / 829 06 00&#10;</text>`;
+  body += div();
+  // Bestellnummer
+  body += `<text align="center" dh="true" dw="true" em="true">#${order.orderNum}&#10;</text>`;
+  body += `<text align="center">${xmlEsc(time)}&#10;</text>`;
+  body += `<text align="center" em="true">${isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***'}&#10;</text>`;
+  body += div();
+  // Kunde
+  body += x(`${order.customer?.first||''} ${order.customer?.last||''}`);
+  if (order.customer?.phone) body += x(order.customer.phone);
+  if (isD) {
+    body += x(`${order.customer?.street||''} ${order.customer?.house||''}`);
+    body += x(order.customer?.city||'');
+  }
+  body += div();
+  // Artikel
+  for (const i of (order.items||[])) {
+    const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,24).padEnd(24);
+    const price = i.price===0 ? '   GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
+    body += `<text em="true">${xmlEsc(label + price.padStart(9))}&#10;</text>`;
+    const extras = i.extraDetails || [];
+    if (extras.length) {
+      extras.forEach(e => { if (e.name) body += x(`  ${e.name}`); });
+    } else if (i.note) {
+      body += x(`  ${i.note}`);
+    }
+  }
+  body += div();
+  // Preise
+  const pad = v => String(v).padStart(14);
+  body += x(`Zwischensumme:  ${pad((order.subtotal||0).toFixed(2)+' EUR')}`);
+  if ((order.deliveryFee||0)>0) body += x(`Liefergebuehr:  ${pad(order.deliveryFee.toFixed(2)+' EUR')}`);
+  body += x(`Servicegebuehr: ${pad((order.serviceFee||0.99).toFixed(2)+' EUR')}`);
+  body += `<text em="true">GESAMT:         ${xmlEsc(pad((order.total||0).toFixed(2)+' EUR'))}&#10;</text>`;
+  body += div();
+  // Zahlung
+  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
+  body += x(`Zahlung: ${zahlung}`);
+  body += x(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
+  if (order.prepTime) body += x(`Wartezeit: ca. ${order.prepTime} Minuten`);
+  if (order.note) body += `<text em="true">${xmlEsc('Anm.: '+order.note)}&#10;</text>`;
+  body += `<feed line="3"/><cut type="feed"/>`;
+
+  const xml = `<?xml version="1.0" encoding="utf-8"?>`
+    + `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">`
+    + `<s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">`
+    + body
+    + `</epos-print></s:Body></s:Envelope>`;
+
+  try {
+    const res = await fetch(getEposUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+      body: xml,
+      signal: AbortSignal.timeout(6000)
+    });
+    eposConnected = res.ok;
+    updatePrinterStatus();
+    return res.ok;
+  } catch(e) {
+    eposConnected = false;
+    updatePrinterStatus();
+    return false;
+  }
+}
+
+async function checkEpos() {
+  try {
+    const res = await fetch(getEposUrl(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+      body: `<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"></epos-print></s:Body></s:Envelope>`,
+      signal: AbortSignal.timeout(3000)
+    });
+    eposConnected = true;
+  } catch(e) {
+    eposConnected = false;
+  }
+  updatePrinterStatus();
+}
 
 function escposBuilder() {
   const b = [];
@@ -1830,7 +1934,11 @@ function escposBuilder() {
 function updatePrinterStatus() {
   const el = document.getElementById('printerStatus');
   if (!el) return;
-  if (rawbtConnected) {
+  if (eposConnected) {
+    el.textContent = '🖨️ Epson OK';
+    el.style.color = 'var(--green)';
+    el.style.borderColor = 'var(--green)';
+  } else if (rawbtConnected) {
     el.textContent = '🖨️ RawBT OK';
     el.style.color = 'var(--green)';
     el.style.borderColor = 'var(--green)';
@@ -1860,20 +1968,24 @@ async function checkRawbt() {
 async function rawbtPrint(order) {
   const isD = order.mode === 'lieferung';
   const ep  = escposBuilder();
+  const W   = 32;
+  const padR = (l, v) => l + String(v).padStart(W - l.length);
 
+  // ── Header ──────────────────────────────────────────
   ep.init()
-    .align('center').size(true).bold(true).line('PIZZERIA AMOURA').size(false).bold(false)
-    .line('Oststrasse 48 - 59269 Beckum')
+    .align('center')
+    .size(true).bold(true).line('PIZZERIA AMOURA').size(false).bold(false)
+    .line('Oststrasse 48 · 59269 Beckum')
     .line('02521 / 829 06 00')
-    .feed().divider()
-    .bold(true).size(true).line(`#${order.orderNum}`).size(false).bold(false)
+    .divider()
+    .size(true).bold(true).line(`BESTELLUNG #${order.orderNum}`).size(false).bold(false)
     .line(new Date(order.createdAt).toLocaleString('de-DE'))
-    .feed()
-    .bold(true).line(isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***').bold(false)
+    .bold(true).line(isD ? '** LIEFERUNG **' : '** ABHOLUNG **').bold(false)
     .divider();
 
+  // ── Kunde ────────────────────────────────────────────
   ep.align('left');
-  ep.line(`${order.customer?.first||''} ${order.customer?.last||''}`);
+  ep.bold(true).line(`${order.customer?.first||''} ${order.customer?.last||''}`).bold(false);
   if (order.customer?.phone) ep.line(order.customer.phone);
   if (isD) {
     ep.line(`${order.customer?.street||''} ${order.customer?.house||''}`);
@@ -1881,28 +1993,58 @@ async function rawbtPrint(order) {
   }
   ep.divider();
 
+  // ── Artikel ──────────────────────────────────────────
   for (const i of (order.items||[])) {
-    const label = `${i.qty}x ${cleanName(i.name)}`.slice(0,24);
-    const price = i.price === 0 ? '  GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
-    ep.line(`${label.padEnd(24)}${price.padStart(10)}`);
-    if (i.note) ep.line(`  -> ${i.note}`);
+    const name  = cleanName(i.name).slice(0, 21);
+    const price = i.price === 0 ? 'GRATIS' : `${(i.price*i.qty).toFixed(2)}EUR`;
+    const label = `${i.qty}x ${name}`;
+    ep.bold(true).line(`${label.padEnd(23)}${price.padStart(9)}`).bold(false);
+    // Extras (Groesse, Zutaten etc.) – nur Name, kein Preis
+    const extras = i.extraDetails || [];
+    if (extras.length) {
+      extras.forEach(e => {
+        if (!e.name) return;
+        ep.line(`  ${e.name}`);
+      });
+    } else if (i.note) {
+      ep.line(`  ${i.note}`);
+    }
   }
 
-  ep.divider()
-    .line(`Zwischensumme:  ${String((order.subtotal||0).toFixed(2)+' EUR').padStart(14)}`);
-  if (order.deliveryFee>0)
-    ep.line(`Liefergebuehr:  ${String(order.deliveryFee.toFixed(2)+' EUR').padStart(14)}`);
-  ep.line(`Servicegebuehr: ${String((order.serviceFee||0.99).toFixed(2)+' EUR').padStart(14)}`);
-  ep.bold(true)
-    .line(`GESAMT:         ${String((order.total||0).toFixed(2)+' EUR').padStart(14)}`)
-    .bold(false).divider();
+  // ── Preise ───────────────────────────────────────────
+  ep.divider();
+  ep.line(padR('Zwischensumme:', (order.subtotal||0).toFixed(2)+' EUR'));
+  if ((order.deliveryFee||0) > 0)
+    ep.line(padR('Liefergebuehr:', order.deliveryFee.toFixed(2)+' EUR'));
+  ep.line(padR('Servicegebuehr:', (order.serviceFee||0.99).toFixed(2)+' EUR'));
+  ep.divider();
+  ep.bold(true).size(true)
+    .line(padR('GESAMT:', (order.total||0).toFixed(2)+' EUR'))
+    .size(false).bold(false);
+  ep.divider();
 
+  // ── Zahlung ──────────────────────────────────────────
   const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
   ep.line(`Zahlung: ${zahlung}`);
-  ep.line(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
-  if (order.prepTime) ep.line(`Wartezeit: ca. ${order.prepTime} Minuten`);
-  if (order.note) ep.line(`Anm.: ${order.note}`);
-  ep.feed().align('center').line('Vielen Dank fuer Ihre Bestellung!').feed(3).cut();
+  if (order.paymentStatus === 'paid') {
+    ep.bold(true).line('BEZAHLT').bold(false);
+  } else {
+    ep.bold(true).line('!!! BITTE KASSIEREN !!!').bold(false);
+  }
+  if (order.prepTime) ep.line(`Wartezeit: ca. ${order.prepTime} Min.`);
+
+  // ── Kundennotiz ──────────────────────────────────────
+  if (order.note) {
+    ep.divider();
+    ep.bold(true).line('KUNDENNOTIZ:').bold(false);
+    ep.line(order.note);
+  }
+
+  // ── Footer ───────────────────────────────────────────
+  ep.divider()
+    .align('center')
+    .line('Vielen Dank fuer Ihren Besuch!')
+    .feed(3).cut();
 
   const bytes = ep.bytes();
 
@@ -1939,15 +2081,18 @@ async function rawbtPrint(order) {
 }
 
 async function smartPrint(order) {
-  // 1. RawBT HTTP API (ESC/POS – korrekte Thermodruck-Qualität, RawBT Pro)
+  // 1. Epson ePOS direkt über Netzwerk (TM-M30II)
+  const epok = await eposPrint(order);
+  if (epok) return;
+  // 2. RawBT HTTP API (Fallback)
   const ok = await rawbtPrint(order);
   if (ok) return;
-  // 2. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
+  // 3. Fully Kiosk Browser (HTML-Druck, Android-Fallback)
   if (window.fully) {
     fullyPrint(order);
     return;
   }
-  // 3. Fallback: Browser-Popup
+  // 4. Fallback: Browser-Popup
   doBrowserPrint(order);
 }
 
