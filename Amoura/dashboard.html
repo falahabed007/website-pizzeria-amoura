@@ -2068,22 +2068,16 @@ async function rawbtPrint(order) {
     return true;
   }
 
-  rawbtConnected = false;
+  // 3. rawbt:// URL – hat vorher funktioniert
+  const b64 = btoa(String.fromCharCode(...bytes));
+  window.location.href = 'rawbt://print?base64=' + encodeURIComponent(b64);
+  rawbtConnected = true;
   updatePrinterStatus();
-  return false;
+  return true;
 }
 
 async function smartPrint(order) {
-  // 1. Epson ePOS direkt – nur wenn bereits verbunden (kein langer Timeout)
-  if (eposConnected) {
-    const epok = await eposPrint(order);
-    if (epok) return;
-  }
-  // 2. RawBT (HTTP API oder Broadcast Intent)
-  const ok = await rawbtPrint(order);
-  if (ok) return;
-  // 3. Popup-Druck (genau wie "Als PDF" – funktioniert in Fully Kiosk)
-  doBrowserPrint(order);
+  await rawbtPrint(order);
 }
 
 function fullyPrint(order) {
