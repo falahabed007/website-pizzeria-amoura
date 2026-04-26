@@ -2129,11 +2129,9 @@ function buildBonHtml(order) {
     </tr>`;
     extras.forEach(e => {
       if (!e.name) return;
-      const ePrice = e.price > 0 ? `+${e.price.toFixed(2).replace('.', ',')} €` : 'inkl.';
       html += `<tr style="font-size:11px;color:#555;">
         <td></td>
-        <td style="padding-left:10px;">↳ ${e.name}</td>
-        <td style="text-align:right;white-space:nowrap;">${ePrice}</td>
+        <td style="padding-left:10px;" colspan="2">↳ ${e.name}</td>
       </tr>`;
     });
     return html;
