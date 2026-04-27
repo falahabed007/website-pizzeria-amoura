@@ -2285,12 +2285,18 @@ function openStripeModal() {
         const addr = isDelivery
           ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
           : 'Abholung im Lokal';
-        const itemRows = (o.items||[]).map(i =>
-          `<div class="il-item">
-            <span>${i.qty}× ${cleanName(i.name)}${i.note?` <em style="color:#888;font-size:.7rem;">(${i.note})</em>`:''}</span>
-            <span>${((i.price||0)*(i.qty||1)).toFixed(2).replace('.',',')} €</span>
-          </div>`
-        ).join('');
+        const itemRows = (o.items||[]).map(i => {
+          const extras = (i.extraDetails||[]).filter(e=>e.name);
+          const legacyNote = !extras.length && i.note ? i.note : '';
+          const priceStr = i.price===0 ? 'GRATIS' : ((i.price||0)*(i.qty||1)).toFixed(2).replace('.',',') + ' €';
+          return `<div class="il-item" style="flex-direction:column;align-items:stretch;gap:2px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span>${i.qty}× ${cleanName(i.name)}${legacyNote?' ('+legacyNote+')':''}</span>
+              <span>${priceStr}</span>
+            </div>
+            ${extras.map(e=>`<div style="font-size:.72rem;color:var(--muted);padding-left:16px;">↳ ${e.name}</div>`).join('')}
+          </div>`;
+        }).join('');
         const deliveryFee = o.deliveryFee||0;
         const serviceFee  = o.serviceFee||0;
         return `
