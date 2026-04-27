@@ -1301,9 +1301,16 @@ function renderOrders() {
 
   // allOrders enthält KEINE awaiting_payment mehr (werden in loadOrders getrennt)
   let list = allOrders.filter(o => {
-    if (isViewingToday && !q) {
-      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-      if (new Date(o.createdAt) < todayStart) return false;
+    const t = new Date(o.createdAt);
+    if (!q) {
+      if (isViewingToday) {
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        if (t < todayStart) return false;
+      } else if (reportDateVal) {
+        const from = new Date(reportDateVal + 'T00:00:00');
+        const to   = new Date(reportDateVal + 'T23:59:59');
+        if (t < from || t > to) return false;
+      }
     }
     if (filter==='neu')         return o.status==='confirmed';
     if (filter==='zubereitung') return o.status==='preparing';

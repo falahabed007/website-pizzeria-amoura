@@ -368,10 +368,35 @@ app.get('/api/admin/orders/pending', auth, async (req, res) => {
 // ── Alle Bestellungen ────────────────────────────────────────────
 app.get('/api/admin/orders', auth, async (req, res) => {
   try {
+    const dateParam = req.query.date; // z.B. "2026-04-25"
+
+    if (dateParam) {
+      // ── Vergangenheits-Abfrage: nur Bestellungen dieses Tages ──
+      const from = new Date(dateParam + 'T00:00:00');
+      const to   = new Date(dateParam + 'T23:59:59');
+      const orders = await Order.find({
+        status:    { $nin: ['pending', 'awaiting_payment'] },
+        createdAt: { $gte: from, $lte: to }
+      }).sort({ createdAt: -1 });
+      const valid = orders.filter(o => o.status !== 'cancelled');
+      return res.json({
+        orders,
+        stats: {
+          todayCount:   orders.length,
+          todayRevenue: valid.reduce((s,o) => s+(o.total||0), 0),
+          active:       orders.filter(o=>['confirmed','preparing'].includes(o.status)).length,
+          done:         orders.filter(o=>['ready','delivered'].includes(o.status)).length,
+          cancelled:    orders.filter(o=>o.status==='cancelled').length,
+          unpaid:       orders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length,
+        }
+      });
+    }
+
+    // ── Normalfall: heutige + laufende Bestellungen ──
     const orders  = await Order.find({ status:{ $nin:['pending'] } }).sort({ createdAt:-1 }).limit(300);
     const pending = await Order.find({ status:'pending' }).sort({ createdAt:1 });
     const today   = new Date(); today.setHours(0,0,0,0);
-    const tod     = orders.filter(o => new Date(o.createdAt) >= today);
+    const tod     = orders.filter(o => new Date(o.createdAt) >= today && o.status !== 'awaiting_payment');
     res.json({
       orders, pending,
       stats: {
@@ -381,7 +406,7 @@ app.get('/api/admin/orders', auth, async (req, res) => {
         active:       orders.filter(o=>['confirmed','preparing'].includes(o.status)).length,
         done:         tod.filter(o=>['ready','delivered'].includes(o.status)).length,
         cancelled:    tod.filter(o=>o.status==='cancelled').length,
-        unpaid:       orders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length,
+        unpaid:       orders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled'&&o.status!=='awaiting_payment').length,
       }
     });
   } catch(e) { res.status(500).json({ message:'Fehler' }); }
