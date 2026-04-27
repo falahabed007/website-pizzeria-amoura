@@ -336,10 +336,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
   <!-- STATS -->
   <div class="stats-bar">
-    <div class="stat-card accent"><div class="stat-label">Umsatz heute</div><div class="stat-val" id="sRevenue">0,00 €</div><div class="stat-sub" id="sTodayCount">0 Bestellungen</div></div>
+    <div class="stat-card accent"><div class="stat-label" id="lRevenue">Umsatz heute</div><div class="stat-val" id="sRevenue">0,00 €</div><div class="stat-sub" id="sTodayCount">0 Bestellungen</div></div>
     <div class="stat-card"><div class="stat-label">Aktiv</div><div class="stat-val" id="sActive">0</div><div class="stat-sub">In Arbeit</div></div>
-    <div class="stat-card"><div class="stat-label">Fertig heute</div><div class="stat-val" id="sDone">0</div><div class="stat-sub">Geliefert/Abgeholt</div></div>
-    <div class="stat-card"><div class="stat-label">Storniert</div><div class="stat-val" id="sCancelled">0</div><div class="stat-sub">Heute</div></div>
+    <div class="stat-card"><div class="stat-label" id="lDone">Fertig heute</div><div class="stat-val" id="sDone">0</div><div class="stat-sub">Geliefert/Abgeholt</div></div>
+    <div class="stat-card"><div class="stat-label">Storniert</div><div class="stat-val" id="sCancelled">0</div><div class="stat-sub" id="lCancelledSub">Heute</div></div>
     <div class="stat-card"><div class="stat-label">Unbezahlt</div><div class="stat-val" id="sUnpaid">0</div><div class="stat-sub">Offen</div></div>
   </div>
 
@@ -1264,6 +1264,12 @@ async function loadOrders() {
     stripeOrders = raw.filter(o => o.status === 'awaiting_payment');
     allOrders    = raw.filter(o => o.status !== 'awaiting_payment');
 
+    // Label für Stats-Karten aktualisieren
+    const dateLabel = isToday ? 'heute' : new Date(reportDateVal+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    document.getElementById('lRevenue').textContent    = `Umsatz ${dateLabel}`;
+    document.getElementById('lDone').textContent       = `Fertig ${dateLabel}`;
+    document.getElementById('lCancelledSub').textContent = dateLabel;
+
     if (isToday) {
       // Stats vom Server – wie bisher
       const s = d.stats || {};
@@ -1274,15 +1280,17 @@ async function loadOrders() {
       document.getElementById('sCancelled').textContent = s.cancelled||0;
       document.getElementById('sUnpaid').textContent    = s.unpaid||0;
     } else {
-      // Stats aus den geladenen Bestellungen berechnen
-      const valid = allOrders.filter(o => o.status !== 'cancelled');
-      const revenue = valid.reduce((sum,o) => sum + (o.total||0), 0);
+      // Stats direkt aus Backend-Antwort (bereits nach Datum gefiltert)
+      const s = d.stats || {};
+      const revenue = s.todayRevenue !== undefined
+        ? s.todayRevenue
+        : allOrders.filter(o=>o.status!=='cancelled').reduce((sum,o)=>sum+(o.total||0),0);
       document.getElementById('sRevenue').textContent   = revenue.toFixed(2).replace('.',',') + ' €';
-      document.getElementById('sTodayCount').textContent = allOrders.length + ' Bestellungen';
-      document.getElementById('sActive').textContent    = allOrders.filter(o=>['confirmed','preparing','ready'].includes(o.status)).length;
-      document.getElementById('sDone').textContent      = allOrders.filter(o=>o.status==='delivered').length;
-      document.getElementById('sCancelled').textContent = allOrders.filter(o=>o.status==='cancelled').length;
-      document.getElementById('sUnpaid').textContent    = allOrders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length;
+      document.getElementById('sTodayCount').textContent = (s.todayCount||allOrders.length) + ' Bestellungen';
+      document.getElementById('sActive').textContent    = s.active !== undefined ? s.active : allOrders.filter(o=>['confirmed','preparing','ready'].includes(o.status)).length;
+      document.getElementById('sDone').textContent      = s.done  !== undefined ? s.done  : allOrders.filter(o=>o.status==='delivered').length;
+      document.getElementById('sCancelled').textContent = s.cancelled !== undefined ? s.cancelled : allOrders.filter(o=>o.status==='cancelled').length;
+      document.getElementById('sUnpaid').textContent    = s.unpaid !== undefined ? s.unpaid : allOrders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length;
     }
 
     updateStripeBadge();
@@ -2381,22 +2389,15 @@ async function printDayReport() {
 
   let dayOrders = [];
   try {
-    // Erst versuchen: Backend mit Datumsfilter
+    // Backend filtert bereits korrekt nach Datum (UTC+2)
     const r = await fetch(`${API_BASE}/admin/orders?date=${dateStr}`, {headers: apiHeaders()});
     const d = await r.json();
-    const all = d.orders || d || [];
-    // Nur Bestellungen des gewählten Tages
-    const from = new Date(dateStr + 'T00:00:00');
-    const to   = new Date(dateStr + 'T23:59:59');
-    dayOrders  = all.filter(o => {
-      const t = new Date(o.createdAt);
-      return t >= from && t <= to && o.status !== 'cancelled';
-    });
+    dayOrders = (d.orders || []).filter(o => o.status !== 'cancelled');
   } catch(e) {
     // Fallback: aus bereits geladenen allOrders filtern
     const from = new Date(dateStr + 'T00:00:00');
     const to   = new Date(dateStr + 'T23:59:59');
-    dayOrders  = allOrders.filter(o => {
+    dayOrders = allOrders.filter(o => {
       const t = new Date(o.createdAt);
       return t >= from && t <= to && o.status !== 'cancelled';
     });
