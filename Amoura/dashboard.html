@@ -825,6 +825,7 @@ let token       = sessionStorage.getItem('amouraToken') || '';
 let orders      = [];
 let allOrders   = [];
 let stripeOrders = [];
+let loadOrdersCtrl = null; // AbortController für laufende Anfragen
 let knownIds    = new Set(JSON.parse(localStorage.getItem('amouraKnownIds')||'[]'));
 // Täglich zurücksetzen
 const today = new Date().toDateString();
@@ -1232,6 +1233,11 @@ function closePendingModal() {
 // LOAD ORDERS
 // ═══════════════════════════════════════════════════════════════
 async function loadOrders() {
+  // Vorherige laufende Anfrage abbrechen (Race Condition Fix)
+  if (loadOrdersCtrl) loadOrdersCtrl.abort();
+  loadOrdersCtrl = new AbortController();
+  const signal = loadOrdersCtrl.signal;
+
   try {
     const reportDateVal = document.getElementById('reportDate')?.value || '';
     const todayStr = new Date().toISOString().slice(0,10);
@@ -1241,7 +1247,7 @@ async function loadOrders() {
       ? `${API_BASE}/admin/orders`
       : `${API_BASE}/admin/orders?date=${reportDateVal}`;
 
-    const r = await fetch(url,{headers:apiHeaders()});
+    const r = await fetch(url,{headers:apiHeaders(), signal});
     const d = await r.json();
     // awaiting_payment sofort trennen – kommen NIE in allOrders
     const raw = d.orders || [];
@@ -1273,7 +1279,9 @@ async function loadOrders() {
     renderOrders();
     if (sideTab==='stats') renderStats();
     if (sideTab==='history') renderHistory();
-  } catch(e) {}
+  } catch(e) {
+    if (e.name === 'AbortError') return; // abgebrochene Anfrage – ignorieren
+  }
 }
 
 function getDisplayStatus(s) {
