@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build" content="2026-04-27-v2">
+<meta name="build" content="2026-04-27-v3">
 <title>Pizzeria Amoura – Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -362,7 +362,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <span class="pill" onclick="setFilter('storniert',this)">Storniert</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="loadOrders()">
+          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="onDateChange()" oninput="onDateChange()">
           <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Stripe-Einbuchung</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
@@ -826,7 +826,16 @@ let token       = sessionStorage.getItem('amouraToken') || '';
 let orders      = [];
 let allOrders   = [];
 let stripeOrders = [];
-let loadOrdersCtrl = null; // AbortController für laufende Anfragen
+let loadOrdersCtrl  = null; // AbortController für laufende Anfragen
+let dateChangeTimer = null;
+
+function onDateChange() {
+  // Debounce: 300ms warten bis User fertig navigiert hat
+  clearTimeout(dateChangeTimer);
+  // Sofort visuelles Feedback
+  document.getElementById('ordersList').innerHTML = '<div class="empty-state">⏳ Lade…</div>';
+  dateChangeTimer = setTimeout(loadOrders, 300);
+}
 let knownIds    = new Set(JSON.parse(localStorage.getItem('amouraKnownIds')||'[]'));
 // Täglich zurücksetzen
 const today = new Date().toDateString();
