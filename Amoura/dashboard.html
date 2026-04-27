@@ -2281,18 +2281,38 @@ function openStripeModal() {
       listEl.innerHTML = '<div class="stripe-empty">✓ Keine ausstehenden Stripe-Zahlungen</div>';
     } else {
       listEl.innerHTML = stripeOrders.map(o => {
-        const items = (o.items||[]).map(i => `${i.qty}× ${cleanName(i.name)}`).join(', ');
+        const isDelivery = o.mode === 'lieferung';
+        const addr = isDelivery
+          ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
+          : 'Abholung im Lokal';
+        const itemRows = (o.items||[]).map(i =>
+          `<div class="il-item">
+            <span>${i.qty}× ${cleanName(i.name)}${i.note?` <em style="color:#888;font-size:.7rem;">(${i.note})</em>`:''}</span>
+            <span>${((i.price||0)*(i.qty||1)).toFixed(2).replace('.',',')} €</span>
+          </div>`
+        ).join('');
+        const deliveryFee = o.deliveryFee||0;
+        const serviceFee  = o.serviceFee||0;
         return `
-        <div class="stripe-row" style="flex-direction:column;align-items:stretch;gap:5px;" onclick="selectOrder('${o._id}');closeStripeModal()">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="sr-num">#${o.orderNum}</span>
-            <span>${o.mode==='lieferung'?'🛵 Lieferung':'🏃 Abholung'}</span>
-            <span class="sr-name">${o.customer?.first||''} ${o.customer?.last||''}</span>
-            <span class="sr-time" style="margin-left:auto;">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
-            <span class="sr-price">${(o.total||0).toFixed(2).replace('.',',')} €</span>
-            <button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})" style="font-size:.7rem;padding:2px 7px;">✕</button>
+        <div style="background:var(--bg3);border:1px solid #2a1f08;border-radius:10px;margin-bottom:10px;overflow:hidden;">
+          <!-- Kopfzeile -->
+          <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);">
+            <span style="color:#f5a623;font-weight:700;font-size:.9rem;">#${o.orderNum}</span>
+            <span style="font-size:.82rem;">${isDelivery?'🛵 Lieferung':'🏃 Abholung'}</span>
+            <span style="flex:1;font-size:.82rem;">${o.customer?.first||''} ${o.customer?.last||''}</span>
+            <span style="font-size:.74rem;color:var(--muted);">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+            <button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})" style="font-size:.7rem;padding:2px 8px;">✕ Storno</button>
           </div>
-          <div style="font-size:.75rem;color:var(--muted);padding-left:2px;">🍕 ${items||'–'}</div>
+          <!-- Adresse -->
+          <div style="padding:5px 12px;font-size:.75rem;color:var(--muted);">📍 ${addr}${o.customer?.phone?` · 📞 ${o.customer.phone}`:''}</div>
+          <!-- Artikel-Bon -->
+          <div class="items-list" style="margin:0 10px 8px;border-radius:7px;">
+            ${itemRows}
+            ${deliveryFee>0?`<div class="il-item"><span>Liefergebühr</span><span>${deliveryFee.toFixed(2).replace('.',',')} €</span></div>`:''}
+            ${serviceFee>0?`<div class="il-item"><span>Servicegebühr</span><span>${serviceFee.toFixed(2).replace('.',',')} €</span></div>`:''}
+            <div class="il-total"><span>Gesamt</span><span>${(o.total||0).toFixed(2).replace('.',',')} €</span></div>
+          </div>
+          ${o.note?`<div style="margin:0 10px 8px;padding:7px 10px;background:rgba(255,193,7,.1);border-left:3px solid #f5a623;border-radius:5px;font-size:.78rem;color:#f5a623;">📝 ${o.note}</div>`:''}
         </div>`;
       }).join('');
     }
