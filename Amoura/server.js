@@ -372,8 +372,10 @@ app.get('/api/admin/orders', auth, async (req, res) => {
 
     if (dateParam) {
       // ── Vergangenheits-Abfrage: nur Bestellungen dieses Tages ──
-      const from = new Date(dateParam + 'T00:00:00');
-      const to   = new Date(dateParam + 'T23:59:59');
+      // Deutschland = UTC+2 (CEST) / UTC+1 (CET)
+      // Server läuft in UTC → 2h abziehen damit der volle deutsche Tag abgedeckt ist
+      const from = new Date(dateParam + 'T00:00:00+02:00');
+      const to   = new Date(dateParam + 'T23:59:59+02:00');
       const orders = await Order.find({
         status:    { $nin: ['pending', 'awaiting_payment'] },
         createdAt: { $gte: from, $lte: to }
