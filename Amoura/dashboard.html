@@ -6,6 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
+<meta name="build" content="2026-04-27-v3">
 <title>Pizzeria Amoura – Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -322,7 +323,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
         <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()" title="Automatik nach Öffnungszeiten">🕐 Auto</span>
       </div>
-      <span id="printerStatus" title="Drucker-Status" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:default;white-space:nowrap;">🖨️ Prüfe...</span>
+      <span id="printerStatus" title="Drucker-Status" onclick="testEposDirect()" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;white-space:nowrap;">🖨️ Prüfe...</span>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>
@@ -361,7 +362,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <span class="pill" onclick="setFilter('storniert',this)">Storniert</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="loadOrders()">
+          <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="onDateChange()" oninput="onDateChange()">
           <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Stripe-Einbuchung</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
@@ -825,6 +826,16 @@ let token       = sessionStorage.getItem('amouraToken') || '';
 let orders      = [];
 let allOrders   = [];
 let stripeOrders = [];
+let loadOrdersCtrl  = null; // AbortController für laufende Anfragen
+let dateChangeTimer = null;
+
+function onDateChange() {
+  // Debounce: 300ms warten bis User fertig navigiert hat
+  clearTimeout(dateChangeTimer);
+  // Sofort visuelles Feedback
+  document.getElementById('ordersList').innerHTML = '<div class="empty-state">⏳ Lade…</div>';
+  dateChangeTimer = setTimeout(loadOrders, 300);
+}
 let knownIds    = new Set(JSON.parse(localStorage.getItem('amouraKnownIds')||'[]'));
 // Täglich zurücksetzen
 const today = new Date().toDateString();
@@ -1232,6 +1243,11 @@ function closePendingModal() {
 // LOAD ORDERS
 // ═══════════════════════════════════════════════════════════════
 async function loadOrders() {
+  // Vorherige laufende Anfrage abbrechen (Race Condition Fix)
+  if (loadOrdersCtrl) loadOrdersCtrl.abort();
+  loadOrdersCtrl = new AbortController();
+  const signal = loadOrdersCtrl.signal;
+
   try {
     const reportDateVal = document.getElementById('reportDate')?.value || '';
     const todayStr = new Date().toISOString().slice(0,10);
@@ -1241,7 +1257,7 @@ async function loadOrders() {
       ? `${API_BASE}/admin/orders`
       : `${API_BASE}/admin/orders?date=${reportDateVal}`;
 
-    const r = await fetch(url,{headers:apiHeaders()});
+    const r = await fetch(url,{headers:apiHeaders(), signal});
     const d = await r.json();
     // awaiting_payment sofort trennen – kommen NIE in allOrders
     const raw = d.orders || [];
@@ -1273,7 +1289,9 @@ async function loadOrders() {
     renderOrders();
     if (sideTab==='stats') renderStats();
     if (sideTab==='history') renderHistory();
-  } catch(e) {}
+  } catch(e) {
+    if (e.name === 'AbortError') return; // abgebrochene Anfrage – ignorieren
+  }
 }
 
 function getDisplayStatus(s) {
@@ -1301,9 +1319,16 @@ function renderOrders() {
 
   // allOrders enthält KEINE awaiting_payment mehr (werden in loadOrders getrennt)
   let list = allOrders.filter(o => {
-    if (isViewingToday && !q) {
-      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-      if (new Date(o.createdAt) < todayStart) return false;
+    const t = new Date(o.createdAt);
+    if (!q) {
+      if (isViewingToday) {
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        if (t < todayStart) return false;
+      } else if (reportDateVal) {
+        const from = new Date(reportDateVal + 'T00:00:00');
+        const to   = new Date(reportDateVal + 'T23:59:59');
+        if (t < from || t > to) return false;
+      }
     }
     if (filter==='neu')         return o.status==='confirmed';
     if (filter==='zubereitung') return o.status==='preparing';
@@ -1935,15 +1960,16 @@ async function eposPrint(order) {
     + `</epos-print></s:Body></s:Envelope>`;
 
   try {
-    const res = await fetch(getEposUrl(), {
+    await fetch(getEposUrl(), {
       method: 'POST',
-      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body: xml,
       signal: AbortSignal.timeout(6000)
     });
-    eposConnected = res.ok;
+    eposConnected = true;
     updatePrinterStatus();
-    return res.ok;
+    return true;
   } catch(e) {
     eposConnected = false;
     updatePrinterStatus();
@@ -1952,6 +1978,7 @@ async function eposPrint(order) {
 }
 
 async function checkEpos() {
+  const el = document.getElementById('printerStatus');
   try {
     const res = await fetch(getEposUrl(), {
       method: 'POST',
@@ -1960,8 +1987,12 @@ async function checkEpos() {
       signal: AbortSignal.timeout(3000)
     });
     eposConnected = true;
+    if (el) el.title = 'ePOS: ' + res.status + ' ' + res.statusText;
   } catch(e) {
     eposConnected = false;
+    if (el) { el.textContent = 'ERR:' + e.name + ' ' + (e.message||'').substring(0,20); el.style.color = 'orange'; }
+    setTimeout(() => updatePrinterStatus(), 20000);
+    return;
   }
   updatePrinterStatus();
 }
@@ -2079,7 +2110,18 @@ async function rawbtPrint(order) {
     }
   } catch(e) { /* Mixed Content blockiert oder RawBT nicht erreichbar */ }
 
-  // Versuch 2: rawbt: URL scheme via <a> click (navigiert nicht weg vom Dashboard)
+  // Versuch 2: Fully Kiosk loadURL (öffnet rawbt: App und kommt zurück)
+  if (window.fully) {
+    try {
+      window.fully.loadURL('rawbt:print?text=' + encodeURIComponent(txt));
+      setTimeout(() => window.fully.loadURL(window.location.href), 2500);
+      rawbtConnected = true;
+      updatePrinterStatus();
+      return true;
+    } catch(e) {}
+  }
+
+  // Versuch 3: rawbt: URL scheme via <a> click
   try {
     const a = document.createElement('a');
     a.href = 'rawbt:print?text=' + encodeURIComponent(txt);
@@ -2090,14 +2132,35 @@ async function rawbtPrint(order) {
     rawbtConnected = true;
     updatePrinterStatus();
     return true;
-  } catch(e) { /* URL scheme auch blockiert */ }
+  } catch(e) {}
 
   rawbtConnected = false;
   updatePrinterStatus();
   return false;
 }
 
+async function testEposDirect() {
+  const el = document.getElementById('printerStatus');
+  el.textContent = '🖨️ Teste...';
+  const url = getEposUrl();
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': '""' },
+      body: '<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"><text>TEST</text></epos-print></s:Body></s:Envelope>',
+      signal: AbortSignal.timeout(5000)
+    });
+    el.textContent = 'ePOS: ' + res.status + ' ' + res.statusText;
+    el.style.color = res.ok ? 'var(--green)' : 'orange';
+  } catch(e) {
+    el.textContent = 'ERR: ' + e.name;
+    el.style.color = 'var(--red)';
+  }
+}
+
 async function smartPrint(order) {
+  const ok = await eposPrint(order);
+  if (ok) return;
   await rawbtPrint(order);
 }
 
@@ -2235,16 +2298,47 @@ function openStripeModal() {
     if (!stripeOrders.length) {
       listEl.innerHTML = '<div class="stripe-empty">✓ Keine ausstehenden Stripe-Zahlungen</div>';
     } else {
-      listEl.innerHTML = stripeOrders.map(o => `
-        <div class="stripe-row" onclick="selectOrder('${o._id}');closeStripeModal()">
-          <span class="sr-num">#${o.orderNum}</span>
-          <span>${o.mode==='lieferung'?'🛵':'🏃'}</span>
-          <span class="sr-name">${o.customer?.first||''} ${o.customer?.last||''}</span>
-          <span class="sr-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
-          <span class="sr-price">${(o.total||0).toFixed(2).replace('.',',')} €</span>
-          <button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})" style="font-size:.7rem;padding:2px 7px;">✕</button>
-        </div>
-      `).join('');
+      listEl.innerHTML = stripeOrders.map(o => {
+        const isDelivery = o.mode === 'lieferung';
+        const addr = isDelivery
+          ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
+          : 'Abholung im Lokal';
+        const itemRows = (o.items||[]).map(i => {
+          const extras = (i.extraDetails||[]).filter(e=>e.name);
+          const legacyNote = !extras.length && i.note ? i.note : '';
+          const priceStr = i.price===0 ? 'GRATIS' : ((i.price||0)*(i.qty||1)).toFixed(2).replace('.',',') + ' €';
+          return `<div class="il-item" style="flex-direction:column;align-items:stretch;gap:2px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span>${i.qty}× ${cleanName(i.name)}${legacyNote?' ('+legacyNote+')':''}</span>
+              <span>${priceStr}</span>
+            </div>
+            ${extras.map(e=>`<div style="font-size:.72rem;color:var(--muted);padding-left:16px;">↳ ${e.name}</div>`).join('')}
+          </div>`;
+        }).join('');
+        const deliveryFee = o.deliveryFee||0;
+        const serviceFee  = o.serviceFee||0;
+        return `
+        <div style="background:var(--bg3);border:1px solid #2a1f08;border-radius:10px;margin-bottom:10px;overflow:hidden;">
+          <!-- Kopfzeile -->
+          <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);">
+            <span style="color:#f5a623;font-weight:700;font-size:.9rem;">#${o.orderNum}</span>
+            <span style="font-size:.82rem;">${isDelivery?'🛵 Lieferung':'🏃 Abholung'}</span>
+            <span style="flex:1;font-size:.82rem;">${o.customer?.first||''} ${o.customer?.last||''}</span>
+            <span style="font-size:.74rem;color:var(--muted);">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+            <button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})" style="font-size:.7rem;padding:2px 8px;">✕ Storno</button>
+          </div>
+          <!-- Adresse -->
+          <div style="padding:5px 12px;font-size:.75rem;color:var(--muted);">📍 ${addr}${o.customer?.phone?` · 📞 ${o.customer.phone}`:''}</div>
+          <!-- Artikel-Bon -->
+          <div class="items-list" style="margin:0 10px 8px;border-radius:7px;">
+            ${itemRows}
+            ${deliveryFee>0?`<div class="il-item"><span>Liefergebühr</span><span>${deliveryFee.toFixed(2).replace('.',',')} €</span></div>`:''}
+            ${serviceFee>0?`<div class="il-item"><span>Servicegebühr</span><span>${serviceFee.toFixed(2).replace('.',',')} €</span></div>`:''}
+            <div class="il-total"><span>Gesamt</span><span>${(o.total||0).toFixed(2).replace('.',',')} €</span></div>
+          </div>
+          ${o.note?`<div style="margin:0 10px 8px;padding:7px 10px;background:rgba(255,193,7,.1);border-left:3px solid #f5a623;border-radius:5px;font-size:.78rem;color:#f5a623;">📝 ${o.note}</div>`:''}
+        </div>`;
+      }).join('');
     }
   }
   document.getElementById('stripeModal').classList.add('show');
