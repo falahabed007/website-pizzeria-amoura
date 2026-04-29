@@ -2232,52 +2232,17 @@ function updateBestellBtn() {
 }
 
 // ── GUTSCHEINCODE ──
-var couponApplied = false;
+var couponValid = false;
 
-async function validateCoupon() {
+function validateCoupon() {
   var code = (document.getElementById('c-coupon').value || '').trim().toUpperCase();
-  var email = (document.getElementById('c-email').value || '').trim();
-  var vorname = (document.getElementById('c-vorname').value || '').trim();
-
-  if (!code) {
-    showCouponMsg('Bitte gib einen Gutscheincode ein.', false);
-    return;
-  }
-  if (code !== 'ROLLNCONE') {
-    showCouponMsg('❌ Ungültiger Gutscheincode.', false);
-    return;
-  }
-  if (couponApplied) {
-    showCouponMsg('✅ Gutscheincode bereits erfolgreich eingelöst!', true);
-    return;
-  }
-  if (!email || !email.includes('@')) {
-    showCouponMsg('Bitte zuerst deine E-Mail-Adresse oben eingeben.', false);
-    return;
-  }
-
+  if (!code) { showCouponMsg('Bitte gib einen Gutscheincode ein.', false); return; }
+  if (code !== 'ROLLNCONE') { showCouponMsg('❌ Ungültiger Gutscheincode.', false); return; }
+  couponValid = true;
+  document.getElementById('c-coupon').disabled = true;
   var btn = document.querySelector('#coupon-section button');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-
-  try {
-    var resp = await fetch(BACKEND_URL + '/api/coupon-raffle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, name: vorname, coupon: code })
-    });
-    if (resp.ok) {
-      couponApplied = true;
-      document.getElementById('c-coupon').disabled = true;
-      if (btn) { btn.disabled = true; btn.textContent = '✓'; btn.style.background = '#2e7d32'; }
-      showCouponMsg('🎉 Gutscheincode erfolgreich eingelöst! Du nimmst an der Roll N Cone Verlosung teil – schau in dein Postfach!', true);
-    } else {
-      if (btn) { btn.disabled = false; btn.textContent = '✓'; }
-      showCouponMsg('❌ Fehler beim Einlösen. Bitte versuche es erneut.', false);
-    }
-  } catch(e) {
-    if (btn) { btn.disabled = false; btn.textContent = '✓'; }
-    showCouponMsg('❌ Verbindungsfehler. Bitte versuche es erneut.', false);
-  }
+  if (btn) { btn.style.background = '#2e7d32'; btn.disabled = true; }
+  showCouponMsg('✅ Gutscheincode gültig! Du nimmst nach deiner Bestellung an der Roll N Cone Verlosung teil.', true);
 }
 
 function showCouponMsg(text, success) {
@@ -2501,6 +2466,7 @@ async function processOrder() {
                     total:       finalTotal,
                     mode:        currentSelection === 'delivery' ? 'lieferung' : 'abholung',
                     note:        notiz,
+                    coupon:      couponValid ? 'ROLLNCONE' : null,
                     customer: {
                         first:  vorname,
                         last:   nachname,
@@ -2544,6 +2510,7 @@ async function processOrder() {
                 mode: barMode,
                 payment: 'bar',
                 note: notiz,
+                coupon: couponValid ? 'ROLLNCONE' : null,
                 customer: { first: vorname, last: nachname, email: email, phone: telefon, street: strasse2, house: hausnr2, city: cityLabel2 }
             })
         });
