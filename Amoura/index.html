@@ -3875,14 +3875,11 @@ var searchOpen = false;
 function toggleSearch() {
   searchOpen = !searchOpen;
   var wrap = document.getElementById('searchBarWrap');
-  var btn = document.getElementById('searchToggleBtn');
   if (searchOpen) {
     wrap.classList.add('open');
-    btn.innerHTML = '<i class="fas fa-times"></i>';
     setTimeout(function() { document.getElementById('searchInput').focus(); }, 200);
   } else {
     wrap.classList.remove('open');
-    btn.innerHTML = '<i class="fas fa-search"></i>';
     clearSearch();
   }
 }
@@ -3891,8 +3888,11 @@ function clearSearch() {
   var input = document.getElementById('searchInput');
   input.value = '';
   handleSearch('');
-  if (!searchOpen) return;
-  input.focus();
+  if (searchOpen) {
+    // X im Eingabefeld schließt auch die Suche
+    searchOpen = false;
+    document.getElementById('searchBarWrap').classList.remove('open');
+  }
 }
 
 function handleSearch(query) {
@@ -3923,25 +3923,42 @@ function handleSearch(query) {
     }
   });
 
-  // Kategorien ausblenden wenn alle Items darin versteckt sind
+  // Kategorien + alle Begleitelemente (p-Texte, fam-extra, etc.) ausblenden
   var categories = document.querySelectorAll('h2.category-title');
   categories.forEach(function(cat) {
-    if (!q) { cat.style.display = ''; return; }
-    // Alle product-items nach dieser Kategorie bis zur nächsten suchen
+    // Alle Geschwister dieser Kategorie sammeln bis zur nächsten
+    var siblings = [];
     var next = cat.nextElementSibling;
-    var hasVisible = false;
     while (next && !next.matches('h2.category-title')) {
-      if (next.classList.contains('product-item') && !next.classList.contains('search-hidden')) {
-        hasVisible = true; break;
-      }
-      // Auch in Grids suchen
-      if (next.classList.contains('product-grid')) {
-        var gridItems = next.querySelectorAll('.product-item:not(.search-hidden)');
-        if (gridItems.length > 0) { hasVisible = true; break; }
-      }
+      siblings.push(next);
       next = next.nextElementSibling;
     }
+
+    if (!q) {
+      cat.style.display = '';
+      siblings.forEach(function(s) { s.style.display = ''; });
+      return;
+    }
+
+    // Prüfen ob mindestens ein sichtbares product-item vorhanden
+    var hasVisible = false;
+    siblings.forEach(function(s) {
+      if (s.classList.contains('product-item') && !s.classList.contains('search-hidden')) {
+        hasVisible = true;
+      }
+      if (s.classList.contains('product-grid')) {
+        if (s.querySelectorAll('.product-item:not(.search-hidden)').length > 0) hasVisible = true;
+      }
+    });
+
+    // Kategorie + alle Begleitelemente ein/ausblenden
     cat.style.display = hasVisible ? '' : 'none';
+    siblings.forEach(function(s) {
+      if (!s.classList.contains('product-item') && !s.classList.contains('product-grid')) {
+        // p-Texte, fam-extra etc. nur anzeigen wenn Kategorie sichtbar
+        s.style.display = hasVisible ? '' : 'none';
+      }
+    });
   });
 
   // "Keine Ergebnisse" anzeigen
