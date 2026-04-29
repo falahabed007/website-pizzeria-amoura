@@ -189,6 +189,99 @@ app.get('/api/availability', async (req, res) => {
   } catch(e) { res.status(500).json({ message: 'Fehler' }); }
 });
 
+// ── Gutscheincode Verlosung ───────────────────────────────────────
+app.post('/api/coupon-raffle', async (req, res) => {
+  const { email, name, coupon } = req.body;
+  if (!email || !coupon) return res.status(400).json({ error: 'Fehlende Felder' });
+  if ((coupon || '').toUpperCase() !== 'ROLLNCONE') return res.status(400).json({ error: 'Ungültiger Gutscheincode' });
+
+  const resend = getResend();
+  if (!resend) return res.json({ ok: true });
+
+  const firstName = (name || 'Kunde').split(' ')[0];
+  const now = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  const customerHtml = `
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#fff9f5;font-family:Arial,Helvetica,sans-serif;">
+<div style="max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+  <!-- Header: Roll N Cone -->
+  <div style="background:linear-gradient(135deg,#ff6b35 0%,#ff4b8b 50%,#a855f7 100%);padding:40px 30px;text-align:center;">
+    <div style="font-size:52px;margin-bottom:8px;">🍦</div>
+    <h1 style="color:#fff;margin:0;font-size:28px;font-weight:900;letter-spacing:-0.5px;">Roll N Cone</h1>
+    <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:14px;letter-spacing:1px;text-transform:uppercase;">× Pizzeria Amoura</p>
+  </div>
+
+  <!-- Konfetti Banner -->
+  <div style="background:#fff3e0;padding:18px 30px;text-align:center;border-bottom:2px dashed #ffcc80;">
+    <p style="margin:0;font-size:22px;font-weight:900;color:#e65100;">🎉 Du bist dabei!</p>
+    <p style="margin:4px 0 0;font-size:14px;color:#bf360c;">Deine Teilnahme an der Verlosung wurde erfolgreich registriert.</p>
+  </div>
+
+  <!-- Body -->
+  <div style="padding:30px 30px 20px;">
+    <p style="font-size:16px;color:#333;margin:0 0 16px;">Hallo <strong>${firstName}</strong>,</p>
+    <p style="font-size:14px;color:#555;line-height:1.7;margin:0 0 20px;">
+      mit dem Gutscheincode <strong style="color:#ff4b8b;font-size:16px;letter-spacing:2px;">ROLLNCONE</strong> hast du erfolgreich an unserer Kooperations-Verlosung zwischen <strong>Pizzeria Amoura</strong> und <strong>Roll N Cone</strong> teilgenommen.
+    </p>
+
+    <!-- Gewinn-Box -->
+    <div style="background:linear-gradient(135deg,#fff0fb,#fff8f0);border:2px solid #ffd6f0;border-radius:14px;padding:22px;text-align:center;margin-bottom:22px;">
+      <p style="margin:0 0 8px;font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px;">Du kannst gewinnen</p>
+      <p style="margin:0;font-size:22px;font-weight:900;color:#a855f7;">🍦 Kostenloses Roll N Cone Erlebnis</p>
+      <p style="margin:8px 0 0;font-size:13px;color:#666;">Inkl. deiner Lieblings-Kreation nach Wahl</p>
+    </div>
+
+    <div style="background:#f9f9f9;border-radius:10px;padding:16px 20px;margin-bottom:22px;">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#333;">📋 Deine Teilnahme im Überblick</p>
+      <table style="width:100%;font-size:13px;color:#555;border-collapse:collapse;">
+        <tr><td style="padding:4px 0;color:#888;">Teilnahmedatum</td><td style="text-align:right;font-weight:600;">${now}</td></tr>
+        <tr><td style="padding:4px 0;color:#888;">Code</td><td style="text-align:right;font-weight:600;color:#ff4b8b;">ROLLNCONE</td></tr>
+        <tr><td style="padding:4px 0;color:#888;">E-Mail</td><td style="text-align:right;font-weight:600;">${email}</td></tr>
+      </table>
+    </div>
+
+    <p style="font-size:13px;color:#777;line-height:1.7;margin:0 0 20px;">
+      Der Gewinner wird direkt per E-Mail benachrichtigt. Wir wünschen dir viel Glück! 🍀<br>
+      Bis dahin – genieße deine Bestellung bei Pizzeria Amoura! 🍕
+    </p>
+  </div>
+
+  <!-- Roll N Cone Info -->
+  <div style="background:linear-gradient(135deg,#ff6b35,#ff4b8b);padding:20px 30px;text-align:center;">
+    <p style="color:#fff;margin:0 0 6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Unsere Kooperationspartner</p>
+    <p style="color:rgba(255,255,255,0.9);margin:0;font-size:14px;">🍦 Roll N Cone – Frische Eiscreme-Rollen & Waffelkegel</p>
+    <a href="https://www.rollncone.de" style="color:#fff;font-size:12px;opacity:0.8;text-decoration:underline;">www.rollncone.de</a>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#f7f3ee;padding:14px 30px;text-align:center;">
+    <p style="margin:0;font-size:11px;color:#aaa;">Pizzeria Amoura · Oststraße 48 · 59269 Beckum · Tel: 02521 / 829 06 00</p>
+    <p style="margin:4px 0 0;font-size:11px;color:#ccc;">Diese E-Mail wurde automatisch generiert.</p>
+  </div>
+</div>
+</body>
+</html>`;
+
+  try {
+    await resend.emails.send({
+      from:    process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
+      to:      email,
+      bcc:     'AbedFalah@Fluevate.onmicrosoft.com',
+      subject: '🎉 Deine Teilnahme an der Roll N Cone Verlosung – Pizzeria Amoura',
+      html:    customerHtml
+    });
+    console.log(`🎟️ Verlosungs-Mail → ${email}`);
+    res.json({ ok: true });
+  } catch(e) {
+    console.error('Coupon-Mail Fehler:', e);
+    res.status(500).json({ error: 'E-Mail konnte nicht gesendet werden' });
+  }
+});
+
 // ── Neue Web-Bestellung (pending) ────────────────────────────────
 app.post('/api/orders', async (req, res) => {
   try {
