@@ -561,6 +561,77 @@
     .mobile-cart-btn,
     .menu-btn-fixed { display: none !important; }
 
+    /* ===== SUCHLEISTE ===== */
+    .search-btn {
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 42px; height: 42px;
+        font-size: 1.05rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .search-btn:hover { background: rgba(255,255,255,0.22); transform: scale(1.08); }
+
+    .search-bar-wrap {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.13);
+        border-radius: 50px;
+        padding: 0 6px 0 14px;
+        gap: 4px;
+        overflow: hidden;
+        max-width: 0;
+        opacity: 0;
+        transition: max-width 0.35s ease, opacity 0.25s ease;
+        pointer-events: none;
+    }
+    .search-bar-wrap.open {
+        max-width: 280px;
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .search-bar-wrap input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-size: 0.9rem;
+        font-family: inherit;
+        width: 180px;
+        padding: 9px 0;
+        min-width: 0;
+    }
+    .search-bar-wrap input::placeholder { color: rgba(255,255,255,0.55); }
+    .search-bar-wrap .search-clear-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 26px; height: 26px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+        flex-shrink: 0;
+    }
+    .search-bar-wrap .search-clear-btn:hover { background: rgba(255,255,255,0.35); }
+
+    .search-no-results {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        color: #9a7c6a;
+        font-size: 1rem;
+    }
+    .search-no-results i { font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.5; }
+
+    .product-item.search-hidden { display: none !important; }
+    .category-block.search-hidden { display: none !important; }
+
     /* Inhalt unter Header + Nav schieben */
     .hero { padding-top: 120px !important; }
 
@@ -575,6 +646,12 @@
     <div class="amoura-logo">
       🍕 Pizzeria <em>Amoura</em>
     </div>
+    <!-- Suchleiste -->
+    <div class="search-bar-wrap" id="searchBarWrap">
+      <input type="text" id="searchInput" placeholder="Gericht oder Nr. suchen…" oninput="handleSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-clear-btn" onclick="clearSearch()" title="Suche leeren"><i class="fas fa-times"></i></button>
+    </div>
+    <button class="search-btn" id="searchToggleBtn" onclick="toggleSearch()" title="Suchen"><i class="fas fa-search"></i></button>
     <button class="amoura-cart-btn" onclick="openMobileCartOverlay()">
       <i class="fas fa-shopping-basket"></i>
       <span class="amoura-cart-count" id="headerCartCount">0</span>
@@ -765,10 +842,13 @@
 
     <div class="main-container">
 
-    
+    <div class="search-no-results" id="searchNoResults">
+      <i class="fas fa-search"></i>
+      Kein Gericht gefunden. Versuche eine andere Suche.
+    </div>
 
     <div class="menu-section" style="width: 100%;">
-        
+
         <div class="menu-section">
           
           
@@ -3786,6 +3866,92 @@ document.readyState === 'loading'
     ? document.addEventListener('DOMContentLoaded', init)
     : init();
 })();
+</script>
+
+<script>
+// ===== SUCHLEISTE =====
+var searchOpen = false;
+
+function toggleSearch() {
+  searchOpen = !searchOpen;
+  var wrap = document.getElementById('searchBarWrap');
+  var btn = document.getElementById('searchToggleBtn');
+  if (searchOpen) {
+    wrap.classList.add('open');
+    btn.innerHTML = '<i class="fas fa-times"></i>';
+    setTimeout(function() { document.getElementById('searchInput').focus(); }, 200);
+  } else {
+    wrap.classList.remove('open');
+    btn.innerHTML = '<i class="fas fa-search"></i>';
+    clearSearch();
+  }
+}
+
+function clearSearch() {
+  var input = document.getElementById('searchInput');
+  input.value = '';
+  handleSearch('');
+  if (!searchOpen) return;
+  input.focus();
+}
+
+function handleSearch(query) {
+  var q = query.trim().toLowerCase();
+  var items = document.querySelectorAll('.product-item');
+  var noResults = document.getElementById('searchNoResults');
+  var totalVisible = 0;
+
+  items.forEach(function(item) {
+    if (!q) {
+      item.classList.remove('search-hidden');
+      totalVisible++;
+      return;
+    }
+    var h3 = item.querySelector('h3');
+    var badge = item.querySelector('.item-num-badge');
+    var name = h3 ? h3.textContent.toLowerCase() : '';
+    var num = badge ? badge.textContent.toLowerCase() : '';
+    var itemNum = (item.dataset.itemNum || '').toLowerCase();
+    // Also check original name stored in dataset if available
+    var origName = (item.dataset.origName || '').toLowerCase();
+
+    if (name.indexOf(q) !== -1 || num.indexOf(q) !== -1 || itemNum.indexOf(q) !== -1 || origName.indexOf(q) !== -1) {
+      item.classList.remove('search-hidden');
+      totalVisible++;
+    } else {
+      item.classList.add('search-hidden');
+    }
+  });
+
+  // Kategorien ausblenden wenn alle Items darin versteckt sind
+  var categories = document.querySelectorAll('h2.category-title');
+  categories.forEach(function(cat) {
+    if (!q) { cat.style.display = ''; return; }
+    // Alle product-items nach dieser Kategorie bis zur nächsten suchen
+    var next = cat.nextElementSibling;
+    var hasVisible = false;
+    while (next && !next.matches('h2.category-title')) {
+      if (next.classList.contains('product-item') && !next.classList.contains('search-hidden')) {
+        hasVisible = true; break;
+      }
+      // Auch in Grids suchen
+      if (next.classList.contains('product-grid')) {
+        var gridItems = next.querySelectorAll('.product-item:not(.search-hidden)');
+        if (gridItems.length > 0) { hasVisible = true; break; }
+      }
+      next = next.nextElementSibling;
+    }
+    cat.style.display = hasVisible ? '' : 'none';
+  });
+
+  // "Keine Ergebnisse" anzeigen
+  if (noResults) noResults.style.display = (q && totalVisible === 0) ? 'block' : 'none';
+}
+
+// Suche schließen bei Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && searchOpen) toggleSearch();
+});
 </script>
 </body>
 <style>
