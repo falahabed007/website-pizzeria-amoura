@@ -1065,7 +1065,7 @@ cron.schedule('59 23 * * 0', async () => {
       // Addresses side by side
       const addrY = doc.y;
       doc.fontSize(8).fillColor('#999').text('RECHNUNGSSTELLER', 50, addrY);
-      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('FlueVate', 50, addrY + 14);
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Abed Rachman Falah / FlueVate', 50, addrY + 14);
       doc.fontSize(10).font('Helvetica').fillColor('#555')
         .text('Zur Goldbrede 30', 50, addrY + 30)
         .text('59269 Beckum', 50, addrY + 44)
@@ -1132,7 +1132,7 @@ cron.schedule('59 23 * * 0', async () => {
 
       // Footer
       doc.fontSize(8).fillColor('#aaa')
-        .text(`FlueVate · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · KW ${kw}/${now.getFullYear()}`, 50, 780, { width: W, align: 'center' });
+        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · KW ${kw}/${now.getFullYear()}`, 50, 780, { width: W, align: 'center' });
     });
 
     // ── PDF 2: Wochenbericht Pizzeria Amoura ──────────────────────
@@ -1277,7 +1277,7 @@ cron.schedule('58 23 * * *', async () => {
       // Addresses
       const addrY = doc.y;
       doc.fontSize(8).fillColor('#999').text('RECHNUNGSSTELLER', 50, addrY);
-      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('FlueVate', 50, addrY+14);
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Abed Rachman Falah / FlueVate', 50, addrY+14);
       doc.fontSize(10).font('Helvetica').fillColor('#555')
         .text('Zur Goldbrede 30', 50, addrY+30)
         .text('59269 Beckum', 50, addrY+44)
@@ -1359,7 +1359,7 @@ cron.schedule('58 23 * * *', async () => {
       });
 
       doc.fontSize(8).fillColor('#aaa')
-        .text(`FlueVate · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · ${monat}`, 50, 780, { width: W, align: 'center' });
+        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · ${monat}`, 50, 780, { width: W, align: 'center' });
 
       // ── Seite 2+: Einzelne Bestellungen ───────────────────────────
       doc.addPage();
