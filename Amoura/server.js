@@ -617,6 +617,28 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
 // ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════
 
+app.get('/api/admin/customers', auth, async (req, res) => {
+  try {
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    const userIds = users.map(u => u._id);
+    const stats = await Order.aggregate([
+      { $match: { userId: { $in: userIds } } },
+      { $group: { _id: '$userId', count: { $sum: 1 }, total: { $sum: '$total' }, lastOrder: { $max: '$createdAt' } } }
+    ]);
+    const statsMap = {};
+    stats.forEach(s => { statsMap[s._id.toString()] = s; });
+    const result = users.map(u => ({
+      ...u.toObject(),
+      orderCount: statsMap[u._id.toString()]?.count || 0,
+      orderTotal: statsMap[u._id.toString()]?.total || 0,
+      lastOrder:  statsMap[u._id.toString()]?.lastOrder || null,
+    }));
+    res.json(result);
+  } catch(e) {
+    res.status(500).json({ message: 'Fehler beim Laden der Kunden' });
+  }
+});
+
 app.post('/api/admin/login', (req, res) => {
   req.body.password === process.env.ADMIN_PASSWORD
     ? res.json({ token: process.env.ADMIN_TOKEN_SECRET })
