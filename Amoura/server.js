@@ -617,6 +617,17 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
 // ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════
 
+app.get('/api/admin/customers/:userId/orders', auth, async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json(orders);
+  } catch(e) {
+    res.status(500).json({ message: 'Fehler beim Laden der Bestellungen' });
+  }
+});
+
 app.get('/api/admin/customers', auth, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
