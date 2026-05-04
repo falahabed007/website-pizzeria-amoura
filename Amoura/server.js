@@ -5,6 +5,8 @@ const Stripe     = require('stripe');
 const { Resend } = require('resend');
 const cron       = require('node-cron');
 const PDFDocument = require('pdfkit');
+const bcrypt     = require('bcryptjs');
+const jwt        = require('jsonwebtoken');
 require('dotenv').config();
 
 const app  = express();
@@ -91,6 +93,7 @@ const orderSchema = new mongoose.Schema({
   total:       Number,
   note:        String,
   coupon:      String,
+  userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
@@ -113,6 +116,23 @@ const settingsSchema = new mongoose.Schema({
 });
 const Settings = mongoose.model('Settings', settingsSchema);
 
+const userSchema = new mongoose.Schema({
+  email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
+  password: { type: String, required: true },
+  first:    { type: String, required: true, trim: true },
+  last:     { type: String, required: true, trim: true },
+  phone:    { type: String, default: '' },
+  addresses: [{
+    label:  { type: String, default: 'Zuhause' },
+    street: String,
+    house:  String,
+    city:   String,
+    zip:    String,
+  }],
+  defaultAddress: { type: Number, default: 0 },
+}, { timestamps: true });
+const User = mongoose.model('User', userSchema);
+
 // ─── Counter ─────────────────────────────────────────────────────
 async function getNextOrderNum() {
   const r = await Counter.findByIdAndUpdate('orderNum',
@@ -120,13 +140,149 @@ async function getNextOrderNum() {
   return r.seq + 1000;
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────
+// ─── Admin Auth ───────────────────────────────────────────────────
 function auth(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ message: 'Nicht autorisiert' });
   if (h.split(' ')[1] !== process.env.ADMIN_TOKEN_SECRET) return res.status(401).json({ message: 'Token ungültig' });
   next();
 }
+
+// ─── Customer Auth (JWT) ──────────────────────────────────────────
+function customerAuth(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Nicht eingeloggt' });
+  }
+  try {
+    req.user = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ message: 'Token abgelaufen oder ungültig' });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KUNDEN-AUTH ROUTES
+// ═══════════════════════════════════════════════════════════════
+
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password, first, last, phone } = req.body;
+    if (!email || !password || !first || !last) {
+      return res.status(400).json({ message: 'Alle Pflichtfelder ausfüllen' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Passwort mindestens 6 Zeichen' });
+    }
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: 'E-Mail bereits registriert' });
+
+    const hash = await bcrypt.hash(password, 12);
+    const user = await User.create({ email, password: hash, first, last, phone: phone || '' });
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    res.status(201).json({
+      token,
+      user: { id: user._id, email: user.email, first: user.first, last: user.last }
+    });
+  } catch (err) {
+    console.error('Register Fehler:', err);
+    res.status(500).json({ message: 'Registrierung fehlgeschlagen' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Falsche E-Mail oder Passwort' });
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ message: 'Falsche E-Mail oder Passwort' });
+
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({
+      token,
+      user: { id: user._id, email: user.email, first: user.first, last: user.last }
+    });
+  } catch (err) {
+    console.error('Login Fehler:', err);
+    res.status(500).json({ message: 'Login fehlgeschlagen' });
+  }
+});
+
+app.get('/api/auth/me', customerAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User nicht gefunden' });
+    res.json(user);
+  } catch {
+    res.status(500).json({ message: 'Fehler' });
+  }
+});
+
+app.patch('/api/auth/profile', customerAuth, async (req, res) => {
+  try {
+    const { first, last, phone, addresses, defaultAddress } = req.body;
+    const update = {};
+    if (first) update.first = first;
+    if (last) update.last = last;
+    if (phone !== undefined) update.phone = phone;
+    if (addresses) update.addresses = addresses;
+    if (defaultAddress !== undefined) update.defaultAddress = defaultAddress;
+
+    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true }).select('-password');
+    res.json(user);
+  } catch {
+    res.status(500).json({ message: 'Profil-Update fehlgeschlagen' });
+  }
+});
+
+app.patch('/api/auth/password', customerAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: 'Neues Passwort mindestens 6 Zeichen' });
+    }
+    const user = await User.findById(req.user.id);
+    const valid = await bcrypt.compare(currentPassword, user.password);
+    if (!valid) return res.status(401).json({ message: 'Aktuelles Passwort falsch' });
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+    res.json({ message: 'Passwort geändert' });
+  } catch {
+    res.status(500).json({ message: 'Fehler beim Passwort ändern' });
+  }
+});
+
+app.get('/api/account/orders', customerAuth, async (req, res) => {
+  try {
+    const orders = await Order.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select('orderNum status payment total items createdAt mode');
+    res.json(orders);
+  } catch {
+    res.status(500).json({ message: 'Bestellhistorie konnte nicht geladen werden' });
+  }
+});
+
+app.post('/api/account/reorder/:orderId', customerAuth, async (req, res) => {
+  try {
+    const original = await Order.findOne({ _id: req.params.orderId, userId: req.user.id });
+    if (!original) return res.status(404).json({ message: 'Bestellung nicht gefunden' });
+
+    res.json({
+      items: original.items,
+      mode: original.mode,
+      note: original.note || ''
+    });
+  } catch {
+    res.status(500).json({ message: 'Re-Order fehlgeschlagen' });
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════
 // PUBLIC ROUTES
@@ -286,10 +442,20 @@ app.post('/api/coupon-raffle', async (req, res) => {
 // ── Neue Web-Bestellung (pending) ────────────────────────────────
 app.post('/api/orders', async (req, res) => {
   try {
+    // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch {} // Gastbestellung – kein Fehler
+    }
+
     const orderNum = await getNextOrderNum();
     const isPOS    = req.body.source === 'pos';
     const order    = new Order({
-      ...req.body, orderNum,
+      ...req.body, orderNum, userId,
       status: isPOS ? 'confirmed' : 'pending'
     });
     await order.save();

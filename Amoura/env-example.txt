@@ -11,6 +11,7 @@ PRINTNODE_API_KEY=
 PRINTNODE_PRINTER_ID=
 ADMIN_PASSWORD=Amoura2025Admin!
 ADMIN_TOKEN_SECRET=AmouraGeheimToken2025xyzABCDEFGHIJKLMN
+JWT_SECRET=dein-geheimer-jwt-schluessel-mindestens-32-zeichen
 WHATSAPP_NUMBER=4925218290600
 FRONTEND_URL=https://pizzeria-amoura.onrender.com
 PORT=3001
