@@ -2438,8 +2438,7 @@ async function processOrder() {
     };
 
     if (zahlung === 'stripe') {
-        // Bestellung erst speichern
-        try { await AmouraDB.addOrder(newOrder); } catch(e) { console.error('Speicherfehler:', e); }
+        // Kein AmouraDB.addOrder() hier – create-stripe-checkout speichert die Bestellung selbst
 
         const btn = document.querySelector('[onclick="processOrder()"]');
         if (btn) { btn.disabled = true; btn.textContent = '⏳ Weiterleitung zu Stripe...'; }
@@ -2560,8 +2559,47 @@ window.addEventListener('load', async () => {
                 console.warn('verify-payment fehlgeschlagen:', e.message);
             }
         }
+        return;
+    }
+
+    // Stripe-Zahlung abgebrochen → Formular wieder freischalten
+    if (params.get('payment') === 'cancelled') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        resetOrderButton();
+        showStripeCancelBanner();
     }
 });
+
+// BFCache-Fix: Seite aus Browser-Cache geladen (z.B. nach Zurück-Button) → Button-State zurücksetzen
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        resetOrderButton();
+    }
+});
+
+function resetOrderButton() {
+    const btn = document.querySelector('[onclick="processOrder()"]');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Kostenpflichtig bestellen';
+    }
+}
+
+function showStripeCancelBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'stripe-cancel-banner';
+    banner.style.cssText = [
+        'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
+        'background:#fff3cd', 'color:#856404', 'border:1px solid #ffc107',
+        'border-radius:10px', 'padding:12px 20px', 'font-size:14px',
+        'box-shadow:0 4px 16px rgba(0,0,0,0.12)', 'z-index:99999',
+        'max-width:90vw', 'text-align:center', 'cursor:pointer'
+    ].join(';');
+    banner.innerHTML = '⚠️ Zahlung abgebrochen – du kannst deine Bestellung anpassen oder eine andere Zahlungsart wählen. <strong>✕</strong>';
+    banner.onclick = () => banner.remove();
+    document.body.appendChild(banner);
+    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 7000);
+}
 </script>
 
        
