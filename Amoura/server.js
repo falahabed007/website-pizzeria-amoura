@@ -169,7 +169,7 @@ function customerAuth(req, res, next) {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, first, last, phone } = req.body;
-    if (!email || !password || !first || !last) {
+    if (!email || !password || !first || !last || !phone) {
       return res.status(400).json({ message: 'Alle Pflichtfelder ausfüllen' });
     }
     if (password.length < 6) {
