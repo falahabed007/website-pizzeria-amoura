@@ -266,25 +266,6 @@
     /* ===== MOBILER WARENKORB-BUTTON (oben rechts) ===== */
     .mobile-cart-btn {
         display: none;
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 100001;
-        background-color: var(--amoura-red);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: Arial, sans-serif;
-        text-decoration: none;
-        white-space: nowrap;
     }
 
     /* ===== SPEISEKARTE OVERLAY (Dropdown-Menü) ===== */
@@ -430,26 +411,6 @@
         gap: 8px;
         font-family: Arial, sans-serif;
     }
-    .mobile-cart-btn {
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 100001;
-        background-color: var(--amoura-red);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        align-items: center;
-        gap: 8px;
-        font-family: Arial, sans-serif;
-        text-decoration: none;
-        white-space: nowrap;
-    }
 
     /* ===== STICKY KATEGORIE-NAV ===== */
     .cat-nav-wrap {
@@ -574,8 +535,41 @@
 
     /* Alte mobile Buttons ausblenden – Header ersetzt sie */
     .mobile-menu-btn,
-    .mobile-cart-btn,
     .menu-btn-fixed { display: none !important; }
+
+    /* Floating Warenkorb-Button (unten rechts) */
+    .mobile-cart-btn {
+        position: fixed !important;
+        bottom: 24px !important;
+        right: 20px !important;
+        top: auto !important;
+        z-index: 100001;
+        background: var(--amoura-red);
+        color: white;
+        border-radius: 50px;
+        padding: 14px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: 0 6px 24px rgba(139,29,29,0.45);
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+    .mobile-cart-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(139,29,29,0.55); }
+    .fab-cart-count {
+        background: #d4a76a;
+        color: white;
+        border-radius: 50%;
+        width: 24px; height: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 700;
+        flex-shrink: 0;
+    }
+    .fab-cart-price { font-weight: 700; }
 
     /* ===== SUCHLEISTE ===== */
     .search-btn {
@@ -669,11 +663,6 @@
     </div>
     <button class="search-btn" id="searchToggleBtn" onclick="toggleSearch()" title="Suchen"><i class="fas fa-search"></i></button>
     <a href="account.html" class="amoura-account-btn" title="Mein Konto"><i class="fas fa-user"></i></a>
-    <button class="amoura-cart-btn" onclick="openMobileCartOverlay()">
-      <i class="fas fa-shopping-basket"></i>
-      <span class="amoura-cart-count" id="headerCartCount">0</span>
-      <span class="amoura-cart-total" id="headerCartTotal">0,00 €</span>
-    </button>
     <!-- Aktion Banner -->
     <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: #d4a76a; color: #3d1a08; padding: 9px 13px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; max-width: 145px; line-height: 1.5; display: none; box-shadow: 0 3px 12px rgba(0,0,0,0.25);">
       <div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">15.04 – 15.05</div>
@@ -691,10 +680,11 @@
         <i class="fas fa-list"></i> Speisen
     </button>
 
-    <!-- MOBILER WARENKORB-BUTTON (oben rechts) -->
+    <!-- FLOATING WARENKORB-BUTTON (unten rechts) -->
     <a href="#" class="mobile-cart-btn" onclick="openMobileCartOverlay(); return false;">
         <i class="fas fa-shopping-basket"></i>
-        <span id="mobile-cart-price-top">0,00 €</span>
+        <span class="fab-cart-count" id="headerCartCount">0</span>
+        <span class="fab-cart-price" id="mobile-cart-price-top">0,00 €</span>
     </a>
 
     <!-- WARENKORB OVERLAY -->
