@@ -2129,7 +2129,9 @@ function toggleMobileMenu() {
         <span onclick="closeCheckoutModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:28px; color:#888;">&times;</span>
         
         <h2 id="modal-title" style="color:#8b1d1d; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Kasse</h2>
-        
+
+        <div id="checkout-customer-banner" style="display:none; background:#fff8e1; border:1px solid #f9a825; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:13px; color:#5d4037;"></div>
+
         <div style="display:flex; gap:10px; margin: 20px 0 10px 0;">
             <input type="text" id="c-vorname" placeholder="Vorname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
             <input type="text" id="c-nachname" placeholder="Nachname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
@@ -4337,6 +4339,65 @@ body.modal-open {
       if (visible) lockBody(); else unlockBody();
     });
     obs.observe(el, { attributes: true, attributeFilter: ['style'] });
+  });
+})();
+</script>
+
+<script>
+// Auto-fill checkout for logged-in customers
+(function() {
+  var _customer = null;
+
+  async function loadCustomer() {
+    var token = localStorage.getItem('customerToken');
+    if (!token) return;
+    try {
+      var res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+      _customer = await res.json();
+    } catch {}
+  }
+
+  function fillCheckout() {
+    if (!_customer) return;
+
+    var fn = document.getElementById('c-vorname');
+    var ln = document.getElementById('c-nachname');
+    var tel = document.getElementById('c-telefon');
+    var em = document.getElementById('c-email');
+    if (fn && !fn.value) fn.value = _customer.first || '';
+    if (ln && !ln.value) ln.value = _customer.last || '';
+    if (tel && !tel.value) tel.value = _customer.phone || '';
+    if (em && !em.value) em.value = _customer.email || '';
+
+    // Default-Adresse befüllen
+    var addr = _customer.addresses && _customer.addresses[_customer.defaultAddress || 0];
+    if (addr) {
+      var st = document.getElementById('c-strasse');
+      var hn = document.getElementById('c-hausnummer');
+      if (st && !st.value) st.value = addr.street || '';
+      if (hn && !hn.value) hn.value = addr.house || '';
+    }
+
+    // Banner anzeigen
+    var banner = document.getElementById('checkout-customer-banner');
+    if (banner) {
+      banner.textContent = '👤 Eingeloggt als ' + _customer.first + ' ' + _customer.last;
+      banner.style.display = 'block';
+    }
+  }
+
+  // openCheckoutModal patchen
+  document.addEventListener('DOMContentLoaded', function() {
+    loadCustomer();
+
+    var orig = window.openCheckoutModal;
+    window.openCheckoutModal = function() {
+      orig.apply(this, arguments);
+      fillCheckout();
+    };
   });
 })();
 </script>
