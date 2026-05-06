@@ -4,9 +4,6 @@
 
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Pizzeria Amoura - Bestellen</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://js.stripe.com/v3/"></script>
@@ -266,6 +263,25 @@
     /* ===== MOBILER WARENKORB-BUTTON (oben rechts) ===== */
     .mobile-cart-btn {
         display: none;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 100001;
+        background-color: var(--amoura-red);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: Arial, sans-serif;
+        text-decoration: none;
+        white-space: nowrap;
     }
 
     /* ===== SPEISEKARTE OVERLAY (Dropdown-Menü) ===== */
@@ -411,6 +427,26 @@
         gap: 8px;
         font-family: Arial, sans-serif;
     }
+    .mobile-cart-btn {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 100001;
+        background-color: var(--amoura-red);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        align-items: center;
+        gap: 8px;
+        font-family: Arial, sans-serif;
+        text-decoration: none;
+        white-space: nowrap;
+    }
 
     /* ===== STICKY KATEGORIE-NAV ===== */
     .cat-nav-wrap {
@@ -469,22 +505,6 @@
         z-index: 600;
         box-shadow: 0 3px 20px rgba(0,0,0,0.35);
     }
-    .amoura-account-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      color: #fff;
-      font-size: 16px;
-      text-decoration: none;
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
-    .amoura-account-btn:hover { background: rgba(255,255,255,0.3); }
-
     .amoura-header-inner {
         max-width: 1100px;
         margin: 0 auto;
@@ -535,112 +555,8 @@
 
     /* Alte mobile Buttons ausblenden – Header ersetzt sie */
     .mobile-menu-btn,
+    .mobile-cart-btn,
     .menu-btn-fixed { display: none !important; }
-
-    /* Floating Warenkorb-Button (unten rechts) */
-    .mobile-cart-btn {
-        position: fixed !important;
-        bottom: 24px !important;
-        right: 20px !important;
-        top: auto !important;
-        z-index: 100001;
-        background: var(--amoura-red);
-        color: white;
-        border-radius: 50px;
-        padding: 14px 20px;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex !important;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        box-shadow: 0 6px 24px rgba(139,29,29,0.45);
-        transition: transform 0.2s, box-shadow 0.2s;
-        white-space: nowrap;
-    }
-    .mobile-cart-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(139,29,29,0.55); }
-    .fab-cart-count {
-        background: #d4a76a;
-        color: white;
-        border-radius: 50%;
-        width: 24px; height: 24px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 13px; font-weight: 700;
-        flex-shrink: 0;
-    }
-    .fab-cart-price { font-weight: 700; }
-
-    /* ===== SUCHLEISTE ===== */
-    .search-btn {
-        background: rgba(255,255,255,0.12);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 42px; height: 42px;
-        font-size: 1.05rem;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s;
-        flex-shrink: 0;
-    }
-    .search-btn:hover { background: rgba(255,255,255,0.22); transform: scale(1.08); }
-
-    .search-bar-wrap {
-        display: flex;
-        align-items: center;
-        background: rgba(255,255,255,0.13);
-        border-radius: 50px;
-        padding: 0 6px 0 14px;
-        gap: 4px;
-        overflow: hidden;
-        max-width: 0;
-        opacity: 0;
-        transition: max-width 0.35s ease, opacity 0.25s ease;
-        pointer-events: none;
-    }
-    .search-bar-wrap.open {
-        max-width: 280px;
-        opacity: 1;
-        pointer-events: auto;
-    }
-    .search-bar-wrap input {
-        background: transparent;
-        border: none;
-        outline: none;
-        color: white;
-        font-size: 0.9rem;
-        font-family: inherit;
-        width: 180px;
-        padding: 9px 0;
-        min-width: 0;
-    }
-    .search-bar-wrap input::placeholder { color: rgba(255,255,255,0.55); }
-    .search-bar-wrap .search-clear-btn {
-        background: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        border-radius: 50%;
-        width: 26px; height: 26px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.15s;
-        flex-shrink: 0;
-    }
-    .search-bar-wrap .search-clear-btn:hover { background: rgba(255,255,255,0.35); }
-
-    .search-no-results {
-        display: none;
-        text-align: center;
-        padding: 40px 20px;
-        color: #9a7c6a;
-        font-size: 1rem;
-    }
-    .search-no-results i { font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.5; }
-
-    .product-item.search-hidden { display: none !important; }
-    .category-block.search-hidden { display: none !important; }
 
     /* Inhalt unter Header + Nav schieben */
     .hero { padding-top: 120px !important; }
@@ -656,19 +572,11 @@
     <div class="amoura-logo">
       🍕 Pizzeria <em>Amoura</em>
     </div>
-    <!-- Suchleiste -->
-    <div class="search-bar-wrap" id="searchBarWrap">
-      <input type="text" id="searchInput" placeholder="Gericht oder Nr. suchen…" oninput="handleSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
-      <button class="search-clear-btn" onclick="clearSearch()" title="Suche leeren"><i class="fas fa-times"></i></button>
-    </div>
-    <button class="search-btn" id="searchToggleBtn" onclick="toggleSearch()" title="Suchen"><i class="fas fa-search"></i></button>
-    <a href="account.html" class="amoura-account-btn" title="Mein Konto"><i class="fas fa-user"></i></a>
-    <!-- Aktion Banner -->
-    <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: #d4a76a; color: #3d1a08; padding: 9px 13px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; max-width: 145px; line-height: 1.5; display: none; box-shadow: 0 3px 12px rgba(0,0,0,0.25);">
-      <div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">15.04 – 15.05</div>
-      <div>🍕 Kl. Pizza Margherita</div>
-      <div style="margin-top:3px; background:#3d1a08; color:#d4a76a; border-radius:4px; padding:2px 5px;">GRATIS ab 15€!</div>
-    </div>
+    <button class="amoura-cart-btn" onclick="openMobileCartOverlay()">
+      <i class="fas fa-shopping-basket"></i>
+      <span class="amoura-cart-count" id="headerCartCount">0</span>
+      <span class="amoura-cart-total" id="headerCartTotal">0,00 €</span>
+    </button>
   </div>
 </header>
 
@@ -680,11 +588,10 @@
         <i class="fas fa-list"></i> Speisen
     </button>
 
-    <!-- FLOATING WARENKORB-BUTTON (unten rechts) -->
+    <!-- MOBILER WARENKORB-BUTTON (oben rechts) -->
     <a href="#" class="mobile-cart-btn" onclick="openMobileCartOverlay(); return false;">
         <i class="fas fa-shopping-basket"></i>
-        <span class="fab-cart-count" id="headerCartCount">0</span>
-        <span class="fab-cart-price" id="mobile-cart-price-top">0,00 €</span>
+        <span id="mobile-cart-price-top">0,00 €</span>
     </a>
 
     <!-- WARENKORB OVERLAY -->
@@ -730,9 +637,9 @@
             <div id="cart-delivery-info" style="margin-top:10px;">
                 <select id="cart-stadt" onchange="updateCartSummary()"
                     style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; font-size:13px; cursor:pointer;">
-                    <option value="beckum">Beckum (MBW: 15,00€ | +2,50€ Gebühr)</option>
-                    <option value="roland">Roland (MBW: 15,00€ | +3,00€ Gebühr)</option>
-                    <option value="vellern">Vellern (MBW: 15,00€ | +3,00€ Gebühr)</option>
+                    <option value="beckum">Beckum (MBW: 15,00€ | +1,50€ Gebühr)</option>
+                    <option value="roland">Roland (MBW: 20,00€ | +2,00€ Gebühr)</option>
+                    <option value="vellern">Vellern (MBW: 20,00€ | +2,00€ Gebühr)</option>
                 </select>
             </div>
 
@@ -769,9 +676,6 @@
             <li><a href="#pizzabroetchen" onclick="toggleMobileMenu()">Pizzabroetchen</a></li>
             <li><a href="#getraenke" onclick="toggleMobileMenu()">Getraenke</a></li>
         </ul>
-        <a href="account.html" style="display:block;margin-top:16px;padding:12px 16px;background:var(--amoura-red);color:#fff;border-radius:8px;text-align:center;text-decoration:none;font-weight:600;font-size:14px;">
-          👤 Mein Konto
-        </a>
     </div>
 
     <div class="hero">
@@ -799,7 +703,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Alle Gebiete ab 15€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
+                    <p>Beckum ab 15€ (+ 1,50€ Fahrt), Vellern, Roland ab 20€ + (2,00€ Fahrt)</p>
                 </div>
             </div>
             
@@ -819,17 +723,6 @@
 
 
 
-
-    <!-- ═══ AKTIONS-BANNER ═══ -->
-    <div id="aktionsBanner" style="display:none; background: linear-gradient(135deg, #d4a76a, #c35a44); color: white; text-align: center; padding: 14px 20px; font-size: 15px; font-weight: bold; line-height: 1.5;">
-        🍕 <span style="font-size:17px;">Gratis Pizza Margherita bei jeder Bestellung ab 15€!</span> 🍕<br>
-        <span style="font-size: 13px; opacity: 0.92; font-weight: normal;">Gültig 15.04 – 15.05 · Wird automatisch in den Warenkorb gelegt</span>
-    </div>
-    <script>
-        if (typeof isPromotionActive === 'function' && isPromotionActive()) {
-            document.getElementById('aktionsBanner').style.display = 'block';
-        }
-    </script>
 
     <!-- ═══ STICKY KATEGORIE-NAVIGATION ═══ -->
     <div class="cat-nav-wrap" id="catNavWrap">
@@ -852,13 +745,10 @@
 
     <div class="main-container">
 
-    <div class="search-no-results" id="searchNoResults">
-      <i class="fas fa-search"></i>
-      Kein Gericht gefunden. Versuche eine andere Suche.
-    </div>
+    
 
     <div class="menu-section" style="width: 100%;">
-
+        
         <div class="menu-section">
           
           
@@ -1010,7 +900,7 @@
                 <div class="price">6,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>7 Pizza Tonno</h3><p>mit Thunfisch</p></div>
+                <div class="product-info"><h3>7 Pizza Tonno</h3><p>Thunfisch, Zwiebeln</p></div>
                 <div class="price">6,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
@@ -1026,7 +916,7 @@
                 <div class="price">6,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>11 Pizza Primavera</h3><p>Salami, Pilze</p></div>
+                <div class="product-info"><h3>11 Pizza Primavera</h3><p>Frische Tomaten, Mozzarella, Basilikum</p></div>
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
@@ -1042,43 +932,43 @@
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>15 Pizza Vito</h3><p>Schinken, Salami</p></div>
+                <div class="product-info"><h3>15 Pizza Vito</h3><p>Salami, Champignons</p></div>
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>16 Pizza Texas</h3><p>Broccoli, Zwiebeln, Pilze, Mais</p></div>
+                <div class="product-info"><h3>16 Pizza Texas</h3><p>Salami, Schinken, Champignons</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>17 Pizza Rustica</h3><p>Thunfisch, Pilze, Knoblauch, Paprika</p></div>
+                <div class="product-info"><h3>17 Pizza Rustica</h3><p>Schinken, Paprika, Ei</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>18 Nach Art des Hauses</h3><p>Schinken, Salami, Pilze, Thunfisch</p></div>
+                <div class="product-info"><h3>18 Nach Art des Hauses</h3><p>Spezialität des Hauses</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>19 Pizza Vegetaria</h3><p>Spinat, Broccoli, Paprika, Zwiebeln, Knoblauch</p></div>
+                <div class="product-info"><h3>19 Pizza Vegetaria</h3><p>verschiedene Gemüsesorten</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>20 Pizza Mista</h3><p>Schinken, Salami, Pilze</p></div>
+                <div class="product-info"><h3>20 Pizza Mista</h3><p>Salami, Schinken, Champignons, Paprika</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>21 Pizza Italia</h3><p>Schinken, Salami, Thunfisch</p></div>
+                <div class="product-info"><h3>21 Pizza Italia</h3><p>Spinat, Zwiebeln, Knoblauch</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>22 Pizza Quattro Stagioni</h3><p>Schinken, Pilze, Paprika, Artischocken</p></div>
+                <div class="product-info"><h3>22 Pizza Quattro Stagioni</h3><p>vier Jahreszeiten</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>23 Pizza Dallas</h3><p>Spinat, Krabben, Knoblauch</p></div>
+                <div class="product-info"><h3>23 Pizza Dallas</h3><p>Salami, Paprika, Zwiebeln</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>24 Pizza Amira</h3><p>frische Tomaten, Mozzarella</p></div>
+                <div class="product-info"><h3>24 Pizza Amira</h3><p>Spezialbelag</p></div>
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
@@ -1086,59 +976,59 @@
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>26 Pizza Frutti Di Mare</h3><p>Meeresfrüchte, Thunfisch, Knoblauch</p></div>
+                <div class="product-info"><h3>26 Pizza Frutti Di Mare</h3><p>Meeresfrüchte, Knoblauch</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>27 Pizza Spaghetti</h3><p>Fleischsauce, Spaghetti, Käse</p></div>
+                <div class="product-info"><h3>27 Pizza Spaghetti</h3><p>Spaghetti, Bolognesesauce</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>28 Pizza Spezial</h3><p>Schinken, Salami, Pilze, Zwiebeln, Paprika, Broccoli, Ei</p></div>
-                <div class="price">9,00 €</div>
+                <div class="product-info"><h3>28 Pizza Spezial</h3><p>Pizzabäcker Spezial</p></div>
+                <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
                 <div class="product-info"><h3>29 Pizza Scampi</h3><p>Scampi, Knoblauch</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>30 Pizza Capricciosa</h3><p>Schinken, Kapern, Sardellen, Oliven</p></div>
+                <div class="product-info"><h3>30 Pizza Capricciosa</h3><p>Schinken, Champignons, Artischocken, Oliven</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>31 Pizza Popey</h3><p>frische Tomaten, Blattspinat, Mozzarella</p></div>
+                <div class="product-info"><h3>31 Pizza Popey</h3><p>Spinat, Knoblauch</p></div>
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>32 Pizza Inferno</h3><p>Schinken, Pilze, Artischocken, extra scharf</p></div>
+                <div class="product-info"><h3>32 Pizza Inferno</h3><p>Scharfe Salami, Peperoni</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>33 Pizza Siciliana</h3><p>Zwiebeln, Paprika, Peperoni, Knoblauch</p></div>
+                <div class="product-info"><h3>33 Pizza Siciliana</h3><p>Sardellen, Kapern, Oliven</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>34 Pizza Picante</h3><p>Schinken, Peperoni, Spargel, Artischocken, Oliven</p></div>
+                <div class="product-info"><h3>34 Pizza Picante</h3><p>Salami, scharfe Peperoni</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>35 Pizza Broccoli</h3><p>frische Tomaten, Broccoli</p></div>
+                <div class="product-info"><h3>35 Pizza Broccoli</h3><p>Broccoli, Knoblauch</p></div>
                 <div class="price">6,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>36 Pizza Sucuk</h3><p>Sucuk, Zwiebeln</p></div>
+                <div class="product-info"><h3>36 Pizza Sucuk</h3><p>Knoblauchwurst, Zwiebeln</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>37 Pizza Tonnarella</h3><p>Thunfisch, Zwiebeln, Peperoni, Ei</p></div>
+                <div class="product-info"><h3>37 Pizza Tonnarella</h3><p>Thunfisch, Krabben, Knoblauch</p></div>
+                <div class="price">7,00 €</div>
+            </div>
+            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+                <div class="product-info"><h3>38 Pizza Vulcano</h3><p>Scharf!</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>38 Pizza Vulcano</h3><p>Spinat, Broccoli, Paprika, Spargel, Pilze</p></div>
-                <div class="price">7,50 €</div>
-            </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>39 Pizza Mexico</h3><p>Pilze, Artischocken, Spargel, Paprika, Oliven</p></div>
+                <div class="product-info"><h3>39 Pizza Mexico</h3><p>Mais, Paprika, Hackfleisch</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
@@ -1146,23 +1036,23 @@
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>41 Pizza Chiken</h3><p>Hähnchenfleisch, Ananas</p></div>
+                <div class="product-info"><h3>41 Pizza Chiken</h3><p>Hähnchenbrust, Curry</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>42 Pizza Bolognese</h3><p>mit Fleischsauce und Käse</p></div>
+                <div class="product-info"><h3>42 Pizza Bolognese</h3><p>mit Fleischsauce</p></div>
                 <div class="price">6,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>43 Pizza Rucola</h3><p>frische Tomaten, Schinken, Mozzarella, Rucola</p></div>
+                <div class="product-info"><h3>43 Pizza Rucola</h3><p>Rucola, Parmesan</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>44 Pizza Margherita Spezial</h3><p>Sauce Hollandaise, Käse</p></div>
+                <div class="product-info"><h3>44 Pizza Margherita Spezial</h3><p>extra viel Käse</p></div>
                 <div class="price">6,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>45 Pizza Rotterdam</h3><p>Schinken, Spargel, Hähnchenbrust, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>45 Pizza Rotterdam</h3><p>Spezialbelag</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
@@ -1170,83 +1060,83 @@
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>47 Döner Pizza alla Layel</h3><p>Dönerfleisch, Mexican-Inferno-Sauce</p></div>
+                <div class="product-info"><h3>47 Döner Pizza alla Layel</h3><p>Dönerfleisch spezial</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>48 Döner-Pizza Bari</h3><p>Dönerfleisch, Sauce Hollandaise, Paprika, Broccoli</p></div>
+                <div class="product-info"><h3>48 Döner-Pizza Bari</h3><p>Dönerfleisch, Zwiebeln, Schafskäse</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>49 Pizza Amoura</h3><p>Paprika, Zwiebeln, Mais, Broccoli, Hähnchenbrust, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>49 Pizza Amoura</h3><p>Spezialität des Hauses</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>50 Pizza Bombastico</h3><p>Dönerfleisch, Hähnchenbrust, Schinken, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>50 Pizza Bombastico</h3><p>Salami, Schinken, Champignons, Ei, Zwiebeln</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>51 Pizza Florida</h3><p>Dönerfleisch, Sauce Hollandaise, Peperoni, Pilze, Knoblauch</p></div>
+                <div class="product-info"><h3>51 Pizza Florida</h3><p>Früchte-Mix</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>52 Pizza Hawaii Classic</h3><p>Schinken, Ananas, Hähnchenbrust, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>52 Pizza Hawaii Classic</h3><p>Schinken, Ananas, extra Käse</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>53 Pizza Amore</h3><p>Spinat, Zwiebeln, Mozzarella, frische Paprika, Knoblauch</p></div>
+                <div class="product-info"><h3>53 Pizza Amore</h3><p>Salami, Schinken, Paprika</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>54 Pizza Ramacca</h3><p>frische Pilze, Paprika, Zwiebeln, Knoblauch</p></div>
+                <div class="product-info"><h3>54 Pizza Ramacca</h3><p>Spezialbelag</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>55 Pizza Jungfrau</h3><p>frische Paprika, Spargel, Mais</p></div>
+                <div class="product-info"><h3>55 Pizza Jungfrau</h3><p>gemischte Zutaten</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>56 Pizza Widder</h3><p>Spinat, Spiegelei, Knoblauch</p></div>
+                <div class="product-info"><h3>56 Pizza Widder</h3><p>Scharf!</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>57 Pizza Calzone Spezial</h3><p>Spinat, Broccoli, Pilze, Knoblauch</p></div>
+                <div class="product-info"><h3>57 Pizza Calzone Spezial</h3><p>gefüllte Pizza Spezial</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>58 Pizza Calzone</h3><p>Schinken, Salami, Pilze</p></div>
+                <div class="product-info"><h3>58 Pizza Calzone</h3><p>gefüllte Pizza</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>59 Pizza Calzone Italia</h3><p>Dönerfleisch, Zwiebeln, Paprika, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>59 Pizza Calzone Italia</h3><p>gefüllte Pizza nach ital. Art</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>60 Pizza Calzone Bruno Spezial</h3><p>Sauce Hollandaise, Schinken, Ananas, Hähnchenbrust</p></div>
+                <div class="product-info"><h3>60 Pizza Calzone Bruno Spezial</h3><p>gefüllte Pizza Bruno</p></div>
                 <div class="price">7,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>61 Salat Pizza</h3><p>Käse, nach dem Backen belegt mit gemischtem Salat und Joghurt Sauce</p></div>
+                <div class="product-info"><h3>61 Salat Pizza</h3><p>mit frischem Salat</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>62 Pizza Gyros</h3><p>Gyros, Zwiebeln, Barbecue Sauce</p></div>
+                <div class="product-info"><h3>62 Pizza Gyros</h3><p>Gyrosfleisch, Zwiebeln</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>63 Gyros Pizza Hollandaise</h3><p>Gyros, Broccoli, Zwiebeln, Sauce Hollandaise</p></div>
+                <div class="product-info"><h3>63 Gyros Pizza Hollandaise</h3><p>Gyros, Hollandaise</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>64 Pizza Regina</h3><p>Gyros, Zwiebeln, frische Tomaten, Weichkäse, Barbecue Sauce</p></div>
+                <div class="product-info"><h3>64 Pizza Regina</h3><p>Schinken, Champignons, Peperoni</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>65 Pizza Nathalie</h3><p>Hähnchenbrust, Ananas, Barbecue Sauce, Hollandaise</p></div>
+                <div class="product-info"><h3>65 Pizza Nathalie</h3><p>Überraschung</p></div>
                 <div class="price">7,50 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
-                <div class="product-info"><h3>66 Pizza Contadina</h3><p>Rucola, Tomaten, Parmesankäse, Olivenöl</p></div>
+                <div class="product-info"><h3>66 Pizza Contadina</h3><p>Speck, Zwiebeln</p></div>
                 <div class="price">7,50 €</div>
             </div>
             
@@ -1645,12 +1535,8 @@
                 <div class="product-info"><h3>Mineralwasser</h3><p>spritzig</p></div>
                 <div class="price">2,50 €</div>
             </div>
-            <div class="product-item" onclick="openQuickAdd(this)" style="cursor: pointer;" data-hide-when-unavailable="1">
-                <div class="product-info"><h3>Test</h3><p>Nur zum Testen</p></div>
-                <div class="price">0,10 €</div>
-            </div>
-
-
+            
+        
     </div>
         </div> 
 <style>
@@ -1723,7 +1609,7 @@
             <div style="text-align:center; color:#999; padding:20px;">Warenkorb leer</div>
         </div>
 
-        <button type="button" id="checkout-btn" class="cart-btn" onclick="openCheckoutModal()" style="width: 100%; padding: 12px; background: #f7fafc; border: 1px solid #edf2f7; border-radius: 10px; color: #a0aec0; font-weight: bold; font-size: 13px; cursor: not-allowed;">
+        <button type="button" id="checkout-btn" class="cart-btn" onclick="openUpsellModal()" style="width: 100%; padding: 12px; background: #f7fafc; border: 1px solid #edf2f7; border-radius: 10px; color: #a0aec0; font-weight: bold; font-size: 13px; cursor: not-allowed;">
             Warenkorb leer
         </button>
     </div>
@@ -1800,7 +1686,7 @@ function goToCheckoutFromCart() {
         }
     }
     closeMobileCartOverlay();
-    openCheckoutModal();
+    openUpsellModal();
 }
 
 function renderMobileCartOverlay() {
@@ -1814,18 +1700,16 @@ function renderMobileCartOverlay() {
 
     let html = '';
     warenkorb.forEach((item, index) => {
-        const priceDisplay = item.isFree ? '<span style="color:#2e7d32; font-weight:bold;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
-        const deleteBtn = item.isFree ? '' : `<button onclick="artikelLoeschenMobile(${index})" style="
-                    background:#fff0f0; border:1px solid #ffcccc; color:#8b1d1d;
-                    border-radius:6px; padding:5px 9px; font-size:13px;
-                    cursor:pointer; flex-shrink:0; font-weight:bold;">✕</button>`;
         html += `
             <div style="display:flex; align-items:flex-start; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; gap:8px;">
                 <div style="flex:1;">
                     <div style="font-size:14px; font-weight:600; color:#333; line-height:1.3;">${item.name}</div>
-                    <div style="font-size:13px; color:#8b1d1d; font-weight:bold; margin-top:3px;">${priceDisplay}</div>
+                    <div style="font-size:13px; color:#8b1d1d; font-weight:bold; margin-top:3px;">${item.preis.toFixed(2).replace('.', ',')} €</div>
                 </div>
-                ${deleteBtn}
+                <button onclick="artikelLoeschenMobile(${index})" style="
+                    background:#fff0f0; border:1px solid #ffcccc; color:#8b1d1d;
+                    border-radius:6px; padding:5px 9px; font-size:13px;
+                    cursor:pointer; flex-shrink:0; font-weight:bold;">✕</button>
             </div>
         `;
     });
@@ -1865,19 +1749,11 @@ function renderWarenkorb() {
 
     warenkorb.forEach((item, index) => {
         gesamt += item.preis;
-        const priceDisplay = item.isFree ? '<span style="color:#2e7d32;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
-        const deleteBtn = item.isFree ? '' : `<span onclick="artikelLoeschen(${index})" style="color:#8b1d1d; cursor:pointer; font-weight:bold; font-size:16px;">✕</span>`;
-        const extrasHtml = (item.extraDetails||[]).filter(e=>e.name).map(e =>
-            `<div style="font-size:12px;color:#888;padding-left:8px;">+ ${e.name}${e.price>0?' ('+e.price.toFixed(2).replace('.',',')+'€)':''}</div>`
-        ).join('');
         html += `
-            <div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
                 <span style="flex:1; padding-right:10px; font-size:14px; line-height:1.2;">${item.name}</span>
-                <span style="font-weight:bold; margin-right:10px; white-space:nowrap; font-size:14px;">${priceDisplay}</span>
-                ${deleteBtn}
-              </div>
-              ${extrasHtml}
+                <span style="font-weight:bold; margin-right:10px; white-space:nowrap; font-size:14px;">${item.preis.toFixed(2).replace('.', ',')} €</span>
+                <span onclick="artikelLoeschen(${index})" style="color:#8b1d1d; cursor:pointer; font-weight:bold; font-size:16px;">✕</span>
             </div>
         `;
     });
@@ -1930,49 +1806,10 @@ function selectOption(option) {
 <script>
 let warenkorb = [];
 
-// ═══ AKTION: Kleine Pizza Margherita GRATIS ═══
-function isPromotionActive() {
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const day = today.getDate();
-  // 15.04 bis 15.05 → Monat 4, Tag 15+ ODER Monat 5, Tag <=15
-  return (month === 4 && day >= 15) || (month === 5 && day <= 15);
-}
-
-function showPromotionBanner() {
-  const banner = document.getElementById('promotionBanner');
-  if (banner && isPromotionActive()) {
-    const header = document.getElementById('amouraHeader');
-    if (header) banner.style.top = (header.offsetHeight + 5) + 'px';
-    banner.style.display = 'block';
-  }
-}
-
-function addFreePizzaIfNeeded() {
-  if (!isPromotionActive()) return;
-  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : b.preis), 0);
-  const hasPizza = warenkorb.some(item => item.isFree);
-  if (summe >= 15 && !hasPizza) {
-    warenkorb.push({ id: Date.now(), name: 'Kleine Pizza Margherita (GRATIS)', preis: 0, isFree: true });
-  } else if (summe < 15 && hasPizza) {
-    // Warenkorb wieder unter 15€ → Gratis-Pizza entfernen
-    const idx = warenkorb.findIndex(item => item.isFree);
-    if (idx !== -1) warenkorb.splice(idx, 1);
-  }
-}
-
-// Banner beim Laden anzeigen
-window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(showPromotionBanner, 100);
-});
-</script>
-
-<script>
-
 function speiseInWarenkorb() {
     let name = "";
     let preis = 0;
-    let extraDetails = []; // [{name, price}]
+    let extras = [];
     let activePopupId = "";
 
     if (document.getElementById('pizzaPopup').style.display === 'flex') {
@@ -1980,23 +1817,17 @@ function speiseInWarenkorb() {
         name = document.getElementById('modalPizzaName').innerText;
         const priceElement = document.querySelector('#pizzaPopup #finalPriceDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        // Größe
-        const activeSize = document.querySelector('.size-btn.active');
-        if (activeSize) extraDetails.push({ name: activeSize.innerText.replace(/\(.*\)/, '').trim(), price: sizeSurcharge });
-        // Extras
         document.querySelectorAll('#pizzaPopup input[type="checkbox"]:checked').forEach(box => {
-            const p = parseFloat(box.getAttribute('data-price') || '0');
-            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: p });
+            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
         });
-    }
+    } 
     else if (document.getElementById('pastaPopup').style.display === 'flex') {
         activePopupId = 'pastaPopup';
         name = document.getElementById('pastaName').innerText;
         const priceElement = document.querySelector('#pastaPopup #pastaTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
         document.querySelectorAll('#pastaPopup input[type="checkbox"]:checked').forEach(box => {
-            const m = box.closest('label').innerText.match(/\+\s*([\d,]+)\s*€/);
-            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: m ? parseFloat(m[1].replace(',','.')) : 0 });
+            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
         });
     }
     else if (document.getElementById('saladPopup').style.display === 'flex') {
@@ -2005,8 +1836,7 @@ function speiseInWarenkorb() {
         const priceElement = document.querySelector('#saladPopup #saladTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
         document.querySelectorAll('#saladPopup input[type="checkbox"]:checked').forEach(box => {
-            const m = box.closest('label').innerText.match(/\+\s*([\d,]+)\s*€/);
-            extraDetails.push({ name: box.closest('label').innerText.replace(/\+.*€/, '').trim(), price: m ? parseFloat(m[1].replace(',','.')) : 0 });
+            extras.push(box.closest('label').innerText.replace(/\+.*€/, '').trim());
         });
     }
     else if (document.getElementById('pbPopup').style.display === 'flex') {
@@ -2014,17 +1844,12 @@ function speiseInWarenkorb() {
         name = document.getElementById('pbName').innerText;
         const priceElement = document.querySelector('#pbPopup #pbTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        document.querySelectorAll('.pb-check:checked').forEach(box => extraDetails.push({ name: box.value, price: 0 }));
-        if (pbDips.knobi > 0) extraDetails.push({ name: `${pbDips.knobi}× Knoblauch-Dip`, price: pbDips.knobi * 0.50 });
-        if (pbDips.kraeuter > 0) extraDetails.push({ name: `${pbDips.kraeuter}× Kräuter-Dip`, price: pbDips.kraeuter * 0.50 });
     }
     else if (document.getElementById('dipPopup').style.display === 'flex') {
         activePopupId = 'dipPopup';
         name = document.getElementById('dipName').innerText;
         const priceElement = document.querySelector('#dipPopup #dipTotalDisplay');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        if (dipCounts.knobi > 0) extraDetails.push({ name: `${dipCounts.knobi}× Knoblauch-Dip`, price: dipCounts.knobi * 0.50 });
-        if (dipCounts.kraeuter > 0) extraDetails.push({ name: `${dipCounts.kraeuter}× Kräuter-Dip`, price: dipCounts.kraeuter * 0.50 });
     }
     else if (document.getElementById('quickPopup').style.display === 'flex') {
         activePopupId = 'quickPopup';
@@ -2037,27 +1862,22 @@ function speiseInWarenkorb() {
         name = document.getElementById('famPizzaName').innerText;
         const priceElement = document.getElementById('famTotal');
         preis = parseFloat(priceElement.innerText.replace('€', '').replace(',', '.').trim());
-        let freeSlots = FREE_EXTRAS;
         document.querySelectorAll('#famPizzaPopup .fam-check:checked').forEach(box => {
             const zutatName = box.nextElementSibling.innerText.trim();
-            const p = freeSlots > 0 ? 0 : EXTRA_PRICE_FLAT;
-            freeSlots--;
-            extraDetails.push({ name: zutatName, price: p });
+            extras.push(zutatName);
         });
     }
 
     if (activePopupId !== "") {
-        warenkorb.push({ id: Date.now(), name: name, preis: preis, extraDetails: extraDetails });
-        addFreePizzaIfNeeded();
+        const vollerName = extras.length > 0 ? `${name} (${extras.join(', ')})` : name;
+        warenkorb.push({ id: Date.now(), name: vollerName, preis: preis });
         renderWarenkorb();
         document.getElementById(activePopupId).style.display = 'none';
     }
 }
 
 function artikelLoeschen(index) {
-    if (warenkorb[index] && warenkorb[index].isFree) return; // Gratis-Artikel nicht löschbar
     warenkorb.splice(index, 1);
-    addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 15€, sonst Gratis-Pizza entfernen
     renderWarenkorb();
 }
 
@@ -2124,19 +1944,61 @@ function toggleMobileMenu() {
     </div>
 </div>
 
+<!-- Upsell Modal -->
+<div id="upsellModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999998; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:white; padding:25px; border-radius:20px; width:100%; max-width:450px; position:relative; box-sizing:border-box; font-family:Arial,sans-serif;">
+        <h2 style="color:#8b1d1d; margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; text-align:center; font-size:20px;">Dazu noch etwas? 🍕</h2>
+        <p style="color:#666; font-size:13px; text-align:center; margin-top:0; margin-bottom:16px;">Viele bestellen das auch dazu:</p>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🥤</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">Coca Cola 0,33 L</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">2,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-cola" onclick="addUpsellItem('Coca Cola 0,33 L', 2.50, 'upsell-btn-cola')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🍞</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">201 Pizzabrötchen</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">3,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-broetchen" onclick="addUpsellItem('201 Pizzabrötchen', 3.50, 'upsell-btn-broetchen')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🧀</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">202 Pizzabrötchen mit Käse</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">6,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-kaese" onclick="addUpsellItem('202 Pizzabrötchen mit Käse', 6.50, 'upsell-btn-kaese')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+        </div>
+
+        <button onclick="proceedFromUpsell()" style="width:100%; padding:15px; background:#8b1d1d; color:white; border:none; border-radius:10px; font-weight:bold; font-size:15px; cursor:pointer;">
+            Weiter zur Bestellung →
+        </button>
+    </div>
+</div>
+
 <div id="checkoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center; padding: 15px;">
     <div style="background:white; padding:25px; border-radius:20px; width:100%; max-width:450px; position:relative; box-sizing: border-box; font-family: Arial, sans-serif;">
         <span onclick="closeCheckoutModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:28px; color:#888;">&times;</span>
         
         <h2 id="modal-title" style="color:#8b1d1d; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Kasse</h2>
-
-        <div id="checkout-customer-banner" style="display:none; background:#fff8e1; border:1px solid #f9a825; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:13px; color:#5d4037;"></div>
-
+        
         <div style="display:flex; gap:10px; margin: 20px 0 10px 0;">
             <input type="text" id="c-vorname" placeholder="Vorname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
             <input type="text" id="c-nachname" placeholder="Nachname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
         </div>
-        <input type="tel" id="c-telefon" placeholder="Telefonnummer *" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         <input type="email" id="c-email" placeholder="E-Mail (für Bestellbestätigung)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
         
         <div id="address-fields">
@@ -2145,44 +2007,17 @@ function toggleMobileMenu() {
             
             <div style="margin-bottom:5px; font-size:12px; color:#666;">Liefergebiet wählen:</div>
             <select id="c-stadt" onchange="updateSummary()" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;">
-                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 2,50€)</option>
-                <option value="roland">Roland (MBW: 15,00€ | Gebühr: 3,00€)</option>
-                <option value="vellern">Vellern (MBW: 15,00€ | Gebühr: 3,00€)</option>
+                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 1,50€)</option>
+                <option value="roland">Roland (MBW: 20,00€ | Gebühr: 2,00€)</option>
+                <option value="vellern">Vellern (MBW: 20,00€ | Gebühr: 2,00€)</option>
             </select>
         </div>
         
         <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">Zahlungsmethode:</div>
-        <select id="c-zahlung" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; background: #fff; cursor:pointer;" onchange="togglePaymentLogos()">
-            <option value="stripe">💳 Online bezahlen (Stripe)</option>
+        <select id="c-zahlung" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; background: #fff; cursor:pointer;">
+            <option value="stripe">💳 Kreditkarte (Stripe)</option>
             <option value="bar">Barzahlung bei Übergabe</option>
         </select>
-
-        <!-- Payment Logos (nur bei Stripe sichtbar) -->
-        <div id="paymentLogos" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:16px;padding:8px 10px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#1a1f71;color:#fff;font-size:.7rem;font-weight:900;font-family:Arial;border-radius:4px;padding:3px 7px;letter-spacing:.5px;">VISA</span>
-          <svg width="34" height="22" viewBox="0 0 34 22" xmlns="http://www.w3.org/2000/svg" style="border-radius:4px;display:block;"><rect width="34" height="22" fill="#1a1a1a" rx="4"/><circle cx="13" cy="11" r="7" fill="#eb001b"/><circle cx="21" cy="11" r="7" fill="#f79e1b"/><path d="M17 5.2a7 7 0 0 1 0 11.6A7 7 0 0 1 17 5.2z" fill="#ff5f00"/></svg>
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#016fcf;color:#fff;font-size:.62rem;font-weight:800;font-family:Arial;border-radius:4px;padding:3px 6px;letter-spacing:.3px;">AMEX</span>
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#000;color:#fff;font-size:.7rem;font-weight:600;font-family:-apple-system,Arial;border-radius:4px;padding:3px 7px;gap:3px;"><svg width="10" height="12" viewBox="0 0 814 1000" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-42.4-145.5-100.8C46.8 801.9 0 677.3 0 562.3 0 349.8 128.1 233.8 254.2 233.8c68.1 0 124.8 45.8 167.7 45.8 41.4 0 106.2-47.8 183.1-47.8zm-19-188c-34.3 36.8-92.2 63-139.5 63-5.8 0-11.6-.6-17.4-1.9-1.9-34.9 16.5-71.3 39.5-95.7 34.9-38.4 93.5-64.9 140.8-64.9 5.2 0 10.3.6 15.5 1.3 1.3 36.2-15.5 72.6-38.9 98.2z"/></svg>Pay</span>
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dadce0;font-size:.7rem;font-weight:500;font-family:Arial;border-radius:4px;padding:3px 7px;color:#3c4043;gap:1px;"><span style="color:#4285f4;font-weight:700;">G</span>Pay</span>
-          <span style="display:inline-flex;align-items:center;justify-content:center;background:#ffb3c7;color:#000;font-size:.7rem;font-weight:700;font-family:Arial;border-radius:4px;padding:3px 7px;">Klarna</span>
-          <span style="font-size:.65rem;color:#999;">& mehr</span>
-        </div>
-
-        <!-- ── GUTSCHEINCODE ── -->
-        <div id="coupon-section" style="margin-bottom:14px;">
-          <div style="display:flex;gap:8px;">
-            <input id="c-coupon" type="text" placeholder="🎟️ Gutscheincode (optional)"
-              autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
-              style="flex:1;padding:12px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;font-family:inherit;font-size:14px;text-transform:uppercase;letter-spacing:1px;">
-            <button type="button" onclick="validateCoupon()"
-              style="padding:12px 16px;background:#8b1d1d;color:white;border:none;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0;transition:background .2s;"
-              onmouseover="this.style.background='#a02222'" onmouseout="this.style.background='#8b1d1d'"
-              title="Gutscheincode einlösen">✓</button>
-          </div>
-          <div id="coupon-msg" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;"></div>
-        </div>
-
-        <textarea id="c-notiz" placeholder="📝 Anmerkungen zur Bestellung (z.B. Nr. 53 ohne Spinat)" maxlength="300" style="width:100%; padding:12px; margin-bottom:14px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; font-family:inherit; font-size:14px; resize:vertical; min-height:70px;"></textarea>
 
         <div id="final-summary" style="background:#f9f9f9;padding:14px;border-radius:10px;margin-bottom:14px;font-size:13px;line-height:1.8;border:1px dashed #ddd;"></div>
 
@@ -2223,13 +2058,6 @@ function toggleMobileMenu() {
 </div>
 
 <script>
-function togglePaymentLogos() {
-  var zahlung = document.getElementById('c-zahlung');
-  var logos   = document.getElementById('paymentLogos');
-  if (!logos || !zahlung) return;
-  logos.style.display = zahlung.value === 'stripe' ? 'flex' : 'none';
-}
-
 function updateBestellBtn() {
   var agb  = document.getElementById('cb-agb');
   var dsgvo = document.getElementById('cb-dsgvo');
@@ -2242,37 +2070,13 @@ function updateBestellBtn() {
   btn.style.cursor     = ok ? 'pointer' : 'not-allowed';
   btn.textContent      = ok ? '✅ Kostenpflichtig bestellen' : '🔒 Bitte AGB & Datenschutz bestätigen';
 }
-
-// ── GUTSCHEINCODE ──
-var couponValid = false;
-
-function validateCoupon() {
-  var code = (document.getElementById('c-coupon').value || '').trim().toUpperCase();
-  if (!code) { showCouponMsg('Bitte gib einen Gutscheincode ein.', false); return; }
-  if (code !== 'ROLLNCONE') { showCouponMsg('❌ Ungültiger Gutscheincode.', false); return; }
-  couponValid = true;
-  document.getElementById('c-coupon').disabled = true;
-  var btn = document.querySelector('#coupon-section button');
-  if (btn) { btn.style.background = '#2e7d32'; btn.disabled = true; }
-  showCouponMsg('✅ Gutscheincode gültig! Du nimmst nach deiner Bestellung an der Roll N Cone Verlosung teil.', true);
-}
-
-function showCouponMsg(text, success) {
-  var msg = document.getElementById('coupon-msg');
-  if (!msg) return;
-  msg.style.display = 'block';
-  msg.style.background = success ? '#e8f5e9' : '#ffebee';
-  msg.style.color = success ? '#2e7d32' : '#c62828';
-  msg.style.border = success ? '1px solid #c8e6c9' : '1px solid #ffcdd2';
-  msg.textContent = text;
-}
 </script>
 
 <script>
 const AREA_CONFIG = {
-    "beckum": { min: 15.00, fee: 2.50, label: "Beckum" },
-    "roland": { min: 15.00, fee: 3.00, label: "Roland" },
-    "vellern": { min: 15.00, fee: 3.00, label: "Vellern" }
+    "beckum": { min: 15.00, fee: 1.50, label: "Beckum" },
+    "roland": { min: 20.00, fee: 2.00, label: "Roland" },
+    "vellern": { min: 20.00, fee: 2.00, label: "Vellern" }
 };
 const SERVICE_FEE = 0.99;
 
@@ -2281,13 +2085,10 @@ document.getElementById('checkout-btn').onclick = function() {
         alert("Warenkorb ist leer!");
         return;
     }
-    openCheckoutModal();
+    openUpsellModal();
 };
 
 function openCheckoutModal() {
-    addFreePizzaIfNeeded();
-    renderWarenkorb();
-
     const modal = document.getElementById('checkoutModal');
     const addressFields = document.getElementById('address-fields');
     const modalTitle = document.getElementById('modal-title');
@@ -2388,28 +2189,68 @@ function getPageUrl() {
     return loc.origin + loc.pathname;
 }
 
+function openUpsellModal() {
+    ['upsell-btn-cola','upsell-btn-broetchen','upsell-btn-kaese'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) { btn.textContent = '+'; btn.style.background = '#8b1d1d'; btn.disabled = false; btn.dataset.added = '0'; }
+    });
+    document.getElementById('upsellModal').style.display = 'flex';
+}
+
+function closeUpsellModal() {
+    document.getElementById('upsellModal').style.display = 'none';
+}
+
+function proceedFromUpsell() {
+    closeUpsellModal();
+    openCheckoutModal();
+}
+
+function addUpsellItem(name, price, btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn.dataset.added === '1') {
+        warenkorb = warenkorb.filter(i => !(i.name === name && i.upsell));
+        renderWarenkorb();
+        btn.textContent = '+';
+        btn.style.background = '#8b1d1d';
+        btn.dataset.added = '0';
+    } else {
+        warenkorb.push({ id: Date.now(), name: name, preis: price, upsell: true });
+        renderWarenkorb();
+        btn.textContent = '✓';
+        btn.style.background = '#27ae60';
+        btn.dataset.added = '1';
+    }
+}
+
 async function processOrder() {
     const summeWaren = warenkorb.reduce((a, b) => a + b.preis, 0);
     const vorname = document.getElementById('c-vorname').value.trim();
     const nachname = document.getElementById('c-nachname').value.trim();
-    const telefon = document.getElementById('c-telefon').value.trim();
+    const email = document.getElementById('c-email').value.trim();
+
+    if (!vorname || !nachname) { alert("Bitte gib Vor- und Nachnamen ein."); return; }
+    if (!email || !email.includes('@')) { alert("Bitte gib eine gueltige E-Mail-Adresse ein."); return; }
+
+    if (currentSelection === 'delivery') {
+        const strasse = document.getElementById('c-strasse').value.trim();
+        const hausnummer = document.getElementById('c-hausnummer').value.trim();
+        const stadtKey = document.getElementById('c-stadt').value;
+        const config = AREA_CONFIG[stadtKey];
+        if (!strasse || !hausnummer) { alert("Bitte gib Straße und Hausnummer ein."); return; }
+        if (summeWaren < config.min) { alert(`Mindestbestellwert: ${config.min.toFixed(2)} €`); return; }
+    }
+
+    finalizeOrder();
+}
+
+async function finalizeOrder() {
+
+    const summeWaren = warenkorb.reduce((a, b) => a + b.preis, 0);
+    const vorname = document.getElementById('c-vorname').value.trim();
+    const nachname = document.getElementById('c-nachname').value.trim();
     const email = document.getElementById('c-email').value.trim();
     const zahlung = document.getElementById('c-zahlung').value;
-    const notiz = document.getElementById('c-notiz').value.trim();
-
-    if (!vorname || !nachname) {
-        alert("Bitte gib Vor- und Nachnamen ein.");
-        return;
-    }
-    if (!telefon) {
-        alert("Bitte gib deine Telefonnummer ein.");
-        document.getElementById('c-telefon').focus();
-        return;
-    }
-    if (!email || !email.includes('@')) {
-        alert("Bitte gib eine gueltige E-Mail-Adresse ein.");
-        return;
-    }
 
     let address = "";
     let fee = 0;
@@ -2419,8 +2260,6 @@ async function processOrder() {
         const hausnummer = document.getElementById('c-hausnummer').value.trim();
         const stadtKey = document.getElementById('c-stadt').value;
         const config = AREA_CONFIG[stadtKey];
-        if (!strasse || !hausnummer) { alert("Bitte gib Straße und Hausnummer ein."); return; }
-        if (summeWaren < config.min) { alert(`Mindestbestellwert: ${config.min.toFixed(2)} €`); return; }
         fee = config.fee;
         address = `${strasse} ${hausnummer}, ${config.label}`;
     } else {
@@ -2442,7 +2281,7 @@ async function processOrder() {
         status: 'neu',
         type: currentSelection,
         customer: { name: `${vorname} ${nachname}`, address: address },
-        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extraDetails: item.extraDetails||[] })),
+        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extras: [] })),
         subtotal: summeWaren,
         fee: fee,
         total: finalTotal,
@@ -2450,7 +2289,8 @@ async function processOrder() {
     };
 
     if (zahlung === 'stripe') {
-        // Kein AmouraDB.addOrder() hier – create-stripe-checkout speichert die Bestellung selbst
+        // Bestellung erst speichern
+        try { await AmouraDB.addOrder(newOrder); } catch(e) { console.error('Speicherfehler:', e); }
 
         const btn = document.querySelector('[onclick="processOrder()"]');
         if (btn) { btn.disabled = true; btn.textContent = '⏳ Weiterleitung zu Stripe...'; }
@@ -2469,20 +2309,19 @@ async function processOrder() {
                         name:  i.name,
                         price: i.preis,
                         qty:   1,
-                        extraDetails: i.extraDetails || []
+                        note:  (i.extras || []).join(', ')
                     })),
                     subtotal:    summeWaren,
                     deliveryFee: fee,
                     serviceFee:  SERVICE_FEE,
                     total:       finalTotal,
                     mode:        currentSelection === 'delivery' ? 'lieferung' : 'abholung',
-                    note:        notiz,
-                    coupon:      couponValid ? 'ROLLNCONE' : null,
+                    note:        '',
                     customer: {
                         first:  vorname,
                         last:   nachname,
                         email:  email,
-                        phone:  telefon,
+                        phone:  '',
                         street: strasse,
                         house:  hausnr,
                         city:   cityLabel
@@ -2516,13 +2355,11 @@ async function processOrder() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, extraDetails: i.extraDetails||[] })),
+                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, note: (i.extras||[]).join(', ') })),
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
-                note: notiz,
-                coupon: couponValid ? 'ROLLNCONE' : null,
-                customer: { first: vorname, last: nachname, email: email, phone: telefon, street: strasse2, house: hausnr2, city: cityLabel2 }
+                customer: { first: vorname, last: nachname, email: email, phone: '', street: strasse2, house: hausnr2, city: cityLabel2 }
             })
         });
         if (barResp.ok) {
@@ -2547,71 +2384,17 @@ function showDankeModal(orderId) {
 }
 
 // Zahlung erfolgreich erkennen (Stripe & PayPal Rückleitung)
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
     const params = new URLSearchParams(window.location.search);
     const orderId = params.get('orderId');
     const orderNum = params.get('order');
-    const sessionId = params.get('session_id');
-
     if (orderId || orderNum) {
         warenkorb = [];
         renderWarenkorb();
         showDankeModal(orderNum ? '#' + orderNum : orderId);
         window.history.replaceState({}, document.title, window.location.pathname);
-
-        // Stripe-Zahlung serverseitig bestätigen (Fallback falls Webhook fehlschlägt)
-        if (sessionId) {
-            try {
-                await fetch(`${BACKEND_URL}/api/verify-payment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sessionId })
-                });
-            } catch(e) {
-                console.warn('verify-payment fehlgeschlagen:', e.message);
-            }
-        }
-        return;
-    }
-
-    // Stripe-Zahlung abgebrochen → Formular wieder freischalten
-    if (params.get('payment') === 'cancelled') {
-        window.history.replaceState({}, document.title, window.location.pathname);
-        resetOrderButton();
-        showStripeCancelBanner();
     }
 });
-
-// BFCache-Fix: Seite aus Browser-Cache geladen (z.B. nach Zurück-Button) → Button-State zurücksetzen
-window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        resetOrderButton();
-    }
-});
-
-function resetOrderButton() {
-    const btn = document.querySelector('[onclick="processOrder()"]');
-    if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Kostenpflichtig bestellen';
-    }
-}
-
-function showStripeCancelBanner() {
-    const banner = document.createElement('div');
-    banner.id = 'stripe-cancel-banner';
-    banner.style.cssText = [
-        'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
-        'background:#fff3cd', 'color:#856404', 'border:1px solid #ffc107',
-        'border-radius:10px', 'padding:12px 20px', 'font-size:14px',
-        'box-shadow:0 4px 16px rgba(0,0,0,0.12)', 'z-index:99999',
-        'max-width:90vw', 'text-align:center', 'cursor:pointer'
-    ].join(';');
-    banner.innerHTML = '⚠️ Zahlung abgebrochen – du kannst deine Bestellung anpassen oder eine andere Zahlungsart wählen. <strong>✕</strong>';
-    banner.onclick = () => banner.remove();
-    document.body.appendChild(banner);
-    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 7000);
-}
 </script>
 
        
@@ -2690,8 +2473,7 @@ const pizzaExtrasList = [
 ];
 
 function openPizza(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     pizzaBasePrice = parseFloat(priceTxt.replace(/[€()]/g, '').replace(',', '.').trim());
@@ -2812,8 +2594,7 @@ function closePizzaPopup() {
 let pastaBasePrice = 0;
 
 function openPasta(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const desc = element.querySelector('p').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
@@ -2935,8 +2716,7 @@ const saladExtrasList = [
 ];
 
 function openSalad(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const desc = element.querySelector('p').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
@@ -3027,8 +2807,7 @@ function closeSaladPopup() {
 
 <script>
 function openQuickAdd(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const descElement = element.querySelector('p');
     const desc = descElement ? descElement.innerText : "";
     const priceTxt = element.querySelector('.price').innerText;
@@ -3127,8 +2906,7 @@ let pbBasePrice = 0;
 let pbDips = { knobi: 0, kraeuter: 0 };
 
 function openPbCustom(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     pbBasePrice = parseFloat(priceTxt.replace('€', '').replace('(', '').replace(')', '').replace(',', '.').trim());
@@ -3214,8 +2992,7 @@ let dipBasePrice = 0;
 let dipCounts = { knobi: 0, kraeuter: 0 };
 
 function openDipPopup(element) {
-    const num = element.dataset.itemNum;
-    const name = (num ? num + ' ' : '') + element.querySelector('h3').innerText;
+    const name = element.querySelector('h3').innerText;
     const priceTxt = element.querySelector('.price').innerText;
     
     dipBasePrice = parseFloat(priceTxt.replace('€', '').replace('(', '').replace(')', '').replace(',', '.').trim());
@@ -3581,7 +3358,7 @@ LEGAL.impressum = {
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>Samstag</td><td>17:00 &ndash; 22:00 Uhr</td></tr>"
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>So &amp; Feiertage</td><td>12:00 &ndash; 14:00 Uhr &amp; 16:00 &ndash; 22:00 Uhr</td></tr>"
        + "</table>"
-       + "<p style='margin-top:20px;font-size:.84rem'>Liefergebiet: Beckum (2,50 &euro;) &middot; Roland &amp; Vellern (3,00 &euro;)</p>"
+       + "<p style='margin-top:20px;font-size:.84rem'>Liefergebiet: Beckum (1,50 &euro;) &middot; Roland &amp; Vellern (2,00 &euro;)</p>"
        + "<h3 style='color:#8b1d1d;margin:20px 0 8px'>EU-Streitschlichtung</h3>"
        + "<p>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:<br>"
        + "<a href='https://ec.europa.eu/consumers/odr/' target='_blank' style='color:#8b1d1d'>ec.europa.eu/consumers/odr</a></p>"
@@ -3631,9 +3408,9 @@ LEGAL.agb = {
        + "<p>Alle Preise inkl. MwSt. (7&nbsp;% auf Speisen, 19&nbsp;% auf Getr&auml;nke). F&uuml;r die Nutzung der Online-Bestellplattform wird eine <strong>Servicegeb&uuml;hr von 0,99&nbsp;&euro;</strong> pro Bestellung erhoben (gem. &sect;&nbsp;312a BGB). Diese z&auml;hlt nicht zum Mindestbestellwert.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;4 Lieferung &amp; Mindestbestellwerte</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
-       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
-       + "<li>Roland: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
-       + "<li>Vellern: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 1,50&nbsp;&euro;</li>"
+       + "<li>Roland: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,00&nbsp;&euro;</li>"
+       + "<li>Vellern: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,00&nbsp;&euro;</li>"
        + "</ul>"
        + "<p>Lieferzeiten sind Sch&auml;tzwerte und nicht verbindlich.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;5 Widerrufsrecht</h4>"
@@ -3919,8 +3696,6 @@ document.readyState === 'loading'
         numBadge.textContent = m[1].padStart(2, '0');
         // Remove number from h3 text
         h3.childNodes[0].textContent = h3.childNodes[0].textContent.replace(/^\d+\s*/, '');
-        // Store number on element so open* functions can use it
-        el.dataset.itemNum = m[1];
       }
     }
 
@@ -3956,109 +3731,6 @@ document.readyState === 'loading'
     ? document.addEventListener('DOMContentLoaded', init)
     : init();
 })();
-</script>
-
-<script>
-// ===== SUCHLEISTE =====
-var searchOpen = false;
-
-function toggleSearch() {
-  searchOpen = !searchOpen;
-  var wrap = document.getElementById('searchBarWrap');
-  if (searchOpen) {
-    wrap.classList.add('open');
-    setTimeout(function() { document.getElementById('searchInput').focus(); }, 200);
-  } else {
-    wrap.classList.remove('open');
-    clearSearch();
-  }
-}
-
-function clearSearch() {
-  var input = document.getElementById('searchInput');
-  input.value = '';
-  handleSearch('');
-  if (searchOpen) {
-    // X im Eingabefeld schließt auch die Suche
-    searchOpen = false;
-    document.getElementById('searchBarWrap').classList.remove('open');
-  }
-}
-
-function handleSearch(query) {
-  var q = query.trim().toLowerCase();
-  var items = document.querySelectorAll('.product-item');
-  var noResults = document.getElementById('searchNoResults');
-  var totalVisible = 0;
-
-  items.forEach(function(item) {
-    if (!q) {
-      item.classList.remove('search-hidden');
-      totalVisible++;
-      return;
-    }
-    var h3 = item.querySelector('h3');
-    var badge = item.querySelector('.item-num-badge');
-    var name = h3 ? h3.textContent.toLowerCase() : '';
-    var num = badge ? badge.textContent.toLowerCase() : '';
-    var itemNum = (item.dataset.itemNum || '').toLowerCase();
-    // Also check original name stored in dataset if available
-    var origName = (item.dataset.origName || '').toLowerCase();
-
-    if (name.indexOf(q) !== -1 || num.indexOf(q) !== -1 || itemNum.indexOf(q) !== -1 || origName.indexOf(q) !== -1) {
-      item.classList.remove('search-hidden');
-      totalVisible++;
-    } else {
-      item.classList.add('search-hidden');
-    }
-  });
-
-  // Kategorien + alle Begleitelemente (p-Texte, fam-extra, etc.) ausblenden
-  var categories = document.querySelectorAll('h2.category-title');
-  categories.forEach(function(cat) {
-    // Alle Geschwister dieser Kategorie sammeln bis zur nächsten
-    var siblings = [];
-    var next = cat.nextElementSibling;
-    while (next && !next.matches('h2.category-title')) {
-      siblings.push(next);
-      next = next.nextElementSibling;
-    }
-
-    if (!q) {
-      cat.style.display = '';
-      siblings.forEach(function(s) { s.style.display = ''; });
-      return;
-    }
-
-    // Prüfen ob mindestens ein sichtbares product-item vorhanden
-    var hasVisible = false;
-    siblings.forEach(function(s) {
-      if (s.classList.contains('product-item') && !s.classList.contains('search-hidden')) {
-        hasVisible = true;
-      }
-      if (s.classList.contains('product-grid')) {
-        if (s.querySelectorAll('.product-item:not(.search-hidden)').length > 0) hasVisible = true;
-      }
-    });
-
-    // Kategorie + alle Begleitelemente ein/ausblenden
-    cat.style.display = hasVisible ? '' : 'none';
-    siblings.forEach(function(s) {
-      if (!s.classList.contains('product-item') && !s.classList.contains('product-grid')) {
-        // p-Texte, fam-extra etc. nur anzeigen wenn Kategorie sichtbar
-        s.style.display = hasVisible ? '' : 'none';
-      }
-    });
-  });
-
-  // "Keine Ergebnisse" anzeigen
-  if (noResults) noResults.style.display = (q && totalVisible === 0) ? 'block' : 'none';
-}
-
-// Suche schließen bei Escape
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && searchOpen) toggleSearch();
-});
 </script>
 </body>
 <style>
@@ -4220,12 +3892,6 @@ body.modal-open {
       const name = h3.textContent.trim();
       if (!disabledNames.some(d => name.startsWith(d))) return;
 
-      // Komplett verstecken wenn gewünscht
-      if (el.getAttribute('data-hide-when-unavailable') === '1') {
-        el.style.display = 'none';
-        return;
-      }
-
       // Schon markiert? Überspringen
       if (el.getAttribute('data-sold-out') === '1') return;
       el.setAttribute('data-sold-out', '1');
@@ -4286,9 +3952,6 @@ body.modal-open {
         hideClosedBanner();
       }
     } catch(e) {
-      // Backend nicht erreichbar → sicher auf geschlossen setzen
-      showClosedBanner('geschlossen');
-      blockPopups('geschlossen');
       console.warn('Status-Check fehlgeschlagen:', e);
     }
 
@@ -4339,65 +4002,6 @@ body.modal-open {
       if (visible) lockBody(); else unlockBody();
     });
     obs.observe(el, { attributes: true, attributeFilter: ['style'] });
-  });
-})();
-</script>
-
-<script>
-// Auto-fill checkout for logged-in customers
-(function() {
-  var _customer = null;
-
-  async function loadCustomer() {
-    var token = localStorage.getItem('customerToken');
-    if (!token) return;
-    try {
-      var res = await fetch('/api/auth/me', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!res.ok) return;
-      _customer = await res.json();
-    } catch {}
-  }
-
-  function fillCheckout() {
-    if (!_customer) return;
-
-    var fn = document.getElementById('c-vorname');
-    var ln = document.getElementById('c-nachname');
-    var tel = document.getElementById('c-telefon');
-    var em = document.getElementById('c-email');
-    if (fn && !fn.value) fn.value = _customer.first || '';
-    if (ln && !ln.value) ln.value = _customer.last || '';
-    if (tel && !tel.value) tel.value = _customer.phone || '';
-    if (em && !em.value) em.value = _customer.email || '';
-
-    // Default-Adresse befüllen
-    var addr = _customer.addresses && _customer.addresses[_customer.defaultAddress || 0];
-    if (addr) {
-      var st = document.getElementById('c-strasse');
-      var hn = document.getElementById('c-hausnummer');
-      if (st && !st.value) st.value = addr.street || '';
-      if (hn && !hn.value) hn.value = addr.house || '';
-    }
-
-    // Banner anzeigen
-    var banner = document.getElementById('checkout-customer-banner');
-    if (banner) {
-      banner.textContent = '👤 Eingeloggt als ' + _customer.first + ' ' + _customer.last;
-      banner.style.display = 'block';
-    }
-  }
-
-  // openCheckoutModal patchen
-  document.addEventListener('DOMContentLoaded', function() {
-    loadCustomer();
-
-    var orig = window.openCheckoutModal;
-    window.openCheckoutModal = function() {
-      orig.apply(this, arguments);
-      fillCheckout();
-    };
   });
 })();
 </script>
