@@ -1865,7 +1865,15 @@ function renderWarenkorb() {
 
     warenkorb.forEach((item, index) => {
         gesamt += item.preis;
+        const qty = item.qty || 1;
+        const unitPrice = item.basePreis || item.preis;
         const priceDisplay = item.isFree ? '<span style="color:#2e7d32;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
+        const qtyBtns = item.isFree ? '' : `
+            <div style="display:flex;align-items:center;gap:5px;margin-right:8px;">
+              <span onclick="artikelQtyChange(${index},-1)" style="cursor:pointer;width:22px;height:22px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#8b1d1d;">−</span>
+              <span style="font-size:14px;font-weight:bold;min-width:16px;text-align:center;">${qty}</span>
+              <span onclick="artikelQtyChange(${index},1)" style="cursor:pointer;width:22px;height:22px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;">+</span>
+            </div>`;
         const deleteBtn = item.isFree ? '' : `<span onclick="artikelLoeschen(${index})" style="color:#8b1d1d; cursor:pointer; font-weight:bold; font-size:16px;">✕</span>`;
         const extrasHtml = (item.extraDetails||[]).filter(e=>e.name).map(e =>
             `<div style="font-size:12px;color:#888;padding-left:8px;">+ ${e.name}${e.price>0?' ('+e.price.toFixed(2).replace('.',',')+'€)':''}</div>`
@@ -1874,6 +1882,7 @@ function renderWarenkorb() {
             <div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="flex:1; padding-right:10px; font-size:14px; line-height:1.2;">${item.name}</span>
+                ${qtyBtns}
                 <span style="font-weight:bold; margin-right:10px; white-space:nowrap; font-size:14px;">${priceDisplay}</span>
                 ${deleteBtn}
               </div>
@@ -1895,7 +1904,7 @@ function renderWarenkorb() {
     const headerTotal = document.getElementById('headerCartTotal');
     const headerCount = document.getElementById('headerCartCount');
     if (headerTotal) headerTotal.innerText = preisText;
-    if (headerCount) headerCount.innerText = warenkorb.length;
+    if (headerCount) headerCount.innerText = warenkorb.reduce((s,i)=>s+(i.qty||1),0);
 }
 </script>
 
@@ -2047,15 +2056,28 @@ function speiseInWarenkorb() {
     }
 
     if (activePopupId !== "") {
-        warenkorb.push({ id: Date.now(), name: name, preis: preis, extraDetails: extraDetails });
+        const extrasKey = extraDetails.map(e=>e.name).join(',');
+        const existing = warenkorb.find(i => i.name === name && (i.extraDetails||[]).map(e=>e.name).join(',') === extrasKey && !i.isFree);
+        if (existing) { existing.qty = (existing.qty||1) + 1; existing.preis = preis * existing.qty; }
+        else warenkorb.push({ id: Date.now(), name: name, preis: preis, basePreis: preis, qty: 1, extraDetails: extraDetails });
         addFreePizzaIfNeeded();
         renderWarenkorb();
         document.getElementById(activePopupId).style.display = 'none';
     }
 }
 
+function artikelQtyChange(index, delta) {
+    const item = warenkorb[index];
+    if (!item || item.isFree) return;
+    const newQty = (item.qty||1) + delta;
+    if (newQty <= 0) { warenkorb.splice(index, 1); }
+    else { item.qty = newQty; item.preis = item.basePreis * newQty; }
+    addFreePizzaIfNeeded();
+    renderWarenkorb();
+}
+
 function artikelLoeschen(index) {
-    if (warenkorb[index] && warenkorb[index].isFree) return; // Gratis-Artikel nicht löschbar
+    if (warenkorb[index] && warenkorb[index].isFree) return;
     warenkorb.splice(index, 1);
     addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 15€, sonst Gratis-Pizza entfernen
     renderWarenkorb();
@@ -2519,7 +2541,7 @@ async function processOrder() {
         status: 'neu',
         type: currentSelection,
         customer: { name: `${vorname} ${nachname}`, address: address },
-        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extraDetails: item.extraDetails||[] })),
+        items: warenkorb.map(item => ({ name: item.name, price: item.basePreis||item.preis, qty: item.qty||1, extraDetails: item.extraDetails||[] })),
         subtotal: summeWaren,
         fee: fee,
         total: finalTotal,
