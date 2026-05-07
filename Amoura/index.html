@@ -1814,18 +1814,21 @@ function renderMobileCartOverlay() {
 
     let html = '';
     warenkorb.forEach((item, index) => {
+        const qty = item.qty || 1;
         const priceDisplay = item.isFree ? '<span style="color:#2e7d32; font-weight:bold;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
-        const deleteBtn = item.isFree ? '' : `<button onclick="artikelLoeschenMobile(${index})" style="
-                    background:#fff0f0; border:1px solid #ffcccc; color:#8b1d1d;
-                    border-radius:6px; padding:5px 9px; font-size:13px;
-                    cursor:pointer; flex-shrink:0; font-weight:bold;">✕</button>`;
+        const qtyBtns = item.isFree ? '' : `
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span onclick="artikelQtyChangeMobile(${index},-1)" style="cursor:pointer;width:26px;height:26px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:#8b1d1d;">−</span>
+              <span style="font-size:14px;font-weight:bold;min-width:18px;text-align:center;">${qty}</span>
+              <span onclick="artikelQtyChangeMobile(${index},1)" style="cursor:pointer;width:26px;height:26px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:#fff;">+</span>
+            </div>`;
         html += `
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; gap:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; gap:8px;">
                 <div style="flex:1;">
                     <div style="font-size:14px; font-weight:600; color:#333; line-height:1.3;">${item.name}</div>
                     <div style="font-size:13px; color:#8b1d1d; font-weight:bold; margin-top:3px;">${priceDisplay}</div>
                 </div>
-                ${deleteBtn}
+                ${qtyBtns}
             </div>
         `;
     });
@@ -1835,6 +1838,11 @@ function renderMobileCartOverlay() {
 
 function artikelLoeschenMobile(index) {
     artikelLoeschen(index);
+    renderMobileCartOverlay();
+}
+
+function artikelQtyChangeMobile(index, delta) {
+    artikelQtyChange(index, delta);
     renderMobileCartOverlay();
 }
 
