@@ -2324,8 +2324,8 @@ function validateCoupon() {
   if (!code) { showCouponMsg('Bitte gib einen Gutscheincode ein.', false); return; }
   if (code !== 'ROLLNCONE') { showCouponMsg('❌ Ungültiger Gutscheincode.', false); return; }
   var now = new Date();
-  var start = new Date('2025-05-19T00:00:00+02:00');
-  var end   = new Date('2025-06-02T23:59:59+02:00');
+  var start = new Date('2026-05-19T00:00:00+02:00');
+  var end   = new Date('2026-06-02T23:59:59+02:00');
   if (now < start || now > end) { showCouponMsg('❌ Dieser Gutscheincode ist abgelaufen.', false); return; }
   couponValid = true;
   document.getElementById('c-coupon').disabled = true;

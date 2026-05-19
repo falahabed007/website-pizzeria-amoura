@@ -824,8 +824,8 @@ const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
 async function sendCouponRaffleEmail(order) {
   if (!order.coupon || order.coupon.toUpperCase() !== 'ROLLNCONE') return;
   const now = new Date();
-  const start = new Date('2025-05-19T00:00:00+02:00');
-  const end   = new Date('2025-06-02T23:59:59+02:00');
+  const start = new Date('2026-05-19T00:00:00+02:00');
+  const end   = new Date('2026-06-02T23:59:59+02:00');
   if (now < start || now > end) return;
   if (!order.customer?.email) return;
   const resend = getResend();
