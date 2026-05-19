@@ -5,8 +5,6 @@ const Stripe     = require('stripe');
 const { Resend } = require('resend');
 const cron       = require('node-cron');
 const PDFDocument = require('pdfkit');
-const bcrypt     = require('bcryptjs');
-const jwt        = require('jsonwebtoken');
 require('dotenv').config();
 
 const app  = express();
@@ -93,7 +91,6 @@ const orderSchema = new mongoose.Schema({
   total:       Number,
   note:        String,
   coupon:      String,
-  userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
@@ -116,23 +113,6 @@ const settingsSchema = new mongoose.Schema({
 });
 const Settings = mongoose.model('Settings', settingsSchema);
 
-const userSchema = new mongoose.Schema({
-  email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true },
-  first:    { type: String, required: true, trim: true },
-  last:     { type: String, required: true, trim: true },
-  phone:    { type: String, default: '' },
-  addresses: [{
-    label:  { type: String, default: 'Zuhause' },
-    street: String,
-    house:  String,
-    city:   String,
-    zip:    String,
-  }],
-  defaultAddress: { type: Number, default: 0 },
-}, { timestamps: true });
-const User = mongoose.model('User', userSchema);
-
 // ─── Counter ─────────────────────────────────────────────────────
 async function getNextOrderNum() {
   const r = await Counter.findByIdAndUpdate('orderNum',
@@ -140,149 +120,13 @@ async function getNextOrderNum() {
   return r.seq + 1000;
 }
 
-// ─── Admin Auth ───────────────────────────────────────────────────
+// ─── Auth ─────────────────────────────────────────────────────────
 function auth(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ message: 'Nicht autorisiert' });
   if (h.split(' ')[1] !== process.env.ADMIN_TOKEN_SECRET) return res.status(401).json({ message: 'Token ungültig' });
   next();
 }
-
-// ─── Customer Auth (JWT) ──────────────────────────────────────────
-function customerAuth(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Nicht eingeloggt' });
-  }
-  try {
-    req.user = jwt.verify(auth.split(' ')[1], process.env.JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ message: 'Token abgelaufen oder ungültig' });
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// KUNDEN-AUTH ROUTES
-// ═══════════════════════════════════════════════════════════════
-
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { email, password, first, last, phone } = req.body;
-    if (!email || !password || !first || !last || !phone) {
-      return res.status(400).json({ message: 'Alle Pflichtfelder ausfüllen' });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Passwort mindestens 6 Zeichen' });
-    }
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ message: 'E-Mail bereits registriert' });
-
-    const hash = await bcrypt.hash(password, 12);
-    const user = await User.create({ email, password: hash, first, last, phone: phone || '' });
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-    res.status(201).json({
-      token,
-      user: { id: user._id, email: user.email, first: user.first, last: user.last }
-    });
-  } catch (err) {
-    console.error('Register Fehler:', err);
-    res.status(500).json({ message: 'Registrierung fehlgeschlagen' });
-  }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: 'Falsche E-Mail oder Passwort' });
-
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: 'Falsche E-Mail oder Passwort' });
-
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({
-      token,
-      user: { id: user._id, email: user.email, first: user.first, last: user.last }
-    });
-  } catch (err) {
-    console.error('Login Fehler:', err);
-    res.status(500).json({ message: 'Login fehlgeschlagen' });
-  }
-});
-
-app.get('/api/auth/me', customerAuth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'User nicht gefunden' });
-    res.json(user);
-  } catch {
-    res.status(500).json({ message: 'Fehler' });
-  }
-});
-
-app.patch('/api/auth/profile', customerAuth, async (req, res) => {
-  try {
-    const { first, last, phone, addresses, defaultAddress } = req.body;
-    const update = {};
-    if (first) update.first = first;
-    if (last) update.last = last;
-    if (phone !== undefined) update.phone = phone;
-    if (addresses) update.addresses = addresses;
-    if (defaultAddress !== undefined) update.defaultAddress = defaultAddress;
-
-    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true }).select('-password');
-    res.json(user);
-  } catch {
-    res.status(500).json({ message: 'Profil-Update fehlgeschlagen' });
-  }
-});
-
-app.patch('/api/auth/password', customerAuth, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ message: 'Neues Passwort mindestens 6 Zeichen' });
-    }
-    const user = await User.findById(req.user.id);
-    const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) return res.status(401).json({ message: 'Aktuelles Passwort falsch' });
-
-    user.password = await bcrypt.hash(newPassword, 12);
-    await user.save();
-    res.json({ message: 'Passwort geändert' });
-  } catch {
-    res.status(500).json({ message: 'Fehler beim Passwort ändern' });
-  }
-});
-
-app.get('/api/account/orders', customerAuth, async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.user.id })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .select('orderNum status payment total items createdAt mode');
-    res.json(orders);
-  } catch {
-    res.status(500).json({ message: 'Bestellhistorie konnte nicht geladen werden' });
-  }
-});
-
-app.post('/api/account/reorder/:orderId', customerAuth, async (req, res) => {
-  try {
-    const original = await Order.findOne({ _id: req.params.orderId, userId: req.user.id });
-    if (!original) return res.status(404).json({ message: 'Bestellung nicht gefunden' });
-
-    res.json({
-      items: original.items,
-      mode: original.mode,
-      note: original.note || ''
-    });
-  } catch {
-    res.status(500).json({ message: 'Re-Order fehlgeschlagen' });
-  }
-});
 
 // ═══════════════════════════════════════════════════════════════
 // PUBLIC ROUTES
@@ -442,20 +286,10 @@ app.post('/api/coupon-raffle', async (req, res) => {
 // ── Neue Web-Bestellung (pending) ────────────────────────────────
 app.post('/api/orders', async (req, res) => {
   try {
-    // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
-    let userId = null;
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const decoded = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET);
-        userId = decoded.id;
-      } catch {} // Gastbestellung – kein Fehler
-    }
-
     const orderNum = await getNextOrderNum();
     const isPOS    = req.body.source === 'pos';
     const order    = new Order({
-      ...req.body, orderNum, userId,
+      ...req.body, orderNum,
       status: isPOS ? 'confirmed' : 'pending'
     });
     await order.save();
@@ -616,39 +450,6 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
 // ═══════════════════════════════════════════════════════════════
 // ADMIN ROUTES
 // ═══════════════════════════════════════════════════════════════
-
-app.get('/api/admin/customers/:userId/orders', auth, async (req, res) => {
-  try {
-    const orders = await Order.find({ userId: req.params.userId })
-      .sort({ createdAt: -1 })
-      .limit(50);
-    res.json(orders);
-  } catch(e) {
-    res.status(500).json({ message: 'Fehler beim Laden der Bestellungen' });
-  }
-});
-
-app.get('/api/admin/customers', auth, async (req, res) => {
-  try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    const userIds = users.map(u => u._id);
-    const stats = await Order.aggregate([
-      { $match: { userId: { $in: userIds } } },
-      { $group: { _id: '$userId', count: { $sum: 1 }, total: { $sum: '$total' }, lastOrder: { $max: '$createdAt' } } }
-    ]);
-    const statsMap = {};
-    stats.forEach(s => { statsMap[s._id.toString()] = s; });
-    const result = users.map(u => ({
-      ...u.toObject(),
-      orderCount: statsMap[u._id.toString()]?.count || 0,
-      orderTotal: statsMap[u._id.toString()]?.total || 0,
-      lastOrder:  statsMap[u._id.toString()]?.lastOrder || null,
-    }));
-    res.json(result);
-  } catch(e) {
-    res.status(500).json({ message: 'Fehler beim Laden der Kunden' });
-  }
-});
 
 app.post('/api/admin/login', (req, res) => {
   req.body.password === process.env.ADMIN_PASSWORD
@@ -1559,6 +1360,84 @@ cron.schedule('58 23 * * *', async () => {
 
       doc.fontSize(8).fillColor('#aaa')
         .text(`Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · ${monat}`, 50, 780, { width: W, align: 'center' });
+
+      // ── Seite 2+: Einzelne Bestellungen ───────────────────────────
+      doc.addPage();
+      doc.rect(0, 0, 595, 50).fill('#1a1a2e');
+      doc.fontSize(14).font('Helvetica-Bold').fillColor('#fff').text('BESTELLUNGSDETAILS', 50, 14);
+      doc.fontSize(9).font('Helvetica').fillColor('rgba(255,255,255,0.7)')
+        .text(`${monat}  ·  ${orders.length} Bestellungen`, 50, 33);
+
+      let dy = 65;
+      const sortedOrders = [...orders].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+      sortedOrders.forEach(o => {
+        const itemCount = (o.items || []).length;
+        const noteLines = (o.items || []).reduce((n, i) => n + (i.note ? i.note.split(', ').length : 0), 0);
+        const hasAddr = o.mode === 'lieferung' && o.customer?.street;
+        const estimatedH = 24 + 14 + (hasAddr ? 13 : 0) + (itemCount * 14) + (noteLines * 11) + 28;
+
+        if (dy + estimatedH > 760) {
+          doc.addPage();
+          dy = 30;
+        }
+
+        const oTime = new Date(o.createdAt).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+        const modeStr = o.mode === 'lieferung' ? 'LIEFERUNG' : 'ABHOLUNG';
+        const payStr = o.payment === 'bar' ? 'Bar' : o.payment === 'stripe' ? 'Stripe' : 'EC-Karte';
+        const paidStr = o.paymentStatus === 'paid' ? 'bezahlt' : 'OFFEN';
+
+        // Kopfzeile Bestellung
+        doc.rect(50, dy, 495, 20).fill('#eef0f5');
+        doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e')
+          .text(`#${o.orderNum}  ·  ${oTime}  ·  ${modeStr}`, 55, dy + 5, { width: 280 });
+        doc.font('Helvetica').fontSize(9).fillColor('#444')
+          .text(`${payStr}  –  ${paidStr}`, 340, dy + 5, { width: 200, align: 'right' });
+        dy += 22;
+
+        // Kunde
+        const custName = `${o.customer?.first || ''} ${o.customer?.last || ''}`.trim();
+        const phone = o.customer?.phone ? `  ·  ${o.customer.phone}` : '';
+        doc.font('Helvetica').fontSize(9).fillColor('#333').text(`${custName}${phone}`, 55, dy);
+        dy += 13;
+        if (hasAddr) {
+          doc.font('Helvetica').fontSize(8).fillColor('#777')
+            .text(`${o.customer.street} ${o.customer.house || ''}, ${o.customer.city || ''}`, 55, dy);
+          dy += 12;
+        }
+        dy += 2;
+
+        // Artikel
+        (o.items || []).forEach(item => {
+          const itemTotal = `${(item.price * item.qty).toFixed(2).replace('.', ',')} €`;
+          doc.font('Helvetica').fontSize(9).fillColor('#222')
+            .text(`${item.qty}×  ${item.name}`, 55, dy, { width: 340 });
+          doc.font('Helvetica').fontSize(9).fillColor('#222')
+            .text(itemTotal, 395, dy, { width: 150, align: 'right' });
+          dy += 13;
+          if (item.note) {
+            item.note.split(', ').forEach(sel => {
+              doc.font('Helvetica').fontSize(8).fillColor('#999').text(`    – ${sel}`, 65, dy);
+              dy += 11;
+            });
+          }
+        });
+
+        // Trennlinie + Gesamt
+        dy += 2;
+        doc.moveTo(55, dy).lineTo(545, dy).strokeColor('#ddd').lineWidth(0.5).stroke();
+        dy += 5;
+        if (o.deliveryFee > 0) {
+          doc.font('Helvetica').fontSize(8).fillColor('#888')
+            .text(`Liefergebühr: ${o.deliveryFee.toFixed(2).replace('.', ',')} €`, 55, dy);
+        }
+        doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e')
+          .text(`Gesamt: ${(o.total || 0).toFixed(2).replace('.', ',')} €`, 350, dy, { width: 195, align: 'right' });
+        dy += 16;
+
+        doc.moveTo(50, dy).lineTo(545, dy).strokeColor('#ccc').lineWidth(0.5).stroke();
+        dy += 10;
+      });
     });
 
     if (process.env.OWNER_EMAIL) {

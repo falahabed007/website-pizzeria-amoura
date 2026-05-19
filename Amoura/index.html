@@ -266,25 +266,6 @@
     /* ===== MOBILER WARENKORB-BUTTON (oben rechts) ===== */
     .mobile-cart-btn {
         display: none;
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 100001;
-        background-color: var(--amoura-red);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-family: Arial, sans-serif;
-        text-decoration: none;
-        white-space: nowrap;
     }
 
     /* ===== SPEISEKARTE OVERLAY (Dropdown-Menü) ===== */
@@ -430,26 +411,6 @@
         gap: 8px;
         font-family: Arial, sans-serif;
     }
-    .mobile-cart-btn {
-        position: fixed;
-        top: 15px;
-        right: 15px;
-        z-index: 100001;
-        background-color: var(--amoura-red);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        align-items: center;
-        gap: 8px;
-        font-family: Arial, sans-serif;
-        text-decoration: none;
-        white-space: nowrap;
-    }
 
     /* ===== STICKY KATEGORIE-NAV ===== */
     .cat-nav-wrap {
@@ -508,6 +469,22 @@
         z-index: 600;
         box-shadow: 0 3px 20px rgba(0,0,0,0.35);
     }
+    .amoura-account-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .amoura-account-btn:hover { background: rgba(255,255,255,0.3); }
+
     .amoura-header-inner {
         max-width: 1100px;
         margin: 0 auto;
@@ -558,8 +535,112 @@
 
     /* Alte mobile Buttons ausblenden – Header ersetzt sie */
     .mobile-menu-btn,
-    .mobile-cart-btn,
     .menu-btn-fixed { display: none !important; }
+
+    /* Floating Warenkorb-Button (unten rechts) */
+    .mobile-cart-btn {
+        position: fixed !important;
+        bottom: 24px !important;
+        right: 20px !important;
+        top: auto !important;
+        z-index: 100001;
+        background: var(--amoura-red);
+        color: white;
+        border-radius: 50px;
+        padding: 14px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex !important;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: 0 6px 24px rgba(139,29,29,0.45);
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+    }
+    .mobile-cart-btn:hover { transform: scale(1.05); box-shadow: 0 8px 28px rgba(139,29,29,0.55); }
+    .fab-cart-count {
+        background: #d4a76a;
+        color: white;
+        border-radius: 50%;
+        width: 24px; height: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 700;
+        flex-shrink: 0;
+    }
+    .fab-cart-price { font-weight: 700; }
+
+    /* ===== SUCHLEISTE ===== */
+    .search-btn {
+        background: rgba(255,255,255,0.12);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 42px; height: 42px;
+        font-size: 1.05rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+    .search-btn:hover { background: rgba(255,255,255,0.22); transform: scale(1.08); }
+
+    .search-bar-wrap {
+        display: flex;
+        align-items: center;
+        background: rgba(255,255,255,0.13);
+        border-radius: 50px;
+        padding: 0 6px 0 14px;
+        gap: 4px;
+        overflow: hidden;
+        max-width: 0;
+        opacity: 0;
+        transition: max-width 0.35s ease, opacity 0.25s ease;
+        pointer-events: none;
+    }
+    .search-bar-wrap.open {
+        max-width: 280px;
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .search-bar-wrap input {
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-size: 0.9rem;
+        font-family: inherit;
+        width: 180px;
+        padding: 9px 0;
+        min-width: 0;
+    }
+    .search-bar-wrap input::placeholder { color: rgba(255,255,255,0.55); }
+    .search-bar-wrap .search-clear-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 26px; height: 26px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+        flex-shrink: 0;
+    }
+    .search-bar-wrap .search-clear-btn:hover { background: rgba(255,255,255,0.35); }
+
+    .search-no-results {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        color: #9a7c6a;
+        font-size: 1rem;
+    }
+    .search-no-results i { font-size: 2rem; display: block; margin-bottom: 10px; opacity: 0.5; }
+
+    .product-item.search-hidden { display: none !important; }
+    .category-block.search-hidden { display: none !important; }
 
     /* Inhalt unter Header + Nav schieben */
     .hero { padding-top: 120px !important; }
@@ -575,11 +656,13 @@
     <div class="amoura-logo">
       🍕 Pizzeria <em>Amoura</em>
     </div>
-    <button class="amoura-cart-btn" onclick="openMobileCartOverlay()">
-      <i class="fas fa-shopping-basket"></i>
-      <span class="amoura-cart-count" id="headerCartCount">0</span>
-      <span class="amoura-cart-total" id="headerCartTotal">0,00 €</span>
-    </button>
+    <!-- Suchleiste -->
+    <div class="search-bar-wrap" id="searchBarWrap">
+      <input type="text" id="searchInput" placeholder="Gericht oder Nr. suchen…" oninput="handleSearch(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-clear-btn" onclick="clearSearch()" title="Suche leeren"><i class="fas fa-times"></i></button>
+    </div>
+    <button class="search-btn" id="searchToggleBtn" onclick="toggleSearch()" title="Suchen"><i class="fas fa-search"></i></button>
+    <a href="account.html" class="amoura-account-btn" title="Mein Konto"><i class="fas fa-user"></i></a>
     <!-- Aktion Banner -->
     <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: #d4a76a; color: #3d1a08; padding: 9px 13px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; max-width: 145px; line-height: 1.5; display: none; box-shadow: 0 3px 12px rgba(0,0,0,0.25);">
       <div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">15.04 – 15.05</div>
@@ -597,10 +680,11 @@
         <i class="fas fa-list"></i> Speisen
     </button>
 
-    <!-- MOBILER WARENKORB-BUTTON (oben rechts) -->
+    <!-- FLOATING WARENKORB-BUTTON (unten rechts) -->
     <a href="#" class="mobile-cart-btn" onclick="openMobileCartOverlay(); return false;">
         <i class="fas fa-shopping-basket"></i>
-        <span id="mobile-cart-price-top">0,00 €</span>
+        <span class="fab-cart-count" id="headerCartCount">0</span>
+        <span class="fab-cart-price" id="mobile-cart-price-top">0,00 €</span>
     </a>
 
     <!-- WARENKORB OVERLAY -->
@@ -685,6 +769,9 @@
             <li><a href="#pizzabroetchen" onclick="toggleMobileMenu()">Pizzabroetchen</a></li>
             <li><a href="#getraenke" onclick="toggleMobileMenu()">Getraenke</a></li>
         </ul>
+        <a href="account.html" style="display:block;margin-top:16px;padding:12px 16px;background:var(--amoura-red);color:#fff;border-radius:8px;text-align:center;text-decoration:none;font-weight:600;font-size:14px;">
+          👤 Mein Konto
+        </a>
     </div>
 
     <div class="hero">
@@ -765,10 +852,13 @@
 
     <div class="main-container">
 
-    
+    <div class="search-no-results" id="searchNoResults">
+      <i class="fas fa-search"></i>
+      Kein Gericht gefunden. Versuche eine andere Suche.
+    </div>
 
     <div class="menu-section" style="width: 100%;">
-        
+
         <div class="menu-section">
           
           
@@ -1005,7 +1095,7 @@
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
                 <div class="product-info"><h3>28 Pizza Spezial</h3><p>Schinken, Salami, Pilze, Zwiebeln, Paprika, Broccoli, Ei</p></div>
-                <div class="price">7,50 €</div>
+                <div class="price">9,00 €</div>
             </div>
             <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
                 <div class="product-info"><h3>29 Pizza Scampi</h3><p>Scampi, Knoblauch</p></div>
@@ -1633,7 +1723,7 @@
             <div style="text-align:center; color:#999; padding:20px;">Warenkorb leer</div>
         </div>
 
-        <button type="button" id="checkout-btn" class="cart-btn" onclick="openCheckoutModal()" style="width: 100%; padding: 12px; background: #f7fafc; border: 1px solid #edf2f7; border-radius: 10px; color: #a0aec0; font-weight: bold; font-size: 13px; cursor: not-allowed;">
+        <button type="button" id="checkout-btn" class="cart-btn" onclick="openUpsellModal()" style="width: 100%; padding: 12px; background: #f7fafc; border: 1px solid #edf2f7; border-radius: 10px; color: #a0aec0; font-weight: bold; font-size: 13px; cursor: not-allowed;">
             Warenkorb leer
         </button>
     </div>
@@ -1710,7 +1800,7 @@ function goToCheckoutFromCart() {
         }
     }
     closeMobileCartOverlay();
-    openCheckoutModal();
+    openUpsellModal();
 }
 
 function renderMobileCartOverlay() {
@@ -1724,18 +1814,21 @@ function renderMobileCartOverlay() {
 
     let html = '';
     warenkorb.forEach((item, index) => {
+        const qty = item.qty || 1;
         const priceDisplay = item.isFree ? '<span style="color:#2e7d32; font-weight:bold;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
-        const deleteBtn = item.isFree ? '' : `<button onclick="artikelLoeschenMobile(${index})" style="
-                    background:#fff0f0; border:1px solid #ffcccc; color:#8b1d1d;
-                    border-radius:6px; padding:5px 9px; font-size:13px;
-                    cursor:pointer; flex-shrink:0; font-weight:bold;">✕</button>`;
+        const qtyBtns = item.isFree ? '' : `
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span onclick="artikelQtyChangeMobile(${index},-1)" style="cursor:pointer;width:26px;height:26px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:#8b1d1d;">−</span>
+              <span style="font-size:14px;font-weight:bold;min-width:18px;text-align:center;">${qty}</span>
+              <span onclick="artikelQtyChangeMobile(${index},1)" style="cursor:pointer;width:26px;height:26px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:#fff;">+</span>
+            </div>`;
         html += `
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; gap:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0; gap:8px;">
                 <div style="flex:1;">
                     <div style="font-size:14px; font-weight:600; color:#333; line-height:1.3;">${item.name}</div>
                     <div style="font-size:13px; color:#8b1d1d; font-weight:bold; margin-top:3px;">${priceDisplay}</div>
                 </div>
-                ${deleteBtn}
+                ${qtyBtns}
             </div>
         `;
     });
@@ -1745,6 +1838,11 @@ function renderMobileCartOverlay() {
 
 function artikelLoeschenMobile(index) {
     artikelLoeschen(index);
+    renderMobileCartOverlay();
+}
+
+function artikelQtyChangeMobile(index, delta) {
+    artikelQtyChange(index, delta);
     renderMobileCartOverlay();
 }
 
@@ -1775,7 +1873,15 @@ function renderWarenkorb() {
 
     warenkorb.forEach((item, index) => {
         gesamt += item.preis;
+        const qty = item.qty || 1;
+        const unitPrice = item.basePreis || item.preis;
         const priceDisplay = item.isFree ? '<span style="color:#2e7d32;">GRATIS 🎉</span>' : item.preis.toFixed(2).replace('.', ',') + ' €';
+        const qtyBtns = item.isFree ? '' : `
+            <div style="display:flex;align-items:center;gap:5px;margin-right:8px;">
+              <span onclick="artikelQtyChange(${index},-1)" style="cursor:pointer;width:22px;height:22px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#8b1d1d;">−</span>
+              <span style="font-size:14px;font-weight:bold;min-width:16px;text-align:center;">${qty}</span>
+              <span onclick="artikelQtyChange(${index},1)" style="cursor:pointer;width:22px;height:22px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;">+</span>
+            </div>`;
         const deleteBtn = item.isFree ? '' : `<span onclick="artikelLoeschen(${index})" style="color:#8b1d1d; cursor:pointer; font-weight:bold; font-size:16px;">✕</span>`;
         const extrasHtml = (item.extraDetails||[]).filter(e=>e.name).map(e =>
             `<div style="font-size:12px;color:#888;padding-left:8px;">+ ${e.name}${e.price>0?' ('+e.price.toFixed(2).replace('.',',')+'€)':''}</div>`
@@ -1784,6 +1890,7 @@ function renderWarenkorb() {
             <div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #eee;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="flex:1; padding-right:10px; font-size:14px; line-height:1.2;">${item.name}</span>
+                ${qtyBtns}
                 <span style="font-weight:bold; margin-right:10px; white-space:nowrap; font-size:14px;">${priceDisplay}</span>
                 ${deleteBtn}
               </div>
@@ -1805,7 +1912,7 @@ function renderWarenkorb() {
     const headerTotal = document.getElementById('headerCartTotal');
     const headerCount = document.getElementById('headerCartCount');
     if (headerTotal) headerTotal.innerText = preisText;
-    if (headerCount) headerCount.innerText = warenkorb.length;
+    if (headerCount) headerCount.innerText = warenkorb.reduce((s,i)=>s+(i.qty||1),0);
 }
 </script>
 
@@ -1957,15 +2064,28 @@ function speiseInWarenkorb() {
     }
 
     if (activePopupId !== "") {
-        warenkorb.push({ id: Date.now(), name: name, preis: preis, extraDetails: extraDetails });
+        const extrasKey = extraDetails.map(e=>e.name).join(',');
+        const existing = warenkorb.find(i => i.name === name && (i.extraDetails||[]).map(e=>e.name).join(',') === extrasKey && !i.isFree);
+        if (existing) { existing.qty = (existing.qty||1) + 1; existing.preis = preis * existing.qty; }
+        else warenkorb.push({ id: Date.now(), name: name, preis: preis, basePreis: preis, qty: 1, extraDetails: extraDetails });
         addFreePizzaIfNeeded();
         renderWarenkorb();
         document.getElementById(activePopupId).style.display = 'none';
     }
 }
 
+function artikelQtyChange(index, delta) {
+    const item = warenkorb[index];
+    if (!item || item.isFree) return;
+    const newQty = (item.qty||1) + delta;
+    if (newQty <= 0) { warenkorb.splice(index, 1); }
+    else { item.qty = newQty; item.preis = item.basePreis * newQty; }
+    addFreePizzaIfNeeded();
+    renderWarenkorb();
+}
+
 function artikelLoeschen(index) {
-    if (warenkorb[index] && warenkorb[index].isFree) return; // Gratis-Artikel nicht löschbar
+    if (warenkorb[index] && warenkorb[index].isFree) return;
     warenkorb.splice(index, 1);
     addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 15€, sonst Gratis-Pizza entfernen
     renderWarenkorb();
@@ -2034,12 +2154,57 @@ function toggleMobileMenu() {
     </div>
 </div>
 
+<!-- Upsell Modal -->
+<div id="upsellModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999998; justify-content:center; align-items:center; padding:15px; box-sizing:border-box;">
+    <div style="background:white; padding:25px; border-radius:20px; width:100%; max-width:450px; position:relative; box-sizing:border-box; font-family:Arial,sans-serif;">
+        <h2 style="color:#8b1d1d; margin-top:0; border-bottom:2px solid #eee; padding-bottom:10px; text-align:center; font-size:20px;">Dazu noch etwas? 🍕</h2>
+        <p style="color:#666; font-size:13px; text-align:center; margin-top:0; margin-bottom:16px;">Viele bestellen das auch dazu:</p>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🥤</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">Coca Cola 0,33 L</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">2,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-cola" onclick="addUpsellItem('Coca Cola 0,33 L', 2.50, 'upsell-btn-cola')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🍞</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">201 Pizzabrötchen</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">3,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-broetchen" onclick="addUpsellItem('201 Pizzabrötchen', 3.50, 'upsell-btn-broetchen')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; background:#f9f9f9; border:1px solid #eee; border-radius:12px; padding:12px 15px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="font-size:26px;">🧀</span>
+                    <div>
+                        <div style="font-weight:bold; font-size:14px; color:#333;">202 Pizzabrötchen mit Käse</div>
+                        <div style="color:#8b1d1d; font-weight:bold; font-size:14px;">6,50 €</div>
+                    </div>
+                </div>
+                <button id="upsell-btn-kaese" onclick="addUpsellItem('202 Pizzabrötchen mit Käse', 6.50, 'upsell-btn-kaese')" style="background:#8b1d1d; color:white; border:none; border-radius:50%; width:36px; height:36px; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0; line-height:1;">+</button>
+            </div>
+        </div>
+        <button onclick="proceedFromUpsell()" style="width:100%; padding:15px; background:#8b1d1d; color:white; border:none; border-radius:10px; font-weight:bold; font-size:15px; cursor:pointer;">
+            Weiter zur Bestellung →
+        </button>
+    </div>
+</div>
+
 <div id="checkoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; justify-content:center; align-items:center; padding: 15px;">
     <div style="background:white; padding:25px; border-radius:20px; width:100%; max-width:450px; position:relative; box-sizing: border-box; font-family: Arial, sans-serif;">
         <span onclick="closeCheckoutModal()" style="position:absolute; right:20px; top:15px; cursor:pointer; font-size:28px; color:#888;">&times;</span>
         
         <h2 id="modal-title" style="color:#8b1d1d; margin-top:0; border-bottom: 2px solid #eee; padding-bottom: 10px;">Kasse</h2>
-        
+
+        <div id="checkout-customer-banner" style="display:none; background:#fff8e1; border:1px solid #f9a825; border-radius:8px; padding:8px 12px; margin-bottom:12px; font-size:13px; color:#5d4037;"></div>
+
         <div style="display:flex; gap:10px; margin: 20px 0 10px 0;">
             <input type="text" id="c-vorname" placeholder="Vorname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
             <input type="text" id="c-nachname" placeholder="Nachname" style="width:50%; padding:12px; border:1px solid #ddd; border-radius:8px;">
@@ -2074,6 +2239,20 @@ function toggleMobileMenu() {
           <span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dadce0;font-size:.7rem;font-weight:500;font-family:Arial;border-radius:4px;padding:3px 7px;color:#3c4043;gap:1px;"><span style="color:#4285f4;font-weight:700;">G</span>Pay</span>
           <span style="display:inline-flex;align-items:center;justify-content:center;background:#ffb3c7;color:#000;font-size:.7rem;font-weight:700;font-family:Arial;border-radius:4px;padding:3px 7px;">Klarna</span>
           <span style="font-size:.65rem;color:#999;">& mehr</span>
+        </div>
+
+        <!-- ── GUTSCHEINCODE ── -->
+        <div id="coupon-section" style="margin-bottom:14px;">
+          <div style="display:flex;gap:8px;">
+            <input id="c-coupon" type="text" placeholder="🎟️ Gutscheincode (optional)"
+              autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+              style="flex:1;padding:12px;border:1px solid #ddd;border-radius:8px;box-sizing:border-box;font-family:inherit;font-size:14px;text-transform:uppercase;letter-spacing:1px;">
+            <button type="button" onclick="validateCoupon()"
+              style="padding:12px 16px;background:#8b1d1d;color:white;border:none;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0;transition:background .2s;"
+              onmouseover="this.style.background='#a02222'" onmouseout="this.style.background='#8b1d1d'"
+              title="Gutscheincode einlösen">✓</button>
+          </div>
+          <div id="coupon-msg" style="display:none;margin-top:8px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:600;"></div>
         </div>
 
         <textarea id="c-notiz" placeholder="📝 Anmerkungen zur Bestellung (z.B. Nr. 53 ohne Spinat)" maxlength="300" style="width:100%; padding:12px; margin-bottom:14px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; font-family:inherit; font-size:14px; resize:vertical; min-height:70px;"></textarea>
@@ -2136,6 +2315,30 @@ function updateBestellBtn() {
   btn.style.cursor     = ok ? 'pointer' : 'not-allowed';
   btn.textContent      = ok ? '✅ Kostenpflichtig bestellen' : '🔒 Bitte AGB & Datenschutz bestätigen';
 }
+
+// ── GUTSCHEINCODE ──
+var couponValid = false;
+
+function validateCoupon() {
+  var code = (document.getElementById('c-coupon').value || '').trim().toUpperCase();
+  if (!code) { showCouponMsg('Bitte gib einen Gutscheincode ein.', false); return; }
+  if (code !== 'ROLLNCONE') { showCouponMsg('❌ Ungültiger Gutscheincode.', false); return; }
+  couponValid = true;
+  document.getElementById('c-coupon').disabled = true;
+  var btn = document.querySelector('#coupon-section button');
+  if (btn) { btn.style.background = '#2e7d32'; btn.disabled = true; }
+  showCouponMsg('✅ Gutscheincode gültig! Du nimmst nach deiner Bestellung an der Roll N Cone Verlosung teil.', true);
+}
+
+function showCouponMsg(text, success) {
+  var msg = document.getElementById('coupon-msg');
+  if (!msg) return;
+  msg.style.display = 'block';
+  msg.style.background = success ? '#e8f5e9' : '#ffebee';
+  msg.style.color = success ? '#2e7d32' : '#c62828';
+  msg.style.border = success ? '1px solid #c8e6c9' : '1px solid #ffcdd2';
+  msg.textContent = text;
+}
 </script>
 
 <script>
@@ -2151,7 +2354,7 @@ document.getElementById('checkout-btn').onclick = function() {
         alert("Warenkorb ist leer!");
         return;
     }
-    openCheckoutModal();
+    openUpsellModal();
 };
 
 function openCheckoutModal() {
@@ -2258,6 +2461,40 @@ function getPageUrl() {
     return loc.origin + loc.pathname;
 }
 
+function openUpsellModal() {
+    ['upsell-btn-cola','upsell-btn-broetchen','upsell-btn-kaese'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) { btn.textContent = '+'; btn.style.background = '#8b1d1d'; btn.disabled = false; btn.dataset.added = '0'; }
+    });
+    document.getElementById('upsellModal').style.display = 'flex';
+}
+
+function closeUpsellModal() {
+    document.getElementById('upsellModal').style.display = 'none';
+}
+
+function proceedFromUpsell() {
+    closeUpsellModal();
+    openCheckoutModal();
+}
+
+function addUpsellItem(name, price, btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn.dataset.added === '1') {
+        warenkorb = warenkorb.filter(i => !(i.name === name && i.upsell));
+        renderWarenkorb();
+        btn.textContent = '+';
+        btn.style.background = '#8b1d1d';
+        btn.dataset.added = '0';
+    } else {
+        warenkorb.push({ id: Date.now(), name: name, preis: price, upsell: true });
+        renderWarenkorb();
+        btn.textContent = '✓';
+        btn.style.background = '#27ae60';
+        btn.dataset.added = '1';
+    }
+}
+
 async function processOrder() {
     const summeWaren = warenkorb.reduce((a, b) => a + b.preis, 0);
     const vorname = document.getElementById('c-vorname').value.trim();
@@ -2312,7 +2549,7 @@ async function processOrder() {
         status: 'neu',
         type: currentSelection,
         customer: { name: `${vorname} ${nachname}`, address: address },
-        items: warenkorb.map(item => ({ name: item.name, price: item.preis, qty: 1, extraDetails: item.extraDetails||[] })),
+        items: warenkorb.map(item => ({ name: item.name, price: item.basePreis||item.preis, qty: item.qty||1, extraDetails: item.extraDetails||[] })),
         subtotal: summeWaren,
         fee: fee,
         total: finalTotal,
@@ -2320,8 +2557,7 @@ async function processOrder() {
     };
 
     if (zahlung === 'stripe') {
-        // Bestellung erst speichern
-        try { await AmouraDB.addOrder(newOrder); } catch(e) { console.error('Speicherfehler:', e); }
+        // Kein AmouraDB.addOrder() hier – create-stripe-checkout speichert die Bestellung selbst
 
         const btn = document.querySelector('[onclick="processOrder()"]');
         if (btn) { btn.disabled = true; btn.textContent = '⏳ Weiterleitung zu Stripe...'; }
@@ -2348,6 +2584,7 @@ async function processOrder() {
                     total:       finalTotal,
                     mode:        currentSelection === 'delivery' ? 'lieferung' : 'abholung',
                     note:        notiz,
+                    coupon:      couponValid ? 'ROLLNCONE' : null,
                     customer: {
                         first:  vorname,
                         last:   nachname,
@@ -2391,6 +2628,7 @@ async function processOrder() {
                 mode: barMode,
                 payment: 'bar',
                 note: notiz,
+                coupon: couponValid ? 'ROLLNCONE' : null,
                 customer: { first: vorname, last: nachname, email: email, phone: telefon, street: strasse2, house: hausnr2, city: cityLabel2 }
             })
         });
@@ -2440,8 +2678,47 @@ window.addEventListener('load', async () => {
                 console.warn('verify-payment fehlgeschlagen:', e.message);
             }
         }
+        return;
+    }
+
+    // Stripe-Zahlung abgebrochen → Formular wieder freischalten
+    if (params.get('payment') === 'cancelled') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        resetOrderButton();
+        showStripeCancelBanner();
     }
 });
+
+// BFCache-Fix: Seite aus Browser-Cache geladen (z.B. nach Zurück-Button) → Button-State zurücksetzen
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        resetOrderButton();
+    }
+});
+
+function resetOrderButton() {
+    const btn = document.querySelector('[onclick="processOrder()"]');
+    if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Kostenpflichtig bestellen';
+    }
+}
+
+function showStripeCancelBanner() {
+    const banner = document.createElement('div');
+    banner.id = 'stripe-cancel-banner';
+    banner.style.cssText = [
+        'position:fixed', 'top:16px', 'left:50%', 'transform:translateX(-50%)',
+        'background:#fff3cd', 'color:#856404', 'border:1px solid #ffc107',
+        'border-radius:10px', 'padding:12px 20px', 'font-size:14px',
+        'box-shadow:0 4px 16px rgba(0,0,0,0.12)', 'z-index:99999',
+        'max-width:90vw', 'text-align:center', 'cursor:pointer'
+    ].join(';');
+    banner.innerHTML = '⚠️ Zahlung abgebrochen – du kannst deine Bestellung anpassen oder eine andere Zahlungsart wählen. <strong>✕</strong>';
+    banner.onclick = () => banner.remove();
+    document.body.appendChild(banner);
+    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 7000);
+}
 </script>
 
        
@@ -3787,6 +4064,109 @@ document.readyState === 'loading'
     : init();
 })();
 </script>
+
+<script>
+// ===== SUCHLEISTE =====
+var searchOpen = false;
+
+function toggleSearch() {
+  searchOpen = !searchOpen;
+  var wrap = document.getElementById('searchBarWrap');
+  if (searchOpen) {
+    wrap.classList.add('open');
+    setTimeout(function() { document.getElementById('searchInput').focus(); }, 200);
+  } else {
+    wrap.classList.remove('open');
+    clearSearch();
+  }
+}
+
+function clearSearch() {
+  var input = document.getElementById('searchInput');
+  input.value = '';
+  handleSearch('');
+  if (searchOpen) {
+    // X im Eingabefeld schließt auch die Suche
+    searchOpen = false;
+    document.getElementById('searchBarWrap').classList.remove('open');
+  }
+}
+
+function handleSearch(query) {
+  var q = query.trim().toLowerCase();
+  var items = document.querySelectorAll('.product-item');
+  var noResults = document.getElementById('searchNoResults');
+  var totalVisible = 0;
+
+  items.forEach(function(item) {
+    if (!q) {
+      item.classList.remove('search-hidden');
+      totalVisible++;
+      return;
+    }
+    var h3 = item.querySelector('h3');
+    var badge = item.querySelector('.item-num-badge');
+    var name = h3 ? h3.textContent.toLowerCase() : '';
+    var num = badge ? badge.textContent.toLowerCase() : '';
+    var itemNum = (item.dataset.itemNum || '').toLowerCase();
+    // Also check original name stored in dataset if available
+    var origName = (item.dataset.origName || '').toLowerCase();
+
+    if (name.indexOf(q) !== -1 || num.indexOf(q) !== -1 || itemNum.indexOf(q) !== -1 || origName.indexOf(q) !== -1) {
+      item.classList.remove('search-hidden');
+      totalVisible++;
+    } else {
+      item.classList.add('search-hidden');
+    }
+  });
+
+  // Kategorien + alle Begleitelemente (p-Texte, fam-extra, etc.) ausblenden
+  var categories = document.querySelectorAll('h2.category-title');
+  categories.forEach(function(cat) {
+    // Alle Geschwister dieser Kategorie sammeln bis zur nächsten
+    var siblings = [];
+    var next = cat.nextElementSibling;
+    while (next && !next.matches('h2.category-title')) {
+      siblings.push(next);
+      next = next.nextElementSibling;
+    }
+
+    if (!q) {
+      cat.style.display = '';
+      siblings.forEach(function(s) { s.style.display = ''; });
+      return;
+    }
+
+    // Prüfen ob mindestens ein sichtbares product-item vorhanden
+    var hasVisible = false;
+    siblings.forEach(function(s) {
+      if (s.classList.contains('product-item') && !s.classList.contains('search-hidden')) {
+        hasVisible = true;
+      }
+      if (s.classList.contains('product-grid')) {
+        if (s.querySelectorAll('.product-item:not(.search-hidden)').length > 0) hasVisible = true;
+      }
+    });
+
+    // Kategorie + alle Begleitelemente ein/ausblenden
+    cat.style.display = hasVisible ? '' : 'none';
+    siblings.forEach(function(s) {
+      if (!s.classList.contains('product-item') && !s.classList.contains('product-grid')) {
+        // p-Texte, fam-extra etc. nur anzeigen wenn Kategorie sichtbar
+        s.style.display = hasVisible ? '' : 'none';
+      }
+    });
+  });
+
+  // "Keine Ergebnisse" anzeigen
+  if (noResults) noResults.style.display = (q && totalVisible === 0) ? 'block' : 'none';
+}
+
+// Suche schließen bei Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && searchOpen) toggleSearch();
+});
+</script>
 </body>
 <style>
 /* Alle Modal-Overlays: auf Handy von oben nach unten scrollbar statt zentriert */
@@ -4066,6 +4446,65 @@ body.modal-open {
       if (visible) lockBody(); else unlockBody();
     });
     obs.observe(el, { attributes: true, attributeFilter: ['style'] });
+  });
+})();
+</script>
+
+<script>
+// Auto-fill checkout for logged-in customers
+(function() {
+  var _customer = null;
+
+  async function loadCustomer() {
+    var token = localStorage.getItem('customerToken');
+    if (!token) return;
+    try {
+      var res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+      _customer = await res.json();
+    } catch {}
+  }
+
+  function fillCheckout() {
+    if (!_customer) return;
+
+    var fn = document.getElementById('c-vorname');
+    var ln = document.getElementById('c-nachname');
+    var tel = document.getElementById('c-telefon');
+    var em = document.getElementById('c-email');
+    if (fn && !fn.value) fn.value = _customer.first || '';
+    if (ln && !ln.value) ln.value = _customer.last || '';
+    if (tel && !tel.value) tel.value = _customer.phone || '';
+    if (em && !em.value) em.value = _customer.email || '';
+
+    // Default-Adresse befüllen
+    var addr = _customer.addresses && _customer.addresses[_customer.defaultAddress || 0];
+    if (addr) {
+      var st = document.getElementById('c-strasse');
+      var hn = document.getElementById('c-hausnummer');
+      if (st && !st.value) st.value = addr.street || '';
+      if (hn && !hn.value) hn.value = addr.house || '';
+    }
+
+    // Banner anzeigen
+    var banner = document.getElementById('checkout-customer-banner');
+    if (banner) {
+      banner.textContent = '👤 Eingeloggt als ' + _customer.first + ' ' + _customer.last;
+      banner.style.display = 'block';
+    }
+  }
+
+  // openCheckoutModal patchen
+  document.addEventListener('DOMContentLoaded', function() {
+    loadCustomer();
+
+    var orig = window.openCheckoutModal;
+    window.openCheckoutModal = function() {
+      orig.apply(this, arguments);
+      fillCheckout();
+    };
   });
 })();
 </script>

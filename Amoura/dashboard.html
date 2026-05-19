@@ -336,10 +336,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 
   <!-- STATS -->
   <div class="stats-bar">
-    <div class="stat-card accent"><div class="stat-label">Umsatz heute</div><div class="stat-val" id="sRevenue">0,00 €</div><div class="stat-sub" id="sTodayCount">0 Bestellungen</div></div>
+    <div class="stat-card accent"><div class="stat-label" id="lRevenue">Umsatz heute</div><div class="stat-val" id="sRevenue">0,00 €</div><div class="stat-sub" id="sTodayCount">0 Bestellungen</div></div>
     <div class="stat-card"><div class="stat-label">Aktiv</div><div class="stat-val" id="sActive">0</div><div class="stat-sub">In Arbeit</div></div>
-    <div class="stat-card"><div class="stat-label">Fertig heute</div><div class="stat-val" id="sDone">0</div><div class="stat-sub">Geliefert/Abgeholt</div></div>
-    <div class="stat-card"><div class="stat-label">Storniert</div><div class="stat-val" id="sCancelled">0</div><div class="stat-sub">Heute</div></div>
+    <div class="stat-card"><div class="stat-label" id="lDone">Fertig heute</div><div class="stat-val" id="sDone">0</div><div class="stat-sub">Geliefert/Abgeholt</div></div>
+    <div class="stat-card"><div class="stat-label">Storniert</div><div class="stat-val" id="sCancelled">0</div><div class="stat-sub" id="lCancelledSub">Heute</div></div>
     <div class="stat-card"><div class="stat-label">Unbezahlt</div><div class="stat-val" id="sUnpaid">0</div><div class="stat-sub">Offen</div></div>
   </div>
 
@@ -364,6 +364,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <div style="display:flex;align-items:center;gap:6px;">
           <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="onDateChange()" oninput="onDateChange()">
           <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Stripe-Einbuchung</button>
+          <button class="day-btn" onclick="openKundenModal()" style="white-space:nowrap;">👥 Kunden</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
       </div>
@@ -1264,6 +1265,12 @@ async function loadOrders() {
     stripeOrders = raw.filter(o => o.status === 'awaiting_payment');
     allOrders    = raw.filter(o => o.status !== 'awaiting_payment');
 
+    // Label für Stats-Karten aktualisieren
+    const dateLabel = isToday ? 'heute' : new Date(reportDateVal+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    document.getElementById('lRevenue').textContent    = `Umsatz ${dateLabel}`;
+    document.getElementById('lDone').textContent       = `Fertig ${dateLabel}`;
+    document.getElementById('lCancelledSub').textContent = dateLabel;
+
     if (isToday) {
       // Stats vom Server – wie bisher
       const s = d.stats || {};
@@ -1274,15 +1281,17 @@ async function loadOrders() {
       document.getElementById('sCancelled').textContent = s.cancelled||0;
       document.getElementById('sUnpaid').textContent    = s.unpaid||0;
     } else {
-      // Stats aus den geladenen Bestellungen berechnen
-      const valid = allOrders.filter(o => o.status !== 'cancelled');
-      const revenue = valid.reduce((sum,o) => sum + (o.total||0), 0);
+      // Stats direkt aus Backend-Antwort (bereits nach Datum gefiltert)
+      const s = d.stats || {};
+      const revenue = s.todayRevenue !== undefined
+        ? s.todayRevenue
+        : allOrders.filter(o=>o.status!=='cancelled').reduce((sum,o)=>sum+(o.total||0),0);
       document.getElementById('sRevenue').textContent   = revenue.toFixed(2).replace('.',',') + ' €';
-      document.getElementById('sTodayCount').textContent = allOrders.length + ' Bestellungen';
-      document.getElementById('sActive').textContent    = allOrders.filter(o=>['confirmed','preparing','ready'].includes(o.status)).length;
-      document.getElementById('sDone').textContent      = allOrders.filter(o=>o.status==='delivered').length;
-      document.getElementById('sCancelled').textContent = allOrders.filter(o=>o.status==='cancelled').length;
-      document.getElementById('sUnpaid').textContent    = allOrders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length;
+      document.getElementById('sTodayCount').textContent = (s.todayCount||allOrders.length) + ' Bestellungen';
+      document.getElementById('sActive').textContent    = s.active !== undefined ? s.active : allOrders.filter(o=>['confirmed','preparing','ready'].includes(o.status)).length;
+      document.getElementById('sDone').textContent      = s.done  !== undefined ? s.done  : allOrders.filter(o=>o.status==='delivered').length;
+      document.getElementById('sCancelled').textContent = s.cancelled !== undefined ? s.cancelled : allOrders.filter(o=>o.status==='cancelled').length;
+      document.getElementById('sUnpaid').textContent    = s.unpaid !== undefined ? s.unpaid : allOrders.filter(o=>o.paymentStatus!=='paid'&&o.status!=='cancelled').length;
     }
 
     updateStripeBadge();
@@ -2381,22 +2390,15 @@ async function printDayReport() {
 
   let dayOrders = [];
   try {
-    // Erst versuchen: Backend mit Datumsfilter
+    // Backend filtert bereits korrekt nach Datum (UTC+2)
     const r = await fetch(`${API_BASE}/admin/orders?date=${dateStr}`, {headers: apiHeaders()});
     const d = await r.json();
-    const all = d.orders || d || [];
-    // Nur Bestellungen des gewählten Tages
-    const from = new Date(dateStr + 'T00:00:00');
-    const to   = new Date(dateStr + 'T23:59:59');
-    dayOrders  = all.filter(o => {
-      const t = new Date(o.createdAt);
-      return t >= from && t <= to && o.status !== 'cancelled';
-    });
+    dayOrders = (d.orders || []).filter(o => o.status !== 'cancelled');
   } catch(e) {
     // Fallback: aus bereits geladenen allOrders filtern
     const from = new Date(dateStr + 'T00:00:00');
     const to   = new Date(dateStr + 'T23:59:59');
-    dayOrders  = allOrders.filter(o => {
+    dayOrders = allOrders.filter(o => {
       const t = new Date(o.createdAt);
       return t >= from && t <= to && o.status !== 'cancelled';
     });
@@ -2482,6 +2484,140 @@ else { document.getElementById('loginPw').addEventListener('keydown',e=>{ if(e.k
 
 // Drucker-Status sofort beim Laden prüfen (auch vor Login)
 updatePrinterStatus();
+
+// ── Kunden-Modal ──────────────────────────────────────────────
+let kundenCache = [];
+
+async function openKundenModal() {
+  document.getElementById('kundenModal').style.display = 'flex';
+  showKundenListe();
+  document.getElementById('kundenList').innerHTML = '<div style="text-align:center;padding:32px;color:#888;">Wird geladen…</div>';
+  try {
+    const res = await fetch(API_BASE + '/admin/customers', { headers: { Authorization: 'Bearer ' + token } });
+    kundenCache = await res.json();
+    if (!kundenCache.length) {
+      document.getElementById('kundenList').innerHTML = '<div style="text-align:center;padding:32px;color:#888;">Noch keine registrierten Kunden.</div>';
+      return;
+    }
+    renderKundenListe();
+  } catch(e) {
+    document.getElementById('kundenList').innerHTML = '<div style="text-align:center;padding:32px;color:#c00;">Fehler beim Laden.</div>';
+  }
+}
+
+function renderKundenListe() {
+  document.getElementById('kundenStat').textContent = kundenCache.length + ' Kunden';
+  document.getElementById('kundenList').innerHTML = kundenCache.map(k => `
+    <div onclick="openKundenDetail('${k._id}')"
+         style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-size:.85rem;cursor:pointer;transition:background .15s;"
+         onmouseover="this.style.background='rgba(139,29,29,0.06)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-weight:700;color:var(--text);">${k.first} ${k.last}</div>
+        <div style="color:var(--muted);font-size:.78rem;margin-top:2px;">${k.email}</div>
+        <div style="color:var(--muted);font-size:.78rem;">${k.phone || '–'}</div>
+      </div>
+      <div>
+        <div style="font-size:.78rem;color:var(--muted);">Registriert: ${new Date(k.createdAt).toLocaleDateString('de-DE')}</div>
+        <div style="font-size:.78rem;color:var(--muted);">Letzter Kauf: ${k.lastOrder ? new Date(k.lastOrder).toLocaleDateString('de-DE') : '–'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;color:var(--gold);font-size:.95rem;">${(k.orderTotal||0).toFixed(2).replace('.',',')} €</div>
+        <div style="font-size:.75rem;color:var(--muted);">${k.orderCount} Bestellung${k.orderCount !== 1 ? 'en' : ''}</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">→ Details</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openKundenDetail(userId) {
+  const k = kundenCache.find(c => c._id === userId);
+  if (!k) return;
+
+  showKundenDetail(k);
+  document.getElementById('kundenDetailOrders').innerHTML = '<div style="text-align:center;padding:24px;color:#888;font-size:.85rem;">Bestellungen werden geladen…</div>';
+
+  try {
+    const res = await fetch(API_BASE + '/admin/customers/' + userId + '/orders', { headers: { Authorization: 'Bearer ' + token } });
+    const orders = await res.json();
+    const statusMap = { pending:'Ausstehend', confirmed:'Bestätigt', preparing:'In Zubereitung', ready:'Fertig', delivered:'Geliefert', cancelled:'Storniert', awaiting_payment:'Zahlung ausstehend' };
+    const statusColor = { pending:'#856404', confirmed:'#0c5460', preparing:'#7a4f00', ready:'#155724', delivered:'#155724', cancelled:'#721c24', awaiting_payment:'#432874' };
+    const statusBg    = { pending:'#fff3cd', confirmed:'#d1ecf1', preparing:'#ffe5b4', ready:'#d4edda', delivered:'#e8f5e9', cancelled:'#f8d7da', awaiting_payment:'#e2d9f3' };
+
+    if (!orders.length) {
+      document.getElementById('kundenDetailOrders').innerHTML = '<div style="text-align:center;padding:24px;color:#888;font-size:.85rem;">Noch keine Bestellungen.</div>';
+      return;
+    }
+    document.getElementById('kundenDetailOrders').innerHTML = orders.map(o => `
+      <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);flex-wrap:wrap;gap:6px;">
+          <span style="font-weight:700;font-size:.88rem;">#${o.orderNum}</span>
+          <span style="font-size:.75rem;padding:3px 9px;border-radius:20px;font-weight:700;background:${statusBg[o.status]||'#eee'};color:${statusColor[o.status]||'#333'};">${statusMap[o.status]||o.status}</span>
+          <span style="font-size:.75rem;color:var(--muted);">${o.mode === 'lieferung' ? '🛵 Lieferung' : '🏪 Abholung'}</span>
+          <span style="font-size:.75rem;color:var(--muted);">${new Date(o.createdAt).toLocaleDateString('de-DE')}</span>
+          <strong style="font-size:.9rem;color:var(--gold);">${(o.total||0).toFixed(2).replace('.',',')} €</strong>
+        </div>
+        <div style="padding:8px 14px;font-size:.8rem;color:var(--muted);">
+          ${o.items.map(i => `${i.qty}× ${i.name}`).join(' · ')}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('kundenDetailOrders').innerHTML = '<div style="text-align:center;padding:24px;color:#c00;font-size:.85rem;">Fehler beim Laden.</div>';
+  }
+}
+
+function showKundenDetail(k) {
+  document.getElementById('kundenModalTitle').textContent = `${k.first} ${k.last}`;
+  document.getElementById('kundenStat').textContent = k.email;
+  document.getElementById('kundenBackBtn').style.display = 'flex';
+  document.getElementById('kundenList').style.display = 'none';
+  document.getElementById('kundenDetailView').style.display = 'block';
+  document.getElementById('kundenDetailInfo').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border-bottom:1px solid var(--border);font-size:.85rem;">
+      <div><div style="color:var(--muted);font-size:.75rem;">E-Mail</div><div style="font-weight:600;">${k.email}</div></div>
+      <div><div style="color:var(--muted);font-size:.75rem;">Telefon</div><div style="font-weight:600;">${k.phone || '–'}</div></div>
+      <div><div style="color:var(--muted);font-size:.75rem;">Registriert</div><div style="font-weight:600;">${new Date(k.createdAt).toLocaleDateString('de-DE')}</div></div>
+      <div><div style="color:var(--muted);font-size:.75rem;">Gesamtumsatz</div><div style="font-weight:700;color:var(--gold);">${(k.orderTotal||0).toFixed(2).replace('.',',')} €</div></div>
+    </div>
+    <div style="padding:12px 16px 4px;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Bestellungen (${k.orderCount})</div>
+  `;
+}
+
+function showKundenListe() {
+  document.getElementById('kundenModalTitle').textContent = '👥 Registrierte Kunden';
+  document.getElementById('kundenBackBtn').style.display = 'none';
+  document.getElementById('kundenList').style.display = 'block';
+  document.getElementById('kundenDetailView').style.display = 'none';
+}
+
+function closeKundenModal() { document.getElementById('kundenModal').style.display = 'none'; }
 </script>
+
+<!-- KUNDEN MODAL -->
+<div id="kundenModal" onclick="if(event.target===this)closeKundenModal()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999999;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#8b1d1d,#6b1515);padding:16px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+      <button id="kundenBackBtn" onclick="showKundenListe();renderKundenListe()"
+              style="display:none;background:rgba(255,255,255,.2);border:none;border-radius:8px;padding:6px 10px;color:#fff;font-size:.85rem;cursor:pointer;align-items:center;gap:4px;">
+        ← Zurück
+      </button>
+      <div style="flex:1;">
+        <div id="kundenModalTitle" style="color:#fff;font-size:1.1rem;font-weight:700;">👥 Registrierte Kunden</div>
+        <div id="kundenStat" style="color:rgba(255,255,255,.7);font-size:.8rem;margin-top:2px;"></div>
+      </div>
+      <button onclick="closeKundenModal()" style="background:rgba(255,255,255,.2);border:none;border-radius:8px;width:32px;height:32px;color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>
+    <!-- Listen-Ansicht -->
+    <div id="kundenList" style="overflow-y:auto;flex:1;"></div>
+    <!-- Detail-Ansicht -->
+    <div id="kundenDetailView" style="display:none;overflow-y:auto;flex:1;flex-direction:column;">
+      <div id="kundenDetailInfo"></div>
+      <div id="kundenDetailOrders" style="padding:0 16px 16px;"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
