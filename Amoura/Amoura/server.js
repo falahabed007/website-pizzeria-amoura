@@ -1384,6 +1384,46 @@ cron.schedule('59 23 * * 0', async () => {
       doc.fontSize(8).font('Helvetica').fillColor('#aaa')
         .text('* Auszahlung erfolgt automatisch über Stripe Connect auf das hinterlegte Bankkonto.');
 
+      // Tagesweise Aufschlüsselung
+      doc.moveDown(1.5);
+      doc.fontSize(13).font('Helvetica-Bold').fillColor('#8b1d1d').text('Umsatz nach Wochentag');
+      doc.moveDown(0.5);
+
+      const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+      const byDay = {};
+      orders.forEach(o => {
+        const d = new Date(o.createdAt);
+        const key = `${dayNames[d.getDay()]} ${d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}`;
+        if (!byDay[key]) byDay[key] = { total: 0, count: 0, bar: 0, stripe: 0 };
+        byDay[key].total  += o.total || 0;
+        byDay[key].count  += 1;
+        if (o.payment === 'bar') byDay[key].bar += o.total || 0;
+        else byDay[key].stripe += o.total || 0;
+      });
+
+      // Tabellenheader
+      const hY = doc.y;
+      doc.rect(50, hY, W, 22).fill('#8b1d1d');
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#fff')
+        .text('Tag', 58, hY + 7)
+        .text('Bestellungen', 160, hY + 7)
+        .text('Bar', 270, hY + 7)
+        .text('Stripe', 340, hY + 7)
+        .text('Tagesumsatz', 410, hY + 7, { width: W - 360, align: 'right' });
+      doc.y = hY + 22;
+
+      Object.entries(byDay).forEach(([day, d], i) => {
+        const rY = doc.y;
+        if (i % 2 === 0) doc.rect(50, rY, W, 22).fill('#f5f5f5');
+        doc.font('Helvetica').fontSize(10).fillColor('#222')
+          .text(day, 58, rY + 6)
+          .text(`${d.count}×`, 160, rY + 6)
+          .text(fmt(d.bar), 250, rY + 6)
+          .text(fmt(d.stripe), 330, rY + 6)
+          .text(fmt(d.total), 50, rY + 6, { width: W, align: 'right' });
+        doc.y = rY + 22;
+      });
+
       // Kundenliste
       doc.moveDown(1.5);
       doc.fontSize(13).font('Helvetica-Bold').fillColor('#8b1d1d').text('Alle Bestellungen dieser Woche');
