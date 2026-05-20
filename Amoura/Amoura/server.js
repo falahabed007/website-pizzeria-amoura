@@ -296,9 +296,9 @@ app.get('/api/config', (req, res) => res.json({
   whatsapp: process.env.WHATSAPP_NUMBER || '',
   serviceFee: 0.99,
   deliveryCities: {
-    'Beckum':  { min: 20.00, fee: 2.50 },
-    'Roland':  { min: 25.00, fee: 3.00 },
-    'Vellern': { min: 25.00, fee: 3.00 },
+    'Beckum':  { min: 15.00, fee: 2.50 },
+    'Roland':  { min: 20.00, fee: 3.00 },
+    'Vellern': { min: 20.00, fee: 3.00 },
   }
 }));
 
