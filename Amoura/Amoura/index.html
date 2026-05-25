@@ -664,10 +664,10 @@
     <button class="search-btn" id="searchToggleBtn" onclick="toggleSearch()" title="Suchen"><i class="fas fa-search"></i></button>
     <a href="account.html" class="amoura-account-btn" title="Mein Konto"><i class="fas fa-user"></i></a>
     <!-- Aktion Banner -->
-    <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: linear-gradient(135deg,#8b1d1d,#c35a44); color: #fff; padding: 11px 15px; border-radius: 10px; font-size: 12px; font-weight: bold; text-align: center; max-width: 165px; line-height: 1.6; display: none; box-shadow: 0 4px 16px rgba(139,29,29,0.45);">
-      <div style="font-size: 10px; opacity: 0.85; margin-bottom: 3px;">🗓 19.05 – 22.06.2026</div>
-      <div style="font-size: 13px;">🍕 Kl. Pizza Margherita</div>
-      <div style="margin-top:5px; background:#fff; color:#8b1d1d; border-radius:5px; padding:3px 6px; font-size:12px;">GRATIS ab 15€!</div>
+    <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: #d4a76a; color: #3d1a08; padding: 9px 13px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; max-width: 145px; line-height: 1.5; display: none; box-shadow: 0 3px 12px rgba(0,0,0,0.25);">
+      <div style="font-size: 9px; opacity: 0.8; margin-bottom: 2px;">15.04 – 15.05</div>
+      <div>🍕 Kl. Pizza Margherita</div>
+      <div style="margin-top:3px; background:#3d1a08; color:#d4a76a; border-radius:4px; padding:2px 5px;">GRATIS ab 15€!</div>
     </div>
   </div>
 </header>
@@ -730,9 +730,9 @@
             <div id="cart-delivery-info" style="margin-top:10px;">
                 <select id="cart-stadt" onchange="updateCartSummary()"
                     style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; font-size:13px; cursor:pointer;">
-                    <option value="beckum">Beckum (MBW: 15,00€ | +2,50€ Gebühr)</option>
-                    <option value="roland">Roland (MBW: 20,00€ | +3,00€ Gebühr)</option>
-                    <option value="vellern">Vellern (MBW: 20,00€ | +3,00€ Gebühr)</option>
+                    <option value="beckum">Beckum (MBW: 20,00€ | +2,50€ Gebühr)</option>
+                    <option value="roland">Roland (MBW: 25,00€ | +3,00€ Gebühr)</option>
+                    <option value="vellern">Vellern (MBW: 25,00€ | +3,00€ Gebühr)</option>
                 </select>
             </div>
 
@@ -799,7 +799,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Beckum ab 15€ · Roland/Vellern ab 20€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
+                    <p>Beckum ab 20€ · Roland/Vellern ab 25€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
                 </div>
             </div>
             
@@ -821,10 +821,9 @@
 
 
     <!-- ═══ AKTIONS-BANNER ═══ -->
-    <div id="aktionsBanner" style="display:none; background: linear-gradient(135deg, #8b1d1d 0%, #c35a44 60%, #d4793a 100%); color: white; text-align: center; padding: 18px 20px; border-bottom: 3px solid #a02222;">
-      <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 6px;">🗓 Aktion · 19. Mai – 22. Juni 2026</div>
-      <div style="font-size: 20px; font-weight: 900; line-height: 1.3;">🍕 Kleine Pizza Margherita <span style="background:#fff; color:#8b1d1d; border-radius:6px; padding:2px 10px; margin-left:4px;">GRATIS</span></div>
-      <div style="font-size: 13px; margin-top: 7px; opacity: 0.9;">Bei jeder Bestellung ab <strong>15 €</strong> · Wird automatisch in den Warenkorb gelegt</div>
+    <div id="aktionsBanner" style="display:none; background: linear-gradient(135deg, #d4a76a, #c35a44); color: white; text-align: center; padding: 14px 20px; font-size: 15px; font-weight: bold; line-height: 1.5;">
+        🍕 <span style="font-size:17px;">Gratis Pizza Margherita bei jeder Bestellung ab 15€!</span> 🍕<br>
+        <span style="font-size: 13px; opacity: 0.92; font-weight: normal;">Gültig 15.04 – 15.05 · Wird automatisch in den Warenkorb gelegt</span>
     </div>
     <script>
         if (typeof isPromotionActive === 'function' && isPromotionActive()) {
@@ -1646,6 +1645,10 @@
                 <div class="product-info"><h3>Mineralwasser</h3><p>spritzig</p></div>
                 <div class="price">2,50 €</div>
             </div>
+            <div class="product-item" onclick="openQuickAdd(this)" style="cursor: pointer;" data-hide-when-unavailable="1">
+                <div class="product-info"><h3>Test</h3><p>Nur zum Testen</p></div>
+                <div class="price">0,10 €</div>
+            </div>
 
 
     </div>
@@ -1946,10 +1949,11 @@ let warenkorb = [];
 
 // ═══ AKTION: Kleine Pizza Margherita GRATIS ═══
 function isPromotionActive() {
-  const now = new Date();
-  const start = new Date('2026-05-19T00:00:00+02:00');
-  const end   = new Date('2026-06-22T23:59:59+02:00');
-  return now >= start && now <= end;
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const day = today.getDate();
+  // 15.04 bis 15.05 → Monat 4, Tag 15+ ODER Monat 5, Tag <=15
+  return (month === 4 && day >= 15) || (month === 5 && day <= 15);
 }
 
 function showPromotionBanner() {
@@ -1968,7 +1972,7 @@ function addFreePizzaIfNeeded() {
   if (summe >= 15 && !hasPizza) {
     warenkorb.push({ id: Date.now(), name: 'Kleine Pizza Margherita (GRATIS)', preis: 0, isFree: true });
   } else if (summe < 15 && hasPizza) {
-    // Warenkorb wieder unter 20€ → Gratis-Pizza entfernen
+    // Warenkorb wieder unter 15€ → Gratis-Pizza entfernen
     const idx = warenkorb.findIndex(item => item.isFree);
     if (idx !== -1) warenkorb.splice(idx, 1);
   }
@@ -2214,9 +2218,9 @@ function toggleMobileMenu() {
             
             <div style="margin-bottom:5px; font-size:12px; color:#666;">Liefergebiet wählen:</div>
             <select id="c-stadt" onchange="updateSummary()" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;">
-                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 2,50€)</option>
-                <option value="roland">Roland (MBW: 20,00€ | Gebühr: 3,00€)</option>
-                <option value="vellern">Vellern (MBW: 20,00€ | Gebühr: 3,00€)</option>
+                <option value="beckum">Beckum (MBW: 20,00€ | Gebühr: 2,50€)</option>
+                <option value="roland">Roland (MBW: 25,00€ | Gebühr: 3,00€)</option>
+                <option value="vellern">Vellern (MBW: 25,00€ | Gebühr: 3,00€)</option>
             </select>
         </div>
         
@@ -2343,9 +2347,9 @@ function showCouponMsg(text, success) {
 
 <script>
 const AREA_CONFIG = {
-    "beckum": { min: 15.00, fee: 2.50, label: "Beckum" },
-    "roland": { min: 20.00, fee: 3.00, label: "Roland" },
-    "vellern": { min: 20.00, fee: 3.00, label: "Vellern" }
+    "beckum": { min: 20.00, fee: 2.50, label: "Beckum" },
+    "roland": { min: 25.00, fee: 3.00, label: "Roland" },
+    "vellern": { min: 25.00, fee: 3.00, label: "Vellern" }
 };
 const SERVICE_FEE = 0.99;
 
@@ -2574,8 +2578,8 @@ async function processOrder() {
                 body: JSON.stringify({
                     items: warenkorb.map(i => ({
                         name:  i.name,
-                        price: i.basePreis || i.preis,
-                        qty:   i.qty || 1,
+                        price: i.preis,
+                        qty:   1,
                         extraDetails: i.extraDetails || []
                     })),
                     subtotal:    summeWaren,
@@ -2623,7 +2627,7 @@ async function processOrder() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                items: warenkorb.map(i => ({ name: i.name, price: i.basePreis||i.preis, qty: i.qty||1, extraDetails: i.extraDetails||[] })),
+                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, extraDetails: i.extraDetails||[] })),
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
@@ -3738,9 +3742,9 @@ LEGAL.agb = {
        + "<p>Alle Preise inkl. MwSt. (7&nbsp;% auf Speisen, 19&nbsp;% auf Getr&auml;nke). F&uuml;r die Nutzung der Online-Bestellplattform wird eine <strong>Servicegeb&uuml;hr von 0,99&nbsp;&euro;</strong> pro Bestellung erhoben (gem. &sect;&nbsp;312a BGB). Diese z&auml;hlt nicht zum Mindestbestellwert.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;4 Lieferung &amp; Mindestbestellwerte</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
-       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
-       + "<li>Roland: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
-       + "<li>Vellern: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Beckum: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
+       + "<li>Roland: Mindestbestellwert 25,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Vellern: Mindestbestellwert 25,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
        + "</ul>"
        + "<p>Lieferzeiten sind Sch&auml;tzwerte und nicht verbindlich.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;5 Widerrufsrecht</h4>"
