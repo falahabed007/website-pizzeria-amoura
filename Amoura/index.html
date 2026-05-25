@@ -730,9 +730,9 @@
             <div id="cart-delivery-info" style="margin-top:10px;">
                 <select id="cart-stadt" onchange="updateCartSummary()"
                     style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; background:white; font-size:13px; cursor:pointer;">
-                    <option value="beckum">Beckum (MBW: 15,00€ | +2,50€ Gebühr)</option>
-                    <option value="roland">Roland (MBW: 15,00€ | +3,00€ Gebühr)</option>
-                    <option value="vellern">Vellern (MBW: 15,00€ | +3,00€ Gebühr)</option>
+                    <option value="beckum">Beckum (MBW: 20,00€ | +2,50€ Gebühr)</option>
+                    <option value="roland">Roland (MBW: 25,00€ | +3,00€ Gebühr)</option>
+                    <option value="vellern">Vellern (MBW: 25,00€ | +3,00€ Gebühr)</option>
                 </select>
             </div>
 
@@ -799,7 +799,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Alle Gebiete ab 15€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
+                    <p>Beckum ab 20€ · Roland/Vellern ab 25€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
                 </div>
             </div>
             
@@ -2218,9 +2218,9 @@ function toggleMobileMenu() {
             
             <div style="margin-bottom:5px; font-size:12px; color:#666;">Liefergebiet wählen:</div>
             <select id="c-stadt" onchange="updateSummary()" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px; background:white; cursor:pointer;">
-                <option value="beckum">Beckum (MBW: 15,00€ | Gebühr: 2,50€)</option>
-                <option value="roland">Roland (MBW: 15,00€ | Gebühr: 3,00€)</option>
-                <option value="vellern">Vellern (MBW: 15,00€ | Gebühr: 3,00€)</option>
+                <option value="beckum">Beckum (MBW: 20,00€ | Gebühr: 2,50€)</option>
+                <option value="roland">Roland (MBW: 25,00€ | Gebühr: 3,00€)</option>
+                <option value="vellern">Vellern (MBW: 25,00€ | Gebühr: 3,00€)</option>
             </select>
         </div>
         
@@ -2323,6 +2323,10 @@ function validateCoupon() {
   var code = (document.getElementById('c-coupon').value || '').trim().toUpperCase();
   if (!code) { showCouponMsg('Bitte gib einen Gutscheincode ein.', false); return; }
   if (code !== 'ROLLNCONE') { showCouponMsg('❌ Ungültiger Gutscheincode.', false); return; }
+  var now = new Date();
+  var start = new Date('2026-05-19T00:00:00+02:00');
+  var end   = new Date('2026-06-02T23:59:59+02:00');
+  if (now < start || now > end) { showCouponMsg('❌ Dieser Gutscheincode ist abgelaufen.', false); return; }
   couponValid = true;
   document.getElementById('c-coupon').disabled = true;
   var btn = document.querySelector('#coupon-section button');
@@ -2343,9 +2347,9 @@ function showCouponMsg(text, success) {
 
 <script>
 const AREA_CONFIG = {
-    "beckum": { min: 15.00, fee: 2.50, label: "Beckum" },
-    "roland": { min: 15.00, fee: 3.00, label: "Roland" },
-    "vellern": { min: 15.00, fee: 3.00, label: "Vellern" }
+    "beckum": { min: 20.00, fee: 2.50, label: "Beckum" },
+    "roland": { min: 25.00, fee: 3.00, label: "Roland" },
+    "vellern": { min: 25.00, fee: 3.00, label: "Vellern" }
 };
 const SERVICE_FEE = 0.99;
 
@@ -2574,8 +2578,8 @@ async function processOrder() {
                 body: JSON.stringify({
                     items: warenkorb.map(i => ({
                         name:  i.name,
-                        price: i.preis,
-                        qty:   1,
+                        price: i.basePreis || i.preis,
+                        qty:   i.qty || 1,
                         extraDetails: i.extraDetails || []
                     })),
                     subtotal:    summeWaren,
@@ -2623,7 +2627,7 @@ async function processOrder() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, extraDetails: i.extraDetails||[] })),
+                items: warenkorb.map(i => ({ name: i.name, price: i.basePreis||i.preis, qty: i.qty||1, extraDetails: i.extraDetails||[] })),
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
@@ -3738,9 +3742,9 @@ LEGAL.agb = {
        + "<p>Alle Preise inkl. MwSt. (7&nbsp;% auf Speisen, 19&nbsp;% auf Getr&auml;nke). F&uuml;r die Nutzung der Online-Bestellplattform wird eine <strong>Servicegeb&uuml;hr von 0,99&nbsp;&euro;</strong> pro Bestellung erhoben (gem. &sect;&nbsp;312a BGB). Diese z&auml;hlt nicht zum Mindestbestellwert.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;4 Lieferung &amp; Mindestbestellwerte</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
-       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
-       + "<li>Roland: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
-       + "<li>Vellern: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Beckum: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
+       + "<li>Roland: Mindestbestellwert 25,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
+       + "<li>Vellern: Mindestbestellwert 25,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
        + "</ul>"
        + "<p>Lieferzeiten sind Sch&auml;tzwerte und nicht verbindlich.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;5 Widerrufsrecht</h4>"
