@@ -2578,8 +2578,8 @@ async function processOrder() {
                 body: JSON.stringify({
                     items: warenkorb.map(i => ({
                         name:  i.name,
-                        price: i.preis,
-                        qty:   1,
+                        price: i.basePreis || i.preis,
+                        qty:   i.qty || 1,
                         extraDetails: i.extraDetails || []
                     })),
                     subtotal:    summeWaren,
@@ -2627,7 +2627,7 @@ async function processOrder() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                items: warenkorb.map(i => ({ name: i.name, price: i.preis, qty: 1, extraDetails: i.extraDetails||[] })),
+                items: warenkorb.map(i => ({ name: i.name, price: i.basePreis||i.preis, qty: i.qty||1, extraDetails: i.extraDetails||[] })),
                 subtotal: summeWaren, deliveryFee: fee, serviceFee: SERVICE_FEE, total: finalTotal,
                 mode: barMode,
                 payment: 'bar',
