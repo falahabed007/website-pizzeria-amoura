@@ -2578,8 +2578,8 @@ async function processOrder() {
                 body: JSON.stringify({
                     items: warenkorb.map(i => ({
                         name:  i.name,
-                        price: i.preis,
-                        qty:   1,
+                        price: i.basePreis || i.preis,
+                        qty:   i.qty || 1,
                         extraDetails: i.extraDetails || []
                     })),
                     subtotal:    summeWaren,
