@@ -298,6 +298,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
     <div class="login-logo">🍕 Amoura</div>
     <div class="login-sub">Admin Dashboard · Pizzeria Amoura</div>
     <input type="password" id="loginPw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
+    <label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.82rem;margin-bottom:12px;cursor:pointer;user-select:none;">
+      <input type="checkbox" id="rememberPw" style="width:auto;margin:0;accent-color:var(--red);">
+      Passwort auf diesem Gerät merken
+    </label>
     <button class="login-btn" onclick="doLogin()">Einloggen</button>
     <div class="login-err" id="loginErr">❌ Falsches Passwort</div>
   </div>
@@ -1045,25 +1049,38 @@ let posCategory = 'pizza';
 async function doLogin() {
   const pw = document.getElementById('loginPw').value.trim();
   if (!pw) return;
+  const remember = document.getElementById('rememberPw').checked;
   document.getElementById('loginErr').style.display='none';
+  const onSuccess = () => {
+    if (remember) localStorage.setItem('amouraSavedPw', pw);
+    else localStorage.removeItem('amouraSavedPw');
+  };
   // Lokales Passwort-Check
   if (pw === DASHBOARD_PW) {
     token = ADMIN_TOKEN_SEC;
     sessionStorage.setItem('amouraToken', token);
-    showApp();
+    onSuccess(); showApp();
     return;
   }
   // Backend-Login (nur wenn kein lokaler Match)
   try {
     const r = await fetch(API_BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     const d = await r.json();
-    if (d.token) { token=d.token; sessionStorage.setItem('amouraToken',token); showApp(); }
+    if (d.token) { token=d.token; sessionStorage.setItem('amouraToken',token); onSuccess(); showApp(); }
     else document.getElementById('loginErr').style.display='block';
   } catch {
-    // Server nicht erreichbar – Passwort war bereits falsch
     document.getElementById('loginErr').style.display='block';
   }
 }
+
+// Auto-Fill gespeichertes Passwort beim Laden
+(function(){
+  const saved = localStorage.getItem('amouraSavedPw');
+  if (saved) {
+    document.getElementById('loginPw').value = saved;
+    document.getElementById('rememberPw').checked = true;
+  }
+})();
 function showApp() {
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
