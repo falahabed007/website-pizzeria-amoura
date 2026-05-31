@@ -296,9 +296,9 @@ app.get('/api/config', (req, res) => res.json({
   whatsapp: process.env.WHATSAPP_NUMBER || '',
   serviceFee: 0.99,
   deliveryCities: {
-    'Beckum':  { min: 15.00, fee: 2.50 },
-    'Roland':  { min: 20.00, fee: 3.00 },
-    'Vellern': { min: 20.00, fee: 3.00 },
+    'Beckum':  { min: 15.00, fee: 1.50 },
+    'Roland':  { min: 20.00, fee: 2.00 },
+    'Vellern': { min: 20.00, fee: 2.00 },
   }
 }));
 
@@ -427,7 +427,7 @@ app.post('/api/coupon-raffle', async (req, res) => {
     await resend.emails.send({
       from:    process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
       to:      email,
-      bcc:     'rachmanfalah5@gmail.com',
+      bcc:     'AbedFalah@Fluevate.onmicrosoft.com',
       subject: '🎉 Deine Teilnahme an der Roll N Cone Verlosung – Pizzeria Amoura',
       html:    customerHtml
     });
@@ -823,10 +823,6 @@ const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
 
 async function sendCouponRaffleEmail(order) {
   if (!order.coupon || order.coupon.toUpperCase() !== 'ROLLNCONE') return;
-  const now = new Date();
-  const start = new Date('2026-05-19T00:00:00+02:00');
-  const end   = new Date('2026-06-02T23:59:59+02:00');
-  if (now < start || now > end) return;
   if (!order.customer?.email) return;
   const resend = getResend();
   if (!resend) return;
@@ -888,7 +884,7 @@ async function sendCouponRaffleEmail(order) {
     await resend.emails.send({
       from:    process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
       to:      email,
-      bcc:     'rachmanfalah5@gmail.com',
+      bcc:     'AbedFalah@Fluevate.onmicrosoft.com',
       subject: '🎉 Du nimmst an der Roll N Cone Verlosung teil! – Pizzeria Amoura',
       html
     });
@@ -1227,7 +1223,7 @@ cron.schedule('0 22 * * *', async () => {
   } catch(e) { console.error('Tagesbericht Fehler:', e); }
 });
 
-cron.schedule('59 23 * * 0', async () => {
+cron.schedule('0 22 * * 0', async () => {
   try {
     const now    = new Date();
     const wStart = new Date(now); wStart.setDate(now.getDate()-6); wStart.setHours(0,0,0,0);
@@ -1241,18 +1237,14 @@ cron.schedule('59 23 * * 0', async () => {
       createdAt: { $gte: wStart, $lte: wEnd }
     });
 
-    const brutto      = orders.reduce((s,o) => s+(o.total||0), 0);
-    const svcFees     = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
-    const nettoBase   = brutto - svcFees;
-    const provision   = nettoBase * 0.05;
-    const meinBetrag  = svcFees + provision;
-    const auszahlung  = brutto - meinBetrag;
-    const web         = orders.filter(o=>o.source!=='pos').length;
-    const pos         = orders.filter(o=>o.source==='pos').length;
-    const totalBar    = orders.filter(o=>o.payment==='bar').reduce((s,o)=>s+(o.total||0),0);
-    const totalStripe = orders.filter(o=>o.payment==='stripe'||o.payment==='karte').reduce((s,o)=>s+(o.total||0),0);
-    const nBar        = orders.filter(o=>o.payment==='bar').length;
-    const nStripe     = orders.filter(o=>o.payment==='stripe'||o.payment==='karte').length;
+    const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
+    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
+    const nettoBase  = brutto - svcFees;
+    const provision  = nettoBase * 0.05;
+    const meinBetrag = svcFees + provision;
+    const auszahlung = brutto - meinBetrag;
+    const web        = orders.filter(o=>o.source!=='pos').length;
+    const pos        = orders.filter(o=>o.source==='pos').length;
 
     const rechnungNr = await getNextRechnungNum();
 
@@ -1354,15 +1346,12 @@ cron.schedule('59 23 * * 0', async () => {
       doc.moveDown(4);
 
       // Stats table
-      const fmt = n => n.toFixed(2).replace('.',',')+' €';
       const rows = [
         ['Bestellungen gesamt', `${orders.length}`, false],
         ['davon Online', `${web}`, true],
         ['davon Telefon / POS', `${pos}`, false],
-        [`Barzahlung (${nBar} Bestellungen)`, fmt(totalBar), true],
-        [`Stripe / Kreditkarte (${nStripe} Bestellungen)`, fmt(totalStripe), false],
-        ['Gesamtumsatz (Brutto)', fmt(brutto), true],
-        ['Einbehaltene Gebühren (A. R. Falah)', `− ${fmt(meinBetrag)}`, false],
+        ['Gesamtumsatz (Brutto)', `${brutto.toFixed(2).replace('.',',')} €`, true],
+        ['Einbehaltene Gebühren (A. R. Falah)', `− ${meinBetrag.toFixed(2).replace('.',',')} €`, false],
       ];
       rows.forEach(([label, value, shade]) => {
         const rowY = doc.y;
@@ -1377,80 +1366,12 @@ cron.schedule('59 23 * * 0', async () => {
       doc.rect(50, ay, W, 38).fill('#e8f5e9');
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#2e7d32')
         .text('Ihr Auszahlungsbetrag', 58, ay + 12);
-      doc.text(fmt(auszahlung), 50, ay + 12, { width: W - 8, align: 'right' });
+      doc.text(`${auszahlung.toFixed(2).replace('.',',')} €`, 50, ay + 12, { width: W - 8, align: 'right' });
       doc.y = ay + 52;
 
       doc.moveDown(0.5);
       doc.fontSize(8).font('Helvetica').fillColor('#aaa')
         .text('* Auszahlung erfolgt automatisch über Stripe Connect auf das hinterlegte Bankkonto.');
-
-      // Tagesweise Aufschlüsselung
-      doc.moveDown(1.5);
-      doc.fontSize(13).font('Helvetica-Bold').fillColor('#8b1d1d').text('Umsatz nach Wochentag');
-      doc.moveDown(0.5);
-
-      const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-      const byDay = {};
-      orders.forEach(o => {
-        const d = new Date(o.createdAt);
-        const key = `${dayNames[d.getDay()]} ${d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}`;
-        if (!byDay[key]) byDay[key] = { total: 0, count: 0, bar: 0, stripe: 0 };
-        byDay[key].total  += o.total || 0;
-        byDay[key].count  += 1;
-        if (o.payment === 'bar') byDay[key].bar += o.total || 0;
-        else byDay[key].stripe += o.total || 0;
-      });
-
-      // Tabellenheader
-      const hY = doc.y;
-      doc.rect(50, hY, W, 22).fill('#8b1d1d');
-      doc.font('Helvetica-Bold').fontSize(9).fillColor('#fff')
-        .text('Tag', 58, hY + 7)
-        .text('Bestellungen', 160, hY + 7)
-        .text('Bar', 270, hY + 7)
-        .text('Stripe', 340, hY + 7)
-        .text('Tagesumsatz', 410, hY + 7, { width: W - 360, align: 'right' });
-      doc.y = hY + 22;
-
-      Object.entries(byDay).forEach(([day, d], i) => {
-        const rY = doc.y;
-        if (i % 2 === 0) doc.rect(50, rY, W, 22).fill('#f5f5f5');
-        doc.font('Helvetica').fontSize(10).fillColor('#222')
-          .text(day, 58, rY + 6)
-          .text(`${d.count}×`, 160, rY + 6)
-          .text(fmt(d.bar), 250, rY + 6)
-          .text(fmt(d.stripe), 330, rY + 6)
-          .text(fmt(d.total), 50, rY + 6, { width: W, align: 'right' });
-        doc.y = rY + 22;
-      });
-
-      // Kundenliste
-      doc.moveDown(1.5);
-      doc.fontSize(13).font('Helvetica-Bold').fillColor('#8b1d1d').text('Alle Bestellungen dieser Woche');
-      doc.moveDown(0.4);
-
-      orders.forEach((o, i) => {
-        if (doc.y > 730) doc.addPage();
-        const rowY = doc.y;
-        if (i % 2 === 0) doc.rect(50, rowY, W, 0).fill('#f9f9f9');
-        doc.rect(50, rowY, W, 0.5).fill('#e0e0e0');
-
-        const kunde   = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
-        const zahlung = o.payment==='stripe'||o.payment==='karte' ? '💳 Stripe' : '💵 Bar';
-        const adresse = o.mode==='lieferung'
-          ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
-          : 'Abholung';
-        const items = (o.items||[]).map(it=>`${it.qty}× ${cleanName(it.name)}`).join(', ');
-
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#8b1d1d')
-          .text(`#${o.orderNum}  ${new Date(o.createdAt).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}  ${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}  ${o.mode==='lieferung'?'LIEFERUNG':'ABHOLUNG'}`, 50, rowY+6, { width: W/2 });
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#222')
-          .text(fmt(o.total||0), 50, rowY+6, { width: W, align: 'right' });
-        doc.font('Helvetica').fontSize(9).fillColor('#333')
-          .text(`${kunde}  |  Tel: ${o.customer?.phone||'–'}  |  ${zahlung}  |  ${adresse}`, 50, rowY+20, { width: W });
-        doc.text(`Artikel: ${items}`, 50, rowY+32, { width: W });
-        doc.y = rowY + 50;
-      });
 
       // Footer
       doc.fontSize(8).fillColor('#aaa')
@@ -1469,13 +1390,11 @@ cron.schedule('59 23 * * 0', async () => {
       <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
       <tr><td style="padding:8px">davon Online</td><td style="padding:8px;text-align:right">${web}</td></tr>
       <tr style="background:#f5f5f5"><td style="padding:8px">davon Telefon / POS</td><td style="padding:8px;text-align:right">${pos}</td></tr>
-      <tr><td style="padding:8px">💵 Barzahlung (${nBar} Bestellungen)</td><td style="padding:8px;text-align:right">${totalBar.toFixed(2).replace('.',',')} €</td></tr>
-      <tr style="background:#f5f5f5"><td style="padding:8px">💳 Stripe / Kreditkarte (${nStripe} Bestellungen)</td><td style="padding:8px;text-align:right">${totalStripe.toFixed(2).replace('.',',')} €</td></tr>
       <tr><td style="padding:8px">Gesamtumsatz (Brutto)</td><td style="padding:8px;text-align:right">${brutto.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#f5f5f5"><td style="padding:8px">Einbehaltene Gebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${meinBetrag.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihr Auszahlungsbetrag</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${auszahlung.toFixed(2).replace('.',',')} €</td></tr>
     </table>
-    <p style="font-size:11px;color:#aaa;margin-top:8px">* Auszahlung erfolgt automatisch über Stripe Connect. Das beigefügte PDF enthält die vollständige Kundenliste.</p>
+    <p style="font-size:11px;color:#aaa;margin-top:8px">* Auszahlung erfolgt automatisch über Stripe Connect.</p>
   </div>
 </div>`;
 
@@ -1514,9 +1433,9 @@ function getWeekNum(d) {
   return 1+Math.round(((dt-w1)/86400000-3+(w1.getDay()+6)%7)/7);
 }
 
-// MONATSBERICHT (Cron – täglich 23:58, nur am letzten Tag des Monats)
+// MONATSBERICHT (Cron – täglich 22:00, nur am letzten Tag des Monats)
 // ═══════════════════════════════════════════════════════════════════
-cron.schedule('58 23 * * *', async () => {
+cron.schedule('0 22 * * *', async () => {
   const now = new Date();
   const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
   if (tomorrow.getDate() !== 1) return; // nur am letzten Tag des Monats
@@ -1534,18 +1453,14 @@ cron.schedule('58 23 * * *', async () => {
       createdAt: { $gte: mStart, $lte: mEnd }
     });
 
-    const brutto      = orders.reduce((s,o) => s+(o.total||0), 0);
-    const svcFees     = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
-    const nettoBase   = brutto - svcFees;
-    const provision   = nettoBase * 0.05;
-    const meinBetrag  = svcFees + provision;
-    const auszahlung  = brutto - meinBetrag;
-    const web         = orders.filter(o=>o.source!=='pos').length;
-    const pos         = orders.filter(o=>o.source==='pos').length;
-    const totalBar    = orders.filter(o=>o.payment==='bar').reduce((s,o)=>s+(o.total||0),0);
-    const totalStripe = orders.filter(o=>o.payment==='stripe'||o.payment==='karte').reduce((s,o)=>s+(o.total||0),0);
-    const nBar        = orders.filter(o=>o.payment==='bar').length;
-    const nStripe     = orders.filter(o=>o.payment==='stripe'||o.payment==='karte').length;
+    const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
+    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
+    const nettoBase  = brutto - svcFees;
+    const provision  = nettoBase * 0.05;
+    const meinBetrag = svcFees + provision;
+    const auszahlung = brutto - meinBetrag;
+    const web        = orders.filter(o=>o.source!=='pos').length;
+    const pos        = orders.filter(o=>o.source==='pos').length;
 
     const monatsPdf = await generatePdf(doc => {
       const W = 495;
@@ -1624,18 +1539,15 @@ cron.schedule('58 23 * * *', async () => {
       doc.moveDown(2);
 
       // Monatsübersicht
-      const fmt = n => n.toFixed(2).replace('.',',')+' €';
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('MONATSÜBERSICHT');
       doc.moveDown(0.5);
       const rows = [
         ['Bestellungen gesamt', `${orders.length}`, false],
         ['davon Online', `${web}`, true],
         ['davon Telefon / POS', `${pos}`, false],
-        [`Barzahlung (${nBar} Bestellungen)`, fmt(totalBar), true],
-        [`Stripe / Kreditkarte (${nStripe} Bestellungen)`, fmt(totalStripe), false],
-        ['Gesamtumsatz (Brutto)', fmt(brutto), true],
-        ['Einbehaltene Gebühren (A. R. Falah)', `− ${fmt(meinBetrag)}`, false],
-        ['Auszahlung an Restaurant', fmt(auszahlung), true],
+        ['Gesamtumsatz (Brutto)', `${brutto.toFixed(2).replace('.',',')} €`, true],
+        ['Einbehaltene Gebühren (A. R. Falah)', `− ${meinBetrag.toFixed(2).replace('.',',')} €`, false],
+        ['Auszahlung an Restaurant', `${auszahlung.toFixed(2).replace('.',',')} €`, true],
       ];
       rows.forEach(([label, value, shade]) => {
         const rowY = doc.y;
@@ -1643,34 +1555,6 @@ cron.schedule('58 23 * * *', async () => {
         doc.font('Helvetica').fontSize(10).fillColor('#222').text(label, 58, rowY+8);
         doc.text(value, 50, rowY+8, { width: W-8, align: 'right' });
         doc.y = rowY + 26;
-      });
-
-      // Kundenliste
-      doc.addPage();
-      doc.fontSize(13).font('Helvetica-Bold').fillColor('#8b1d1d').text(`Alle Bestellungen – ${monat}`);
-      doc.moveDown(0.4);
-
-      orders.forEach((o, i) => {
-        if (doc.y > 730) doc.addPage();
-        const rowY = doc.y;
-        if (i % 2 === 0) doc.rect(50, rowY, W, 0).fill('#f9f9f9');
-        doc.rect(50, rowY, W, 0.5).fill('#e0e0e0');
-
-        const kunde   = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
-        const zahlung = o.payment==='stripe'||o.payment==='karte' ? '💳 Stripe' : '💵 Bar';
-        const adresse = o.mode==='lieferung'
-          ? `${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim()
-          : 'Abholung';
-        const items = (o.items||[]).map(it=>`${it.qty}× ${cleanName(it.name)}`).join(', ');
-
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#8b1d1d')
-          .text(`#${o.orderNum}  ${new Date(o.createdAt).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}  ${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}  ${o.mode==='lieferung'?'LIEFERUNG':'ABHOLUNG'}`, 50, rowY+6, { width: W/2 });
-        doc.font('Helvetica-Bold').fontSize(10).fillColor('#222')
-          .text(fmt(o.total||0), 50, rowY+6, { width: W, align: 'right' });
-        doc.font('Helvetica').fontSize(9).fillColor('#333')
-          .text(`${kunde}  |  Tel: ${o.customer?.phone||'–'}  |  ${zahlung}  |  ${adresse}`, 50, rowY+20, { width: W });
-        doc.text(`Artikel: ${items}`, 50, rowY+32, { width: W });
-        doc.y = rowY + 50;
       });
 
       doc.fontSize(8).fillColor('#aaa')
