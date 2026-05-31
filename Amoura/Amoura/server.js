@@ -296,9 +296,9 @@ app.get('/api/config', (req, res) => res.json({
   whatsapp: process.env.WHATSAPP_NUMBER || '',
   serviceFee: 0.99,
   deliveryCities: {
-    'Beckum':  { min: 15.00, fee: 1.50 },
-    'Roland':  { min: 20.00, fee: 2.00 },
-    'Vellern': { min: 20.00, fee: 2.00 },
+    'Beckum':  { min: 15.00, fee: 2.50 },
+    'Roland':  { min: 20.00, fee: 3.00 },
+    'Vellern': { min: 20.00, fee: 3.00 },
   }
 }));
 
@@ -427,7 +427,7 @@ app.post('/api/coupon-raffle', async (req, res) => {
     await resend.emails.send({
       from:    process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
       to:      email,
-      bcc:     'AbedFalah@Fluevate.onmicrosoft.com',
+      bcc:     'rachmanfalah5@gmail.com',
       subject: '🎉 Deine Teilnahme an der Roll N Cone Verlosung – Pizzeria Amoura',
       html:    customerHtml
     });
@@ -823,6 +823,10 @@ const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/, '').trimEnd();
 
 async function sendCouponRaffleEmail(order) {
   if (!order.coupon || order.coupon.toUpperCase() !== 'ROLLNCONE') return;
+  const now = new Date();
+  const start = new Date('2026-05-19T00:00:00+02:00');
+  const end   = new Date('2026-06-02T23:59:59+02:00');
+  if (now < start || now > end) return;
   if (!order.customer?.email) return;
   const resend = getResend();
   if (!resend) return;
@@ -884,7 +888,7 @@ async function sendCouponRaffleEmail(order) {
     await resend.emails.send({
       from:    process.env.EMAIL_FROM || 'bestellungen@pizzeria-amoura.de',
       to:      email,
-      bcc:     'AbedFalah@Fluevate.onmicrosoft.com',
+      bcc:     'rachmanfalah5@gmail.com',
       subject: '🎉 Du nimmst an der Roll N Cone Verlosung teil! – Pizzeria Amoura',
       html
     });
@@ -1081,6 +1085,157 @@ function generatePdf(buildFn) {
   });
 }
 
+// ─── PDF Layout-Helpers ───────────────────────────────────────────────────
+const PDF_M  = 50;
+const PDF_W  = 495;
+const PDF_PW = 595;
+const PDF_FT = 810;
+const PDF_SV = 0.99;
+const PDF_PR = 0.05;
+const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
+
+function pdfColorBox(doc, title, sub, color = '#8b1d1d', h = 70) {
+  doc.rect(0, 0, PDF_PW, h).fill(color);
+  doc.font('Helvetica-Bold').fontSize(20).fillColor('#fff').text(title, PDF_M, 18);
+  if (sub) doc.font('Helvetica').fontSize(9).fillColor('rgba(255,255,255,0.75)').text(sub, PDF_M, 44);
+  doc.y = h + 12;
+}
+
+function pdfHr(doc, color = '#ddd', lw = 0.5) {
+  doc.moveTo(PDF_M, doc.y).lineTo(PDF_M + PDF_W, doc.y).strokeColor(color).lineWidth(lw).stroke();
+  doc.y += lw + 3;
+}
+
+function pdfKacheln(doc, items) {
+  const kW = Math.floor((PDF_W - (items.length - 1) * 8) / items.length);
+  const top = doc.y;
+  items.forEach(([label, value, color], i) => {
+    const x = PDF_M + i * (kW + 8);
+    doc.rect(x, top, kW, 46).fill(color);
+    doc.font('Helvetica').fontSize(7.5).fillColor('rgba(255,255,255,0.72)').text(label, x + 8, top + 8, { width: kW - 12 });
+    doc.font('Helvetica-Bold').fontSize(14).fillColor('#fff').text(value, x + 8, top + 22, { width: kW - 12 });
+  });
+  doc.y = top + 54;
+}
+
+function pdfTableRow(doc, cells, shade, bold = false) {
+  const top = doc.y;
+  if (shade) doc.rect(PDF_M, top, PDF_W, 20).fill('#f5f7fa');
+  cells.forEach(([txt, x, w, align]) => {
+    const opts = align ? { width: w, align } : { width: w };
+    (bold ? doc.font('Helvetica-Bold') : doc.font('Helvetica'))
+      .fontSize(9.5).fillColor('#222').text(txt, x, top + 5, opts);
+  });
+  doc.y = top + 20;
+}
+
+function pdfKundenliste(doc, orders) {
+  function drawGroup(label, color, list) {
+    if (!list.length) return;
+    const gy = doc.y;
+    doc.rect(PDF_M, gy, PDF_W, 22).fill(color);
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text(label, PDF_M + 8, gy + 6, { width: PDF_W - 16 });
+    doc.y = gy + 22 + 2;
+    const hy = doc.y;
+    doc.rect(PDF_M, hy, PDF_W, 16).fill('#eaeef3');
+    [['#', PDF_M+2, 30, 'left'], ['Datum', PDF_M+34, 40, 'left'], ['Kunde', PDF_M+76, 190, 'left'],
+     ['Art', PDF_M+268, 80, 'left'], ['Betrag', PDF_M+2, PDF_W-4, 'right']
+    ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(8).fillColor('#444').text(h, x, hy+4, { width:w, align:a }));
+    doc.y = hy + 16 + 2;
+    let sub = 0;
+    list.forEach((o, i) => {
+      if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
+      const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
+      const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 28);
+      const modeStr = o.mode === 'lieferung' ? 'Lieferung' : 'Abholung';
+      const ry = doc.y;
+      if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 18).fill('#fafafa');
+      doc.font('Helvetica').fontSize(9).fillColor('#222')
+        .text(`${o.orderNum}`, PDF_M+2,   ry+4, { width:30 })
+        .text(date,            PDF_M+34,  ry+4, { width:40 })
+        .text(name,            PDF_M+76,  ry+4, { width:188 })
+        .text(modeStr,         PDF_M+268, ry+4, { width:80 });
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#222')
+        .text(pdfFmt(o.total||0), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
+      doc.y = ry + 18;
+      sub += (o.total||0);
+    });
+    const sy = doc.y;
+    doc.rect(PDF_M, sy, PDF_W, 20).fill(color + '28');
+    doc.font('Helvetica').fontSize(9).fillColor('#333').text(`Summe ${label}:`, PDF_M+8, sy+5);
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#333').text(pdfFmt(sub), PDF_M+2, sy+5, { width:PDF_W-4, align:'right' });
+    doc.y = sy + 20 + 10;
+  }
+  drawGroup('Barzahlung', '#8b1d1d', orders.filter(o => o.payment === 'bar'));
+  drawGroup('Online-Zahlung (Stripe)', '#276749', orders.filter(o => o.payment !== 'bar'));
+}
+
+function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
+  if (!barOrders.length) return;
+  doc.addPage(); doc.y = PDF_M;
+  doc.rect(0, 0, PDF_PW, 50).fill('#1a1a2e');
+  doc.font('Helvetica-Bold').fontSize(16).fillColor('#fff').text('Bar-Rechnung', PDF_M, 14);
+  doc.font('Helvetica').fontSize(9).fillColor('rgba(255,255,255,0.7)').text(`FlueVate Online-Bestellsystem  ·  ${zeitraum}`, PDF_M, 33);
+  doc.y = 62;
+  const addrY = doc.y;
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Rechnungssteller:', PDF_M, addrY);
+  doc.font('Helvetica').fontSize(9).fillColor('#444').text('Abed Rachman Falah · FlueVate', PDF_M, addrY+12).text('Zur Goldbrede 30, 59269 Beckum', PDF_M, addrY+22);
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Rechnungsempfänger:', PDF_M+270, addrY);
+  doc.font('Helvetica').fontSize(9).fillColor('#444').text('Pizzeria Amoura', PDF_M+270, addrY+12).text('Oststraße 48, 59269 Beckum', PDF_M+270, addrY+22);
+  doc.y = addrY + 38;
+  doc.font('Helvetica').fontSize(8.5).fillColor('#888').text(`Zeitraum: ${zeitraum}  ·  Rg.-Nr.: ${rgnr}`, PDF_M, doc.y);
+  doc.y += 12;
+  const hy = doc.y;
+  doc.rect(PDF_M, hy, PDF_W, 16).fill('#fef9e7');
+  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('ℹ  Nur Barzahlungen – Stripe-Gebühren wurden bereits automatisch beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
+  doc.y = hy + 16 + 6;
+  doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
+  const th = doc.y;
+  doc.rect(PDF_M, th, PDF_W, 16).fill('#1a1a2e');
+  [['#', PDF_M+2, 34, 'left'], ['Datum', PDF_M+38, 40, 'left'], ['Kunde', PDF_M+80, 170, 'left'],
+   ['Umsatz', PDF_M+252, 64, 'right'], ['Gebühr', PDF_M+318, 60, 'right'], ['5% Prov', PDF_M+380, 58, 'right'], ['Gesamt', PDF_M+2, PDF_W-4, 'right']
+  ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#fff').text(h, x, th+4, { width:w, align:a }));
+  doc.y = th + 16;
+  barOrders.forEach((o, i) => {
+    if (doc.y > PDF_FT - 20) { doc.addPage(); doc.y = PDF_M; }
+    const sf   = o.serviceFee || PDF_SV;
+    const prov = (o.total - sf) * PDF_PR;
+    const ges  = sf + prov;
+    const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
+    const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 24);
+    const ry = doc.y;
+    if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 16).fill('#f8f9fc');
+    doc.font('Helvetica').fontSize(8.5).fillColor('#222')
+      .text(`${o.orderNum}`, PDF_M+2,  ry+4, { width:34 })
+      .text(date,            PDF_M+38, ry+4, { width:40 })
+      .text(name,            PDF_M+80, ry+4, { width:168 })
+      .text(pdfFmt(o.total), PDF_M+252, ry+4, { width:64,  align:'right' })
+      .text(pdfFmt(sf),      PDF_M+318, ry+4, { width:60,  align:'right' })
+      .text(pdfFmt(prov),    PDF_M+380, ry+4, { width:58,  align:'right' });
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(ges), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
+    doc.y = ry + 16;
+  });
+  doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
+  const s1y = doc.y;
+  doc.rect(PDF_M, s1y, PDF_W, 18).fill('#f0f4f8');
+  doc.font('Helvetica').fontSize(9).fillColor('#333').text('Servicegebühren', PDF_M+8, s1y+5).text(`${barOrders.length} × ${pdfFmt(PDF_SV)}`, PDF_M+200, s1y+5, { width:140, align:'right' });
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#222').text(pdfFmt(barStats.barSvc), PDF_M+2, s1y+5, { width:PDF_W-4, align:'right' });
+  doc.y = s1y + 18;
+  const s2y = doc.y;
+  doc.font('Helvetica').fontSize(9).fillColor('#333').text('Systemprovision (5 %)', PDF_M+8, s2y+5).text(`5 % von ${pdfFmt(barStats.barNetto)}`, PDF_M+200, s2y+5, { width:140, align:'right' });
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#222').text(pdfFmt(barStats.barProv), PDF_M+2, s2y+5, { width:PDF_W-4, align:'right' });
+  doc.y = s2y + 18 + 4;
+  const gy = doc.y;
+  doc.rect(PDF_M, gy, PDF_W, 30).fill('#1a1a2e');
+  doc.font('Helvetica-Bold').fontSize(11).fillColor('#fff').text('RECHNUNGSBETRAG (netto)', PDF_M+10, gy+9, { width:PDF_W*0.6 });
+  doc.font('Helvetica-Bold').fontSize(13).fillColor('#ffd700').text(pdfFmt(barStats.barBetrag), PDF_M+2, gy+8, { width:PDF_W-4, align:'right' });
+  doc.y = gy + 30 + 8;
+  const uy = doc.y;
+  doc.rect(PDF_M, uy, PDF_W, 14).fill('#fef9e7');
+  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen (Kleinunternehmerregelung).', PDF_M+6, uy+3, { width:PDF_W-12 });
+  doc.y = uy + 14;
+}
+
 // Rechnungsnummer fortlaufend in MongoDB speichern
 async function getNextRechnungNum() {
   const c = await Counter.findByIdAndUpdate('rechnungNum', { $inc: { seq: 1 } }, { new: true, upsert: true });
@@ -1225,12 +1380,12 @@ cron.schedule('0 22 * * *', async () => {
 
 cron.schedule('0 22 * * 0', async () => {
   try {
-    const now    = new Date();
-    const wStart = new Date(now); wStart.setDate(now.getDate()-6); wStart.setHours(0,0,0,0);
-    const wEnd   = new Date(now); wEnd.setHours(23,59,59,999);
-    const kw     = getWeekNum(now);
-    const datum  = now.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
-    const vonBis = `${wStart.toLocaleDateString('de-DE')} – ${datum}`;
+    const now      = new Date();
+    const wStart   = new Date(now); wStart.setDate(now.getDate()-6); wStart.setHours(0,0,0,0);
+    const wEnd     = new Date(now); wEnd.setHours(23,59,59,999);
+    const kw       = getWeekNum(now);
+    const datum    = now.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const vonBis   = `${wStart.toLocaleDateString('de-DE')} – ${datum}`;
 
     const orders = await Order.find({
       status: { $in: ['confirmed','preparing','ready','delivered'] },
@@ -1238,13 +1393,16 @@ cron.schedule('0 22 * * 0', async () => {
     });
 
     const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
-    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
+    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
     const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * 0.05;
+    const provision  = nettoBase * PDF_PR;
     const meinBetrag = svcFees + provision;
     const auszahlung = brutto - meinBetrag;
-    const web        = orders.filter(o=>o.source!=='pos').length;
-    const pos        = orders.filter(o=>o.source==='pos').length;
+    const barOrders  = orders.filter(o => o.payment === 'bar');
+    const barSvc     = barOrders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
+    const barNetto   = barOrders.reduce((s,o) => s+(o.total||0), 0) - barSvc;
+    const barProv    = barNetto * PDF_PR;
+    const barBetrag  = barSvc + barProv;
 
     const rechnungNr = await getNextRechnungNum();
 
@@ -1336,51 +1494,44 @@ cron.schedule('0 22 * * 0', async () => {
 
     // ── PDF 2: Wochenbericht Pizzeria Amoura ──────────────────────
     const berichtPdf = await generatePdf(doc => {
-      const W = 495;
-      // Header
-      doc.rect(0, 0, 595, 70).fill('#8b1d1d');
-      doc.fontSize(22).font('Helvetica-Bold').fillColor('#fff').text('Wochenbericht', 50, 20);
-      doc.fontSize(10).font('Helvetica').fillColor('rgba(255,255,255,0.75)')
-        .text(`Pizzeria Amoura  ·  KW ${kw} / ${now.getFullYear()}  ·  ${vonBis}`, 50, 46);
-
-      doc.moveDown(4);
-
-      // Stats table
-      const rows = [
-        ['Bestellungen gesamt', `${orders.length}`, false],
-        ['davon Online', `${web}`, true],
-        ['davon Telefon / POS', `${pos}`, false],
-        ['Gesamtumsatz (Brutto)', `${brutto.toFixed(2).replace('.',',')} €`, true],
-        ['Einbehaltene Gebühren (A. R. Falah)', `− ${meinBetrag.toFixed(2).replace('.',',')} €`, false],
-      ];
-      rows.forEach(([label, value, shade]) => {
-        const rowY = doc.y;
-        if (shade) doc.rect(50, rowY, W, 28).fill('#f5f5f5');
-        doc.font('Helvetica').fontSize(11).fillColor('#222').text(label, 58, rowY + 8);
-        doc.text(value, 50, rowY + 8, { width: W - 8, align: 'right' });
-        doc.y = rowY + 28;
-      });
-
-      // Auszahlung highlight
+      pdfColorBox(doc, `Wochenbericht KW ${kw} / ${now.getFullYear()}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
+      pdfKacheln(doc, [
+        ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
+        ['Davon Bar',           `${barOrders.length}`,                           '#2c5282'],
+        ['Davon Stripe',        `${orders.filter(o=>o.payment!=='bar').length}`, '#276749'],
+        ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
+      ]);
+      doc.moveDown(0.4);
+      pdfHr(doc);
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
+      doc.y += 14;
+      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
+      pdfTableRow(doc, [[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,          PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision),  PDF_M+2, PDF_W-4, 'right']], true);
+      pdfTableRow(doc, [['Mein Gesamtbetrag',                                        PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
+      doc.y += 4;
       const ay = doc.y;
-      doc.rect(50, ay, W, 38).fill('#e8f5e9');
-      doc.font('Helvetica-Bold').fontSize(14).fillColor('#2e7d32')
-        .text('Ihr Auszahlungsbetrag', 58, ay + 12);
-      doc.text(`${auszahlung.toFixed(2).replace('.',',')} €`, 50, ay + 12, { width: W - 8, align: 'right' });
-      doc.y = ay + 52;
-
-      doc.moveDown(0.5);
-      doc.fontSize(8).font('Helvetica').fillColor('#aaa')
-        .text('* Auszahlung erfolgt automatisch über Stripe Connect auf das hinterlegte Bankkonto.');
-
-      // Footer
-      doc.fontSize(8).fillColor('#aaa')
-        .text(`Pizzeria Amoura  ·  KW ${kw} / ${now.getFullYear()}`, 50, 780, { width: W, align: 'center' });
+      doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
+      doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura', PDF_M+10, ay+8, { width: PDF_W*0.65 });
+      doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
+      doc.y = ay + 28 + 12;
+      pdfHr(doc, '#bbb');
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE', PDF_M, doc.y);
+      doc.y += 12;
+      pdfKundenliste(doc, orders);
+      if (barOrders.length > 0) {
+        pdfBarRechnung(doc, barOrders, { barSvc, barNetto, barProv, barBetrag }, vonBis, `${rechnungNr}-BAR`);
+      }
+      doc.font('Helvetica').fontSize(7).fillColor('#bbb')
+        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Wochenbericht KW ${kw} / ${now.getFullYear()}`, PDF_M, 820, { width: PDF_W, align: 'center' });
     });
 
-    // ── E-Mail 1: Restaurant bekommt nur den Wochenbericht ────────
-    const restaurantHtml = `
-<div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;color:#222">
+    // ── E-Mail 1: Restaurant bekommt Wochenbericht als PDF-Anhang ────────
+    if (process.env.RESTAURANT_EMAIL) {
+      await getResend()?.emails.send({
+        from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
+        to: process.env.RESTAURANT_EMAIL,
+        subject: `📊 Wochenbericht KW ${kw} / ${now.getFullYear()} · Pizzeria Amoura`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;color:#222">
   <div style="background:#8b1d1d;padding:24px 28px;color:#fff">
     <h2 style="margin:0;font-size:20px">Wochenbericht KW ${kw} / ${now.getFullYear()}</h2>
     <p style="margin:4px 0 0;opacity:.8;font-size:13px">${vonBis}</p>
@@ -1388,22 +1539,14 @@ cron.schedule('0 22 * * 0', async () => {
   <div style="padding:24px 28px">
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
-      <tr><td style="padding:8px">davon Online</td><td style="padding:8px;text-align:right">${web}</td></tr>
-      <tr style="background:#f5f5f5"><td style="padding:8px">davon Telefon / POS</td><td style="padding:8px;text-align:right">${pos}</td></tr>
       <tr><td style="padding:8px">Gesamtumsatz (Brutto)</td><td style="padding:8px;text-align:right">${brutto.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#f5f5f5"><td style="padding:8px">Einbehaltene Gebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${meinBetrag.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihr Auszahlungsbetrag</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${auszahlung.toFixed(2).replace('.',',')} €</td></tr>
     </table>
-    <p style="font-size:11px;color:#aaa;margin-top:8px">* Auszahlung erfolgt automatisch über Stripe Connect.</p>
+    <p style="font-size:11px;color:#aaa;margin-top:8px">Anbei der Wochenbericht mit Kundenliste${barOrders.length > 0 ? ' und Bar-Rechnung' : ''}.</p>
   </div>
-</div>`;
-
-    if (process.env.RESTAURANT_EMAIL) {
-      await getResend()?.emails.send({
-        from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
-        to: process.env.RESTAURANT_EMAIL,
-        subject: `📊 Wochenbericht KW ${kw} / ${now.getFullYear()} · Pizzeria Amoura`,
-        html: restaurantHtml,
+</div>`,
+        attachments: [{ filename: `KW${kw}_${now.getFullYear()}_Amoura_Wochenbericht.pdf`, content: berichtPdf.toString('base64') }],
       });
     }
 
@@ -1454,125 +1597,155 @@ cron.schedule('0 22 * * *', async () => {
     });
 
     const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
-    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||0.99), 0);
+    const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
     const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * 0.05;
+    const provision  = nettoBase * PDF_PR;
     const meinBetrag = svcFees + provision;
     const auszahlung = brutto - meinBetrag;
-    const web        = orders.filter(o=>o.source!=='pos').length;
-    const pos        = orders.filter(o=>o.source==='pos').length;
+    const barOrdersM = orders.filter(o => o.payment === 'bar');
+    const barSvcM    = barOrdersM.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
+    const barNettoM  = barOrdersM.reduce((s,o) => s+(o.total||0), 0) - barSvcM;
+    const barProvM   = barNettoM * PDF_PR;
+    const barBetragM = barSvcM + barProvM;
 
+    // ── Wochenübersicht berechnen ─────────────────────────────────
+    const weeksMap = {};
+    orders.forEach(o => {
+      const kw2 = getWeekNum(new Date(o.createdAt));
+      if (!weeksMap[kw2]) weeksMap[kw2] = { n: 0, brutto: 0 };
+      weeksMap[kw2].n++;
+      weeksMap[kw2].brutto += o.total || 0;
+    });
+    const weekRows = Object.entries(weeksMap).sort((a, b) => +a[0] - +b[0]);
+
+    // ── PDF 1: Monatsbericht (Kennzahlen + Kundenliste + Bar-Rechnung) ─────
     const monatsPdf = await generatePdf(doc => {
+      pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
+      pdfKacheln(doc, [
+        ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
+        ['Davon Bar',           `${barOrdersM.length}`,                          '#2c5282'],
+        ['Davon Stripe',        `${orders.filter(o=>o.payment!=='bar').length}`, '#276749'],
+        ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
+      ]);
+      doc.moveDown(0.4);
+      pdfHr(doc);
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
+      doc.y += 14;
+      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
+      pdfTableRow(doc, [[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,          PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision),  PDF_M+2, PDF_W-4, 'right']], true);
+      pdfTableRow(doc, [['Mein Gesamtbetrag',                                        PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
+      doc.y += 4;
+      const ay = doc.y;
+      doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
+      doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura', PDF_M+10, ay+8, { width: PDF_W*0.65 });
+      doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
+      doc.y = ay + 28 + 16;
+      pdfHr(doc, '#bbb');
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('WOCHENÜBERSICHT', PDF_M, doc.y);
+      doc.y += 14;
+      weekRows.forEach(([kw2, d], i) => {
+        pdfTableRow(doc, [
+          [`KW ${kw2}`,           PDF_M+8, 70,       'left'],
+          [`${d.n} Bestellungen`, PDF_M+8, PDF_W-80, 'left'],
+          [pdfFmt(d.brutto),      PDF_M+2, PDF_W-4,  'right'],
+        ], i % 2 === 1);
+      });
+      doc.y += 8;
+      pdfHr(doc, '#bbb');
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE', PDF_M, doc.y);
+      doc.y += 12;
+      pdfKundenliste(doc, orders);
+      if (barOrdersM.length > 0) {
+        pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barProv: barProvM, barBetrag: barBetragM }, vonBis, `${rechnungNr}-BAR`);
+      }
+      doc.font('Helvetica').fontSize(7).fillColor('#bbb')
+        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, 820, { width: PDF_W, align: 'center' });
+    });
+
+    // ── PDF 2: FlueVate Rechnung (nur für Owner) ──────────────────────────
+    const monatRechnungPdf = await generatePdf(doc => {
       const W = 495;
-      // Header
       doc.rect(0, 0, 595, 70).fill('#1a1a2e');
       doc.fontSize(22).font('Helvetica-Bold').fillColor('#fff').text('Abed Rachman Falah', 50, 20);
-      doc.fontSize(10).font('Helvetica').fillColor('rgba(255,255,255,0.7)').text(`Monatsbericht · ${monat}`, 50, 46);
-
-      doc.moveDown(3.5).fontSize(16).font('Helvetica-Bold').fillColor('#1a1a2e').text(`MONATSABRECHNUNG ${rechnungNr}`);
+      doc.fontSize(10).font('Helvetica').fillColor('rgba(255,255,255,0.7)').text('Online-Bestellsystem · Monatsabrechnung', 50, 46);
+      doc.moveDown(3).fontSize(16).font('Helvetica-Bold').fillColor('#1a1a2e').text(`RECHNUNG ${rechnungNr}`);
       doc.fontSize(10).font('Helvetica').fillColor('#666').text(`${monat}  ·  ${vonBis}`);
       doc.moveDown(1.5);
-
-      // Addresses
       const addrY = doc.y;
       doc.fontSize(8).fillColor('#999').text('RECHNUNGSSTELLER', 50, addrY);
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Abed Rachman Falah', 50, addrY+14);
-      doc.fontSize(10).font('Helvetica').fillColor('#555')
-        .text('Zur Goldbrede 30', 50, addrY+30)
-        .text('59269 Beckum', 50, addrY+44)
-        .text('Deutschland', 50, addrY+58);
-      if (process.env.STEUERNUMMER) {
-        doc.text(`Steuernummer: ${process.env.STEUERNUMMER}`, 50, addrY+72);
-      }
-
+      doc.fontSize(10).font('Helvetica').fillColor('#555').text('Zur Goldbrede 30', 50, addrY+30).text('59269 Beckum', 50, addrY+44);
+      if (process.env.STEUERNUMMER) doc.text(`St.-Nr.: ${process.env.STEUERNUMMER}`, 50, addrY+58);
       doc.fontSize(8).fillColor('#999').text('RECHNUNGSEMPFÄNGER', 310, addrY);
       doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Pizzeria Amoura', 310, addrY+14);
-      doc.fontSize(10).font('Helvetica').fillColor('#555')
-        .text('Oststraße 48', 310, addrY+30)
-        .text('59269 Beckum', 310, addrY+44)
-        .text('Deutschland', 310, addrY+58);
-
-      doc.y = addrY + 100;
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(1).stroke();
-      doc.moveDown(0.8);
-
-      doc.fontSize(9).fillColor('#555')
-        .text(`Rechnungsnummer: ${rechnungNr}`, 50, doc.y, { continued: true })
-        .text(`Datum: ${datum}`, { align: 'right' });
-      doc.text(`Leistungszeitraum: ${vonBis}`, 50);
-      doc.moveDown(1);
-
-      // Line items
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke();
-      doc.moveDown(0.5);
-      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222')
-        .text('Leistung', 50, doc.y)
-        .text('Betrag', 50, doc.y-14, { width: W, align: 'right' });
-      doc.moveDown(0.5);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke();
-      doc.moveDown(0.5);
-
+      doc.fontSize(10).font('Helvetica').fillColor('#555').text('Oststraße 48', 310, addrY+30).text('59269 Beckum', 310, addrY+44);
+      doc.y = addrY + 80;
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(1).stroke(); doc.moveDown(0.8);
+      doc.fontSize(9).fillColor('#555').text(`Rechnungsnummer: ${rechnungNr}`, 50, doc.y, { continued:true }).text(`Datum: ${datum}`, { align:'right' });
+      doc.text(`Leistungszeitraum: ${vonBis}`, 50); doc.moveDown(1);
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Leistung', 50, doc.y).text('Betrag', 50, doc.y-14, { width:W, align:'right' });
+      doc.moveDown(0.5); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke(); doc.moveDown(0.5);
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Servicegebühren Online-Bestellsystem', 50);
-      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`0,99 € × ${orders.length} Bestellungen (${monat})`);
+      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen (${monat})`);
       const sfY = doc.y - 32;
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, sfY, { width: W, align: 'right' });
-      doc.moveDown(0.8);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#eee').lineWidth(0.5).stroke();
-      doc.moveDown(0.5);
-
+      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, sfY, { width:W, align:'right' });
+      doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#eee').lineWidth(0.5).stroke(); doc.moveDown(0.5);
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Systemprovision (5 % auf Speisenumsatz)', 50);
       doc.font('Helvetica').fontSize(9).fillColor('#888').text(`5 % von ${nettoBase.toFixed(2).replace('.',',')} € Speisenumsatz`);
       const pvY = doc.y - 32;
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`, 50, pvY, { width: W, align: 'right' });
-      doc.moveDown(0.8);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke();
-      doc.moveDown(0.5);
-
+      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`, 50, pvY, { width:W, align:'right' });
+      doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a2e').text('RECHNUNGSBETRAG (netto)', 50);
       const totY = doc.y - 18;
-      doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`, 50, totY, { width: W, align: 'right' });
+      doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`, 50, totY, { width:W, align:'right' });
       doc.moveDown(1.5);
-
-      doc.rect(50, doc.y, W, 26).fill('#fff8e1');
-      doc.fontSize(9).font('Helvetica').fillColor('#7a5c00')
-        .text('Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).', 56, doc.y-20);
-      doc.moveDown(2);
-
-      // Monatsübersicht
-      doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('MONATSÜBERSICHT');
-      doc.moveDown(0.5);
-      const rows = [
-        ['Bestellungen gesamt', `${orders.length}`, false],
-        ['davon Online', `${web}`, true],
-        ['davon Telefon / POS', `${pos}`, false],
-        ['Gesamtumsatz (Brutto)', `${brutto.toFixed(2).replace('.',',')} €`, true],
-        ['Einbehaltene Gebühren (A. R. Falah)', `− ${meinBetrag.toFixed(2).replace('.',',')} €`, false],
-        ['Auszahlung an Restaurant', `${auszahlung.toFixed(2).replace('.',',')} €`, true],
-      ];
-      rows.forEach(([label, value, shade]) => {
-        const rowY = doc.y;
-        if (shade) doc.rect(50, rowY, W, 26).fill('#f5f5f5');
-        doc.font('Helvetica').fontSize(10).fillColor('#222').text(label, 58, rowY+8);
-        doc.text(value, 50, rowY+8, { width: W-8, align: 'right' });
-        doc.y = rowY + 26;
-      });
-
-      doc.fontSize(8).fillColor('#aaa')
-        .text(`Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  ${rechnungNr} · ${monat}`, 50, 780, { width: W, align: 'center' });
+      const noteY = doc.y;
+      doc.rect(50, noteY, W, 26).fill('#fff8e1');
+      doc.fontSize(9).font('Helvetica').fillColor('#7a5c00').text('Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).', 56, noteY+4);
+      doc.fontSize(8).fillColor('#aaa').text(`Abed Rachman Falah · ${rechnungNr} · ${monat}`, 50, 780, { width:W, align:'center' });
     });
 
+    // ── E-Mail: Restaurant ────────────────────────────────────────────────
+    if (process.env.RESTAURANT_EMAIL) {
+      await getResend()?.emails.send({
+        from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
+        to:   process.env.RESTAURANT_EMAIL,
+        subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;color:#222">
+  <div style="background:#8b1d1d;padding:24px 28px;color:#fff">
+    <h2 style="margin:0;font-size:20px">Monatsbericht ${monat}</h2>
+    <p style="margin:4px 0 0;opacity:.8;font-size:13px">${vonBis}</p>
+  </div>
+  <div style="padding:24px 28px">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
+      <tr><td style="padding:8px">Gesamtumsatz (Brutto)</td><td style="padding:8px;text-align:right">${brutto.toFixed(2).replace('.',',')} €</td></tr>
+      <tr style="background:#f5f5f5"><td style="padding:8px">Einbehaltene Gebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${meinBetrag.toFixed(2).replace('.',',')} €</td></tr>
+      <tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihr Auszahlungsbetrag</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${auszahlung.toFixed(2).replace('.',',')} €</td></tr>
+    </table>
+    <p style="font-size:11px;color:#aaa;margin-top:8px">Anbei der Monatsbericht mit Kundenliste${barOrdersM.length > 0 ? ' und Bar-Rechnung' : ''}.</p>
+  </div>
+</div>`,
+        attachments: [{ filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') }],
+      });
+    }
+
+    // ── E-Mail: Owner ─────────────────────────────────────────────────────
     if (process.env.OWNER_EMAIL) {
       await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
-        subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
-        html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei der Monatsbericht <b>${monat}</b> für Pizzeria Amoura.<br><b>Dein Verdienst:</b> ${meinBetrag.toFixed(2).replace('.',',')} €</p>`,
+        subject: `🧾 ${rechnungNr} + Monatsbericht ${monat} · Pizzeria Amoura`,
+        html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei Rechnung <b>${rechnungNr}</b> und Monatsbericht <b>${monat}</b> für Pizzeria Amoura.</p>
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Verdienst:</b> ${meinBetrag.toFixed(2).replace('.',',')} €${barOrdersM.length > 0 ? `<br><b>Bar-Rechnung:</b> ${barBetragM.toFixed(2).replace('.',',')} € (${barOrdersM.length} Barzahlungen)` : ''}</p>`,
         attachments: [
-          { filename: `${rechnungNr}_ARF_Monatsbericht_${monat.replace(' ','_')}.pdf`, content: monatsPdf.toString('base64') },
+          { filename: `${rechnungNr}_ARF_Monatsrechnung_${monat.replace(' ','_')}.pdf`, content: monatRechnungPdf.toString('base64') },
+          { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`,              content: monatsPdf.toString('base64') },
         ],
       });
     }
-    console.log(`📅 Monatsbericht ${monat} versendet`);
+    console.log(`📅 Monatsbericht ${monat} + Rechnung ${rechnungNr} versendet`);
   } catch(e) { console.error('Monatsbericht Fehler:', e); }
 });
 
