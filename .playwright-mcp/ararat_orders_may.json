@@ -1,0 +1,258 @@
+[
+  {
+    "orderNum": 1004,
+    "createdAt": "2026-05-02T18:29:35.760Z",
+    "status": "delivered",
+    "payment": "bar",
+    "total": 31.99,
+    "serviceFee": 0.99,
+    "mode": "abholung",
+    "customer": "Nadien Falah",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Döner-Tasche",
+      "1× Döner-Tasche",
+      "2× Pommes Frites (klein)",
+      "1× Uludag Türkische Brause (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1006,
+    "createdAt": "2026-05-03T16:20:44.063Z",
+    "status": "delivered",
+    "payment": "bar",
+    "total": 52.49,
+    "serviceFee": 0.99,
+    "mode": "abholung",
+    "customer": "Dennis Strothmann",
+    "items": [
+      "4× Pizza Margherita",
+      "1× Cola Zero (GRATIS)",
+      "1× Pommes Frites (groß)",
+      "1× Döner-Salat"
+    ]
+  },
+  {
+    "orderNum": 1008,
+    "createdAt": "2026-05-06T18:29:05.416Z",
+    "status": "delivered",
+    "payment": "stripe",
+    "total": 33.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Joel Wahner",
+    "items": [
+      "1× Pomm-Döner",
+      "2× Seele 1",
+      "1× Cola Zero (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1007,
+    "createdAt": "2026-05-06T17:09:21.579Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 30.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Stefan Harnack",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Döner-Box",
+      "2× Pommes Frites (groß)",
+      "1× Fanta (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1010,
+    "createdAt": "2026-05-09T16:41:39.547Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 38.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Kristina Rolf",
+    "items": [
+      "1× Kinder Menü – Chicken-Nuggets",
+      "1× Kinder Menü – Dönerfleisch",
+      "1× Dürüm (vegetarisch)",
+      "1× Pizza Vegetaria",
+      "1× Mineralwasser (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1009,
+    "createdAt": "2026-05-09T16:04:54.270Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 74.99,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Samantha Casu",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Döner-Tasche",
+      "1× Döner-Tasche",
+      "1× Cola Zero (GRATIS)",
+      "1× Döner-Tasche",
+      "1× Döner-Tasche",
+      "1× Dürüm",
+      "1× Döner-Salat",
+      "1× Kinder Menü – Chicken-Nuggets"
+    ]
+  },
+  {
+    "orderNum": 1011,
+    "createdAt": "2026-05-10T17:29:49.758Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 26.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Johannes Stake",
+    "items": [
+      "1× Dürüm Spezial",
+      "1× Kiymali Hackfleisch"
+    ]
+  },
+  {
+    "orderNum": 1014,
+    "createdAt": "2026-05-14T16:56:42.845Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 34.49,
+    "serviceFee": 0.99,
+    "mode": "abholung",
+    "customer": "Dennis Schmitwilken",
+    "items": [
+      "1× Iskender Kebab",
+      "1× Dürüm Spezial",
+      "1× Uludag Türkische Brause (GRATIS)",
+      "1× Pizza-Brötchen"
+    ]
+  },
+  {
+    "orderNum": 1013,
+    "createdAt": "2026-05-14T15:40:40.358Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 44.99,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Maya Alexandra Höner-Hirdes",
+    "items": [
+      "1× Lahmacun mit Dönerfleisch",
+      "1× Dürüm",
+      "1× Gemüse-Spezial",
+      "1× Cola Zero (GRATIS)",
+      "1× Döner-Tasche"
+    ]
+  },
+  {
+    "orderNum": 1012,
+    "createdAt": "2026-05-14T15:12:19.549Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 30.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Denis Podkopaev",
+    "items": [
+      "1× Döner Teller",
+      "1× Pizza Calzone",
+      "1× Cola Zero (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1016,
+    "createdAt": "2026-05-15T17:37:55.041Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 28.99,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Melanie Kuhna",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Pizza Calzone",
+      "1× Pizza-Brötchen"
+    ]
+  },
+  {
+    "orderNum": 1015,
+    "createdAt": "2026-05-15T15:26:44.385Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 46.99,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "nils Schürbüscher",
+    "items": [
+      "1× Döner Teller",
+      "1× Seele 6",
+      "1× Cola Zero (GRATIS)",
+      "1× Big Döner"
+    ]
+  },
+  {
+    "orderNum": 1017,
+    "createdAt": "2026-05-16T14:38:44.773Z",
+    "status": "confirmed",
+    "payment": "stripe",
+    "total": 55.49,
+    "serviceFee": 0.99,
+    "mode": "lieferung",
+    "customer": "Nathan Vicari",
+    "items": [
+      "1× Dürüm",
+      "1× Fanta (GRATIS)",
+      "2× Pirzola"
+    ]
+  },
+  {
+    "orderNum": 1018,
+    "createdAt": "2026-05-17T18:50:13.754Z",
+    "status": "confirmed",
+    "payment": "stripe",
+    "total": 32.5,
+    "serviceFee": 1,
+    "mode": "lieferung",
+    "customer": "Noah Möllmann",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Lahmacun mit Dönerfleisch",
+      "1× Lahmacun mit Dönerfleisch",
+      "1× Fanta (GRATIS)"
+    ]
+  },
+  {
+    "orderNum": 1020,
+    "createdAt": "2026-05-19T16:45:56.319Z",
+    "status": "confirmed",
+    "payment": "bar",
+    "total": 25.5,
+    "serviceFee": 1,
+    "mode": "lieferung",
+    "customer": "Timo Kohlstedt",
+    "items": [
+      "1× Döner-Tasche",
+      "1× Pomm-Döner",
+      "2× Cola"
+    ]
+  },
+  {
+    "orderNum": 1019,
+    "createdAt": "2026-05-19T14:11:33.732Z",
+    "status": "confirmed",
+    "payment": "stripe",
+    "total": 45.5,
+    "serviceFee": 1,
+    "mode": "lieferung",
+    "customer": "Nathan Vicari",
+    "items": [
+      "1× Pirzola",
+      "1× Pirzola",
+      "1× Fanta (GRATIS)"
+    ]
+  }
+]

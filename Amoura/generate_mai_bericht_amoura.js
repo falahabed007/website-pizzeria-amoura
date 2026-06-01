@@ -347,7 +347,7 @@ async function main() {
   });
 
   // ── Speichern ─────────────────────────────────────────────────
-  const outDir = path.join(__dirname);
+  const outDir = path.join(__dirname, 'PDFs');
   const file1  = path.join(outDir, `Mai_2026_Amoura_Monatsbericht.pdf`);
   const file2  = path.join(outDir, `${rechnungNr}_ARF_Monatsrechnung_Mai_2026.pdf`);
 

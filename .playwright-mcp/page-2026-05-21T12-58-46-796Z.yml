@@ -1,0 +1,70 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: 🍕 Pizzeria Amoura
+        - generic [ref=e6]: Admin Dashboard
+      - generic [ref=e7]:
+        - generic [ref=e8]: 14:58:46
+        - generic [ref=e9]: Do., 21.05.
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - button "🟢 Online" [ref=e12] [cursor=pointer]
+          - button "⚪ Neutral" [ref=e13] [cursor=pointer]
+          - button "🔴 Geschlossen" [ref=e14] [cursor=pointer]
+          - generic "Automatik deaktiviert – klicken zum Aktivieren" [ref=e15] [cursor=pointer]: 🕐 Auto
+        - generic "Drucker-Status" [ref=e16] [cursor=pointer]: 🖨️ Getrennt
+        - button "Abmelden" [ref=e17] [cursor=pointer]
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]: Umsatz heute
+        - generic [ref=e21]: 0,00 €
+        - generic [ref=e22]: 0 Bestellungen
+      - generic [ref=e23]:
+        - generic [ref=e24]: Aktiv
+        - generic [ref=e25]: "47"
+        - generic [ref=e26]: In Arbeit
+      - generic [ref=e27]:
+        - generic [ref=e28]: Fertig heute
+        - generic [ref=e29]: "0"
+        - generic [ref=e30]: Geliefert/Abgeholt
+      - generic [ref=e31]:
+        - generic [ref=e32]: Storniert
+        - generic [ref=e33]: "0"
+        - generic [ref=e34]: heute
+      - generic [ref=e35]:
+        - generic [ref=e36]: Unbezahlt
+        - generic [ref=e37]: "34"
+        - generic [ref=e38]: Offen
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: 🔍
+            - textbox "Suche…" [ref=e44]
+          - generic [ref=e45]:
+            - generic [ref=e46] [cursor=pointer]: Alle
+            - generic [ref=e47] [cursor=pointer]: Neu
+            - generic [ref=e48] [cursor=pointer]: Zubereitung
+            - generic [ref=e49] [cursor=pointer]: Fertig
+            - generic [ref=e50] [cursor=pointer]: Geliefert
+            - generic [ref=e51] [cursor=pointer]: Storniert
+          - generic [ref=e52]:
+            - textbox "Datum wählen" [ref=e53] [cursor=pointer]: 2026-05-21
+            - button "💳 Stripe-Einbuchung20" [ref=e54] [cursor=pointer]
+            - button "👥 Kunden" [ref=e55] [cursor=pointer]
+            - button "📊 Tagesabschluss" [ref=e56] [cursor=pointer]
+        - generic [ref=e58]:
+          - text: 📭
+          - text: Keine Bestellungen
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61] [cursor=pointer]: Detail
+          - generic [ref=e62] [cursor=pointer]: Statistik
+          - generic [ref=e63] [cursor=pointer]: Verlauf
+          - generic [ref=e64] [cursor=pointer]: 🔴 Verfügbar
+        - generic [ref=e66]:
+          - text: 📋
+          - text: Bestellung auswählen
+  - button "➕ Neue Bestellung" [ref=e67] [cursor=pointer]
+  - button "🧪 Test-Bestellung" [ref=e68] [cursor=pointer]

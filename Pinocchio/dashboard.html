@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<title>Pinocchio – Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0f0f;--bg2:#161616;--bg3:#1e1e1e;--card:#1a1a1a;
+  --border:#2a2a2a;--text:#f0ece4;--muted:#777;
+  --red:#c0392b;--red2:#9b2115;--gold:#d4a76a;
+  --s-new:#e8a020;--s-prep:#2196f3;--s-ready:#4caf50;
+  --s-del:#9c27b0;--s-cancel:#e53935;--green:#4caf50;--radius:10px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#333;border-radius:3px;}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:360px;text-align:center;}
+.login-logo{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;
+  background:linear-gradient(135deg,var(--red),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.login-sub{color:var(--muted);font-size:.82rem;margin-bottom:28px;}
+.login-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;
+  padding:12px 16px;color:var(--text);font-size:.95rem;font-family:inherit;margin-bottom:12px;}
+.login-box input:focus{outline:none;border-color:var(--red);}
+.login-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:9px;
+  padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.login-btn:hover{background:var(--red2);}
+.login-err{color:#f85149;font-size:.82rem;margin-top:8px;display:none;}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100%;}
+
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 18px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;
+  background:linear-gradient(135deg,var(--red),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.topbar-sub{font-size:.68rem;color:var(--muted);}
+.topbar-clock .time{font-size:1rem;font-weight:700;color:var(--text);}
+.topbar-clock .date{font-size:.7rem;color:var(--muted);}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.mode-btns{display:flex;align-items:center;gap:5px;}
+.mode-btn{border:2px solid var(--border);background:var(--bg3);color:var(--muted);border-radius:50px;
+  padding:5px 12px;font-size:.76rem;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap;font-family:inherit;}
+.mode-btn:hover{border-color:#aaa;color:var(--text);}
+.mode-btn.active-online{background:#1a6b2f;border-color:#1a6b2f;color:#fff;}
+.mode-btn.active-neutral{background:#5a5a00;border-color:#8a8a00;color:#fff;}
+.mode-btn.active-geschlossen{background:var(--red2);border-color:var(--red);color:#fff;}
+.mode-auto-badge{font-size:.68rem;background:var(--bg3);border:1px solid var(--border);border-radius:20px;
+  padding:3px 8px;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.mode-auto-badge.auto-on{background:#1a3a6b;border-color:#2a5aab;color:#7ab3ff;}
+.printer-badge{font-size:.72rem;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--muted);}
+.pos-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:5px 12px;
+  font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.pos-btn:hover{background:var(--red2);}
+.logout-btn{background:transparent;border:1px solid var(--border);border-radius:7px;padding:5px 11px;
+  color:var(--muted);font-size:.75rem;cursor:pointer;font-family:inherit;}
+.logout-btn:hover{border-color:var(--red);color:var(--text);}
+
+/* ALERT */
+.alert-banner{background:linear-gradient(135deg,var(--red),#c35a44);padding:11px 18px;
+  display:none;align-items:center;justify-content:space-between;flex-shrink:0;}
+.alert-banner.show{display:flex;}
+.alert-text{font-weight:700;font-size:.88rem;}
+.alert-dismiss{background:rgba(0,0,0,.25);border:none;color:#fff;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:.78rem;}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 16px;flex-shrink:0;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;}
+.stat-label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.stat-val{font-size:1.2rem;font-weight:700;color:var(--text);}
+.stat-sub{font-size:.68rem;color:var(--muted);margin-top:1px;}
+.stat-card.accent .stat-val{color:var(--gold);}
+
+/* MAIN AREA */
+.main-area{display:grid;grid-template-columns:1fr 300px;flex:1;overflow:hidden;}
+.orders-col{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.sidebar-col{display:flex;flex-direction:column;overflow:hidden;}
+
+/* FILTER BAR */
+.filter-bar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.filter-bar input{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px;
+  color:var(--text);font-size:.82rem;font-family:inherit;width:160px;}
+.filter-bar input:focus{outline:none;border-color:var(--red);}
+.pill{background:var(--bg3);border:1px solid var(--border);border-radius:50px;padding:5px 12px;
+  font-size:.76rem;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:inherit;}
+.pill:hover{border-color:#aaa;color:var(--text);}
+.pill.active{background:var(--red);border-color:var(--red);color:#fff;}
+.date-picker{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;
+  color:var(--text);font-size:.78rem;font-family:inherit;}
+.date-picker:focus{outline:none;border-color:var(--red);}
+.report-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 12px;
+  color:var(--muted);font-size:.76rem;cursor:pointer;font-family:inherit;}
+.report-btn:hover{border-color:var(--gold);color:var(--gold);}
+.recover-btn{background:var(--bg3);border:1px solid #e8a020;border-radius:8px;padding:6px 12px;
+  color:#e8a020;font-size:.76rem;cursor:pointer;font-family:inherit;}
+
+/* ORDERS LIST */
+.orders-list{flex:1;overflow-y:auto;padding:10px;}
+.order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .18s;}
+.order-card:hover{border-color:#444;}
+.order-card.selected{border-color:var(--red);}
+.oc-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;}
+.oc-num{font-weight:700;font-size:.9rem;color:var(--gold);}
+.oc-time{font-size:.75rem;color:var(--muted);}
+.oc-mode{font-size:.8rem;}
+.oc-badges{display:flex;gap:5px;margin-left:auto;}
+.badge{border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;white-space:nowrap;}
+.b-new{background:var(--s-new);}
+.b-prep{background:var(--s-prep);}
+.b-ready{background:var(--s-ready);}
+.b-del{background:var(--s-del);}
+.b-cancel{background:var(--s-cancel);}
+.b-paid{background:rgba(76,175,80,.2);color:#4caf50;}
+.b-unpaid{background:rgba(229,57,53,.2);color:#ef5350;}
+.b-await{background:rgba(232,160,32,.2);color:#e8a020;}
+.b-stripe-wait{background:rgba(200,138,0,.25);color:#c88a00;}
+.oc-items{font-size:.78rem;color:var(--muted);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.oc-bottom{display:flex;align-items:center;justify-content:space-between;}
+.oc-price{font-weight:700;font-size:.88rem;color:var(--gold);}
+.oc-actions{display:flex;gap:4px;}
+.oc-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:4px 9px;
+  font-size:.74rem;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;white-space:nowrap;}
+.oc-btn:hover{border-color:#aaa;color:var(--text);}
+.oc-btn.next{background:var(--red);border-color:var(--red);color:#fff;}
+.oc-btn.next:hover{background:var(--red2);}
+.oc-btn.cancel{border-color:#555;color:#ef5350;}
+.oc-btn.cancel:hover{background:rgba(229,57,53,.1);}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);font-size:.9rem;}
+
+/* SIDEBAR */
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sidebar-tab{flex:1;padding:10px 4px;font-size:.75rem;font-weight:600;color:var(--muted);
+  border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;white-space:nowrap;}
+.sidebar-tab:hover{color:var(--text);}
+.sidebar-tab.active{color:var(--text);border-bottom-color:var(--red);}
+.sidebar-content{flex:1;overflow-y:auto;padding:14px;}
+.no-sel{text-align:center;padding:50px 20px;color:var(--muted);font-size:.85rem;line-height:2;}
+
+/* DETAIL */
+.detail-num{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--gold);}
+.detail-meta{font-size:.75rem;color:var(--muted);margin-bottom:12px;}
+.detail-sec{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:10px;}
+.detail-sec-title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px;}
+.detail-item{display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem;margin-bottom:5px;}
+.di-name{flex:1;padding-right:8px;}
+.di-price{font-weight:700;white-space:nowrap;}
+.detail-total{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);padding:4px 0;}
+.detail-total.grand{font-size:.95rem;font-weight:700;color:var(--gold);border-top:1px solid var(--border);margin-top:6px;padding-top:8px;}
+.mini-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.mini-btn{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 4px;
+  font-size:.74rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;color:var(--muted);}
+.mini-btn:hover{border-color:#aaa;color:var(--text);}
+.mini-btn.active{background:var(--green);border-color:var(--green);color:#fff;}
+.paid-row{display:flex;justify-content:space-between;align-items:center;
+  background:var(--bg3);border-radius:7px;padding:8px 10px;cursor:pointer;margin-bottom:8px;}
+.paid-row:hover{background:var(--border);}
+.detail-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.detail-btn{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:9px 6px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;min-width:60px;}
+.detail-btn:hover{border-color:#aaa;color:var(--text);}
+.detail-btn.primary{background:var(--red);border-color:var(--red);color:#fff;}
+.detail-btn.primary:hover{background:var(--red2);}
+.detail-btn.danger{border-color:rgba(229,57,53,.5);color:#ef5350;}
+.detail-btn.danger:hover{background:rgba(229,57,53,.1);}
+
+/* STATS BARS */
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.bar-name{width:110px;font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;background:var(--bg3);border-radius:4px;height:8px;}
+.bar-fill{height:100%;background:var(--red);border-radius:4px;transition:width .4s;}
+.bar-val{font-size:.74rem;font-weight:700;color:var(--text);min-width:24px;text-align:right;}
+
+/* HISTORY */
+.hist-day{margin-bottom:14px;}
+.hist-day-hd{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.hist-item{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:.78rem;}
+.hist-item:hover{color:var(--gold);}
+.hi-num{color:var(--gold);font-weight:700;min-width:46px;}
+.hi-time{color:var(--muted);min-width:36px;}
+.hi-name{flex:1;color:var(--muted);}
+.hi-price{font-weight:700;white-space:nowrap;}
+
+/* SOLD OUT */
+.so-item{display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:5px;}
+.so-name{font-size:.8rem;color:var(--text);flex:1;padding-right:8px;}
+.so-toggle{position:relative;width:44px;height:24px;display:inline-block;flex-shrink:0;}
+.so-toggle input{opacity:0;width:0;height:0;}
+.so-slider{position:absolute;inset:0;background:#555;border-radius:24px;cursor:pointer;transition:.3s;}
+.so-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;
+  background:#fff;border-radius:50%;transition:.3s;}
+.so-toggle input:checked+.so-slider{background:var(--green);}
+.so-toggle input:checked+.so-slider:before{transform:translateX(20px);}
+
+/* PENDING MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9000;align-items:center;justify-content:center;}
+.modal-ov.show{display:flex;}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  max-width:480px;width:95%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h2{font-size:1rem;font-weight:700;}
+.modal-close{background:none;border:1px solid var(--border);border-radius:7px;width:30px;height:30px;cursor:pointer;color:var(--muted);}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1;}
+.pending-info{background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;}
+.pi-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.pi-row:last-child{border:none;}
+.pi-label{color:var(--muted);}
+.pi-val{font-weight:600;text-align:right;}
+.items-list{background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;}
+.il-item{display:flex;justify-content:space-between;font-size:.82rem;padding:3px 0;}
+.il-total{display:flex;justify-content:space-between;font-weight:700;font-size:.9rem;color:var(--gold);border-top:1px solid var(--border);margin-top:6px;padding-top:6px;}
+.time-btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:12px;}
+.time-btn{background:var(--bg3);border:2px solid var(--border);border-radius:8px;padding:8px 4px;
+  font-size:.82rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;color:var(--muted);}
+.time-btn:hover{border-color:var(--gold);color:var(--gold);}
+.time-btn.selected{background:var(--red);border-color:var(--red);color:#fff;}
+.confirm-btn{width:100%;background:var(--green);border:none;border-radius:10px;padding:13px;
+  font-size:.95rem;font-weight:700;color:#fff;cursor:pointer;margin-bottom:8px;font-family:inherit;}
+.confirm-btn:disabled{background:#333;color:var(--muted);cursor:not-allowed;}
+.cancel-btn{width:100%;background:transparent;border:1px solid var(--s-cancel);border-radius:10px;padding:10px;
+  font-size:.85rem;font-weight:600;color:var(--s-cancel);cursor:pointer;margin-bottom:6px;font-family:inherit;}
+.cancel-reason{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:10px;color:var(--text);font-size:.82rem;font-family:inherit;margin-bottom:6px;resize:vertical;}
+
+/* BON MODAL */
+#bonModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9001;align-items:center;justify-content:center;}
+.bon-box{background:var(--bg2);border-radius:12px;max-width:420px;width:95%;max-height:90vh;display:flex;flex-direction:column;}
+.bon-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:700;}
+#bonContent{overflow-y:auto;padding:18px;flex:1;}
+.bon-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.bon-btn{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px;
+  font-size:.82rem;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;}
+.bon-btn:hover{border-color:#aaa;color:var(--text);}
+
+/* POS MODAL */
+#posModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9002;align-items:stretch;justify-content:center;padding:0;}
+#posModal.show{display:flex;}
+.pos-box{background:var(--bg2);width:100%;max-width:900px;display:flex;flex-direction:column;overflow:hidden;}
+.pos-top{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pos-top h2{font-size:1rem;font-weight:700;}
+.pos-layout{display:grid;grid-template-columns:1fr 300px;flex:1;overflow:hidden;}
+.pos-left{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.pos-right{display:flex;flex-direction:column;overflow:hidden;}
+.pos-search{padding:8px 12px;border-bottom:1px solid var(--border);}
+.pos-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  padding:8px 12px;color:var(--text);font-size:.85rem;font-family:inherit;}
+.pos-cats{display:flex;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none;}
+.pos-cats::-webkit-scrollbar{display:none;}
+.pos-cat{flex-shrink:0;padding:9px 14px;font-size:.78rem;font-weight:600;color:var(--muted);
+  border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;white-space:nowrap;}
+.pos-cat:hover{color:var(--text);}
+.pos-cat.active{color:var(--text);border-bottom-color:var(--red);}
+.pos-items{flex:1;overflow-y:auto;padding:8px;}
+.pos-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:3px;}
+.pos-item:hover{background:var(--bg3);}
+.pos-item-num{font-size:.7rem;color:var(--muted);min-width:26px;}
+.pos-item-name{flex:1;font-size:.84rem;}
+.pos-item-price{font-size:.84rem;font-weight:700;color:var(--gold);}
+.pos-add-btn{background:var(--red);color:#fff;border:none;border-radius:6px;width:26px;height:26px;
+  font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.pos-cart{flex:1;overflow-y:auto;padding:10px;}
+.pos-cart-item{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);font-size:.82rem;}
+.pci-qty{color:var(--gold);font-weight:700;min-width:24px;}
+.pci-name{flex:1;}
+.pci-price{font-weight:700;white-space:nowrap;}
+.pci-del{background:none;border:none;color:#555;cursor:pointer;font-size:.9rem;padding:2px;}
+.pci-del:hover{color:var(--s-cancel);}
+.pos-cart-empty{text-align:center;padding:30px 10px;color:var(--muted);font-size:.82rem;}
+.pos-customer{padding:10px;border-top:1px solid var(--border);}
+.pos-customer input,.pos-customer select{width:100%;background:var(--bg3);border:1px solid var(--border);
+  border-radius:7px;padding:7px 10px;color:var(--text);font-size:.8rem;font-family:inherit;margin-bottom:5px;}
+.pos-customer input:focus,.pos-customer select:focus{outline:none;border-color:var(--red);}
+.pos-mode{display:flex;gap:5px;margin-bottom:8px;}
+.pos-mode-btn{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  padding:7px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;}
+.pos-mode-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
+.pos-totals{padding:8px 10px;border-top:1px solid var(--border);font-size:.82rem;}
+.pos-total-row{display:flex;justify-content:space-between;padding:3px 0;color:var(--muted);}
+.pos-total-row.grand{font-weight:700;font-size:.92rem;color:var(--gold);}
+.pos-submit{width:100%;background:var(--green);border:none;border-radius:8px;padding:11px;
+  font-size:.9rem;font-weight:700;color:#fff;cursor:pointer;margin-top:8px;font-family:inherit;}
+.pos-submit:disabled{background:#333;color:var(--muted);cursor:not-allowed;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 20px;
+  border-radius:50px;font-size:.84rem;font-weight:600;z-index:9999;opacity:0;
+  transition:all .3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#printArea{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🍕 Pinocchio</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" id="loginPw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Einloggen</button>
+    <div class="login-err" id="loginErr">❌ Falsches Passwort</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">🍕 Pinocchio</div>
+      <div class="topbar-sub">Ennigerloh · Admin</div>
+    </div>
+    <div class="topbar-clock">
+      <div class="time" id="clock">--:--:--</div>
+      <div class="date" id="clockDate"></div>
+    </div>
+    <div class="topbar-right">
+      <span class="printer-badge" id="printerStatus">🖨️ Prüfe...</span>
+      <button class="pos-btn" onclick="openPOS()">📞 Neue Bestellung</button>
+      <div class="mode-btns">
+        <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()">🕐 Auto</span>
+        <button class="mode-btn" id="modeOnline" onclick="setMode('online')">🟢 Online</button>
+        <button class="mode-btn" id="modeNeutral" onclick="setMode('neutral')">⚪ Neutral</button>
+        <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Abmelden</button>
+    </div>
+  </div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alertBanner">
+    <span class="alert-text" id="alertText">🔔 Neue Bestellung!</span>
+    <button class="alert-dismiss" onclick="dismissAlert()">Schließen</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card accent"><div class="stat-label" id="lRevenue">Umsatz heute</div><div class="stat-val" id="sRevenue">–</div><div class="stat-sub" id="sTodayCount">–</div></div>
+    <div class="stat-card"><div class="stat-label">Aktiv</div><div class="stat-val" id="sActive">–</div><div class="stat-sub">in Zubereitung</div></div>
+    <div class="stat-card"><div class="stat-label" id="lDone">Fertig heute</div><div class="stat-val" id="sDone">–</div><div class="stat-sub">abgeschlossen</div></div>
+    <div class="stat-card"><div class="stat-label">Storniert</div><div class="stat-val" id="sCancelled">–</div><div class="stat-sub" id="lCancelledSub">heute</div></div>
+    <div class="stat-card"><div class="stat-label">Unbezahlt</div><div class="stat-val" id="sUnpaid">–</div><div class="stat-sub">offen</div></div>
+  </div>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <!-- ORDERS COLUMN -->
+    <div class="orders-col">
+      <div class="filter-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Nr. oder Name..." oninput="renderOrders()">
+        <button class="pill active" onclick="setFilter('all',this)">Alle</button>
+        <button class="pill" onclick="setFilter('neu',this)">Neu</button>
+        <button class="pill" onclick="setFilter('zubereitung',this)">Zubereitung</button>
+        <button class="pill" onclick="setFilter('fertig',this)">Fertig</button>
+        <button class="pill" onclick="setFilter('geliefert',this)">Geliefert</button>
+        <button class="pill" onclick="setFilter('storniert',this)">Storniert</button>
+        <input type="date" class="date-picker" id="reportDate" onchange="onDateChange()" oninput="onDateChange()">
+        <button class="report-btn" onclick="printDayReport()">📊 Tagesabschluss</button>
+        <button class="recover-btn" onclick="openStripeModal()" id="btnStripePanel">💳 Stripe-Einbuchung</button>
+      </div>
+      <div class="orders-list" id="ordersList">
+        <div class="empty-state">📭<br>Lade Bestellungen...</div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar-col">
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" onclick="setSideTab('detail',this)">Detail</button>
+        <button class="sidebar-tab" onclick="setSideTab('stats',this)">Statistik</button>
+        <button class="sidebar-tab" onclick="setSideTab('history',this)">Verlauf</button>
+        <button class="sidebar-tab" onclick="setSideTab('soldout',this)">🔴 Verfügbar</button>
+      </div>
+      <div class="sidebar-content" id="sideContent">
+        <div class="no-sel">📋<br>Bestellung auswählen</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PENDING MODAL -->
+<div class="modal-ov" id="pendingModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2>🔔 Neue Bestellung!</h2>
+      <button class="modal-close" onclick="closePendingModal()">✕</button>
+    </div>
+    <div class="modal-body" id="pendingModalBody"></div>
+  </div>
+</div>
+
+<!-- BON MODAL -->
+<div id="bonModal">
+  <div class="bon-box">
+    <div class="bon-header">🧾 Bon Vorschau <button onclick="closeBonModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;">✕</button></div>
+    <div id="bonContent"></div>
+    <div class="bon-footer">
+      <button class="bon-btn" onclick="bonPrint()">🖨️ Drucken</button>
+      <button class="bon-btn" onclick="bonPDF()">📄 PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- STRIPE MODAL -->
+<div class="modal-ov" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
+  <div class="modal-box" style="max-width:500px;">
+    <div class="modal-head" style="background:linear-gradient(135deg,#7a5200,#c88a00);">
+      <h2>💳 Stripe-Zahlungen ausstehend</h2>
+      <button class="modal-close" onclick="closeStripeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">
+        Diese Bestellungen warten noch auf Stripe-Zahlung. Erst nach Bezahlung erscheinen sie im Dashboard.
+      </p>
+      <div id="stripeModalList"></div>
+      <button class="confirm-btn" onclick="doRecoverStripe()" id="btnRecoverAction">
+        🔁 Bei Stripe prüfen & einbuchen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- POS MODAL -->
+<div id="posModal">
+  <div class="pos-box">
+    <div class="pos-top">
+      <h2>📞 Telefonische Bestellung</h2>
+      <button onclick="closePOS()" style="background:none;border:1px solid var(--border);border-radius:7px;padding:4px 10px;color:var(--muted);cursor:pointer;">✕ Schließen</button>
+    </div>
+    <div class="pos-layout">
+      <div class="pos-left">
+        <div class="pos-search"><input type="text" id="posSearch" placeholder="🔍 Artikel suchen..." oninput="renderPOSItems()"></div>
+        <div class="pos-cats" id="posCatTabs"></div>
+        <div class="pos-items" id="posItems"></div>
+      </div>
+      <div class="pos-right">
+        <div style="padding:10px;border-bottom:1px solid var(--border);">
+          <div class="pos-mode">
+            <button class="pos-mode-btn active" id="posTabLief" onclick="setPOSMode('lieferung')">🛵 Lieferung</button>
+            <button class="pos-mode-btn" id="posTabAbh" onclick="setPOSMode('abholung')">🏃 Abholung</button>
+          </div>
+        </div>
+        <div class="pos-cart" id="posCartItems"><div class="pos-cart-empty">Leer</div></div>
+        <div class="pos-customer" id="posCustomerFields">
+          <input type="text" id="posFirst" placeholder="Vorname *">
+          <input type="text" id="posLast" placeholder="Nachname *">
+          <input type="text" id="posPhone" placeholder="Telefon">
+          <input type="email" id="posEmail" placeholder="E-Mail (optional)">
+          <div id="posAddrFields">
+            <select id="posCity" onchange="renderPOSTotals()">
+              <option value="Ennigerloh">Ennigerloh</option>
+              <option value="Westkirchen">Westkirchen</option>
+              <option value="Enniger">Enniger</option>
+              <option value="Beelen">Beelen</option>
+              <option value="Beckum">Beckum</option>
+              <option value="Oelde">Oelde</option>
+            </select>
+            <input type="text" id="posStreet" placeholder="Straße">
+            <input type="text" id="posHouse" placeholder="Hausnummer">
+          </div>
+          <select id="posPayment">
+            <option value="bar">💵 Barzahlung</option>
+            <option value="karte">💳 EC-Karte</option>
+          </select>
+        </div>
+        <div class="pos-totals" id="posTotals"></div>
+        <div style="padding:0 10px 10px">
+          <button class="pos-submit" id="posSubmitBtn" onclick="submitPOS()">✅ Speichern & Drucken</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="printArea"></div>
+<div id="toast"></div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────
+const API_BASE       = 'https://pinocchio-backend.onrender.com/api';
+const DASHBOARD_PW   = 'Pinocchio2025!';
+const ADMIN_TOKEN    = 'PinocchioGeheimToken2025xyzABCDEFGHIJKLMNOP';
+const SERVICE_FEE    = 0.99;
+const DELIVERY_FEES  = { Ennigerloh:0, Westkirchen:1.50, Enniger:1.50, Beelen:2.00, Beckum:2.50, Oelde:3.00 };
+const RAWBT_URL      = 'http://127.0.0.1:19100';
+
+const POS_MENU = {
+  'Angebote': [
+    { num:'A1', name:'Pinocchio Angebot 1',  price:28.00 },
+    { num:'A2', name:'Pinocchio Angebot 2',  price:28.00 },
+    { num:'A3', name:'Pinocchio Angebot 3',  price:28.00 },
+    { num:'A4', name:'Pinocchio Angebot 4',  price:28.00 },
+  ],
+  'Menüs': [
+    { num:'M1', name:'Menü 1', price:8.50 },
+    { num:'M2', name:'Menü 2', price:8.50 },
+    { num:'M3', name:'Menü 3', price:8.50 },
+    { num:'M4', name:'Menü 4', price:8.50 },
+    { num:'M5', name:'Menü 5', price:8.50 },
+    { num:'M6', name:'Menü 6', price:8.50 },
+  ],
+  'Mittagsangebot': [
+    { num:'MA', name:'Mittagsangebot Pizza', price:5.50 },
+  ],
+  'Pizza': [
+    { num:'1',   name:'1. Pizza Margherita',              price:5.00 },
+    { num:'2',   name:'2. Pizza Cipolla',                 price:5.50 },
+    { num:'3',   name:'3. Pizza Funghi',                  price:5.50 },
+    { num:'4',   name:'4. Pizza Paprika',                 price:5.50 },
+    { num:'5',   name:'5. Pizza Prosciutto',              price:5.50 },
+    { num:'6',   name:'6. Pizza Salami',                  price:5.50 },
+    { num:'7',   name:'7. Pizza Tonno',                   price:5.50 },
+    { num:'8',   name:'8. Pizza Tonno Cipolla',           price:6.00 },
+    { num:'9',   name:'9. Pizza Primavera',               price:6.00 },
+    { num:'10',  name:'10. Pizza Romana',                 price:6.00 },
+    { num:'11',  name:'11. Pizza Dallas',                 price:6.00 },
+    { num:'12',  name:'12. Pizza Hawaii',                 price:6.00 },
+    { num:'13',  name:'13. Pizza Atlanta',                price:6.00 },
+    { num:'14',  name:'14. Pizza Quattro Stagioni',       price:6.00 },
+    { num:'15',  name:'15. Pizza Vegetaria',              price:6.00 },
+    { num:'16',  name:'16. Calzone',                      price:6.00 },
+    { num:'17',  name:'17. Pizza Texas',                  price:6.00 },
+    { num:'18',  name:'18. Pizza Gamberetti',             price:6.00 },
+    { num:'19',  name:'19. Pizza nach Art des Hauses',    price:6.00 },
+    { num:'20',  name:'20. Pizza Frutti di Mare',         price:6.00 },
+    { num:'21',  name:'21. Pizza Mista',                  price:6.00 },
+    { num:'22',  name:'22. Pizza Italia',                 price:6.00 },
+    { num:'23',  name:'23. Pizza Picante',                price:6.00 },
+    { num:'24',  name:'24. Pizza Gorgonzola',             price:6.00 },
+    { num:'25',  name:'25. Pizza Mozzarella',             price:6.00 },
+    { num:'26',  name:'26. Pizza 3 Formaggio',            price:6.00 },
+    { num:'27',  name:'27. Pizza Spaghetti',              price:6.00 },
+    { num:'28',  name:'28. Calzone Mafiose',              price:6.00 },
+    { num:'29',  name:'29. Pizza Muscheln',               price:6.00 },
+    { num:'30',  name:'30. Pizza Scampi',                 price:6.00 },
+    { num:'30a', name:'30a. Pizza Garnelen',              price:7.00 },
+    { num:'31',  name:'31. Pizza Capricciosa',            price:6.00 },
+    { num:'32',  name:'32. Pizza Popey',                  price:6.00 },
+    { num:'33',  name:'33. Pizza Inferno',                price:6.00 },
+    { num:'34',  name:'34. Pizza Sizilliana',             price:6.00 },
+    { num:'35',  name:'35. Pizza Pinocchio',              price:6.00 },
+    { num:'36',  name:'36. Pizza Broccoli',               price:6.00 },
+    { num:'37',  name:'37. Pizza Vesuvia',                price:6.00 },
+    { num:'38',  name:'38. Pizza Tonorella',              price:6.00 },
+    { num:'39',  name:'39. Pizza Phoenix',                price:6.00 },
+    { num:'40',  name:'40. Pizza Marinara',               price:6.00 },
+    { num:'44',  name:'44. Pizza Lachs',                  price:6.00 },
+    { num:'45',  name:'45. Pizza Chicken',                price:6.00 },
+    { num:'46',  name:'46. Pizza Bolognese',              price:6.00 },
+    { num:'99',  name:'99. Pizza Amore',                  price:6.00 },
+    { num:'100', name:'100. Pizza Ramacca',               price:6.00 },
+    { num:'101', name:'101. Pizza Jungfrau',              price:6.00 },
+    { num:'102', name:'102. Pizza Widder',                price:6.00 },
+    { num:'103', name:'103. Calzone Spezial',             price:6.00 },
+    { num:'113', name:'113. Pizza Miami',                 price:6.00 },
+    { num:'114', name:'114. Pizza Santa Fe',              price:6.00 },
+    { num:'115', name:'115. Pizza Alaska',                price:6.00 },
+    { num:'116', name:'116. Pizza Manhattan',             price:6.00 },
+    { num:'117', name:'117. Pizza Hongkong',              price:6.00 },
+    { num:'118', name:'118. Pizza Tokio',                 price:6.00 },
+    { num:'119', name:'119. Pizza Bangkok',               price:6.00 },
+    { num:'120', name:'120. Pizza Shanghai',              price:6.00 },
+    { num:'121', name:'121. Pizza Palermo',               price:6.00 },
+    { num:'122', name:'122. Pizza Diavolo',               price:6.00 },
+    { num:'201', name:'201. Pizza Rucola-Schinken',       price:6.00 },
+    { num:'202', name:'202. Pizza Rucola-Champignons',    price:6.00 },
+    { num:'203', name:'203. Pizza Rucola-Mozzarella',     price:6.00 },
+    { num:'204', name:'204. Pizza Dönerfleisch',     price:6.50 },
+    { num:'205', name:'205. Pizza Dönerfleisch',     price:6.50 },
+    { num:'206', name:'206. Pizza Dönerfleisch',     price:6.50 },
+    { num:'207', name:'207. Döner Calzone',          price:6.50 },
+    { num:'208', name:'208. Pizza Sucuk',                 price:6.50 },
+    { num:'209', name:'209. American Pizza New York',     price:7.00 },
+    { num:'210', name:'210. American Pizza California',   price:7.00 },
+    { num:'211', name:'211. American Pizza Key West',     price:7.00 },
+    { num:'212', name:'212. American Pizza Barbecue',     price:7.00 },
+    { num:'213', name:'213. American Pizza Grand Canyon', price:7.00 },
+  ],
+  'Familienpizza': [
+    { num:'F1', name:'Familienpizza Ø 50 cm', price:26.50 },
+    { num:'F2', name:'Familienpizza Ø 40 cm', price:20.00 },
+    { num:'F3', name:'Partypizza 60x40 cm',         price:31.00 },
+  ],
+  'Pizzabrötchen': [
+    { num:'PB',   name:'Pizzabrötchen',                                         price:3.00 },
+    { num:'704a', name:'704. Pizzabrötchen mit Käse und Knoblauch',         price:6.50 },
+    { num:'704b', name:'704. Pizzabrötchen mit Tomatensauce und Knoblauch',      price:6.50 },
+    { num:'704c', name:'704. Pizzabrötchen gefüllt mit Käse und Salami',    price:6.50 },
+    { num:'704d', name:'704. Pizzabrötchen gefüllt mit Käse und Schinken',  price:6.50 },
+    { num:'704e', name:'704. Pizzabrötchen gefüllt mit Käse und Thunfisch', price:6.50 },
+    { num:'705',  name:'705. Käse-Tasche',                                      price:6.50 },
+    { num:'706',  name:'706. Käse-Tasche mit Feta',                             price:6.50 },
+    { num:'707',  name:'707. Spinat-Tasche mit Käse',                           price:7.00 },
+    { num:'708',  name:'708. Spezial-Tasche mit Ananas und Mozzarella',               price:7.00 },
+  ],
+  'Pasta': [
+    { num:'71',  name:'71. Lasagne',                            price:9.00 },
+    { num:'72',  name:'72. Lasagne Vegetaria',                  price:9.50 },
+    { num:'73',  name:'73. Tris di Pasta',                      price:9.00 },
+    { num:'107', name:'107. Bandnudeln Vegetaria',              price:9.50 },
+    { num:'165', name:'165. Bandnudeln a la Panna',             price:9.50 },
+    { num:'166', name:'166. Bandnudeln Quattro Formaggi',       price:9.50 },
+    { num:'167', name:'167. Bandnudeln Gorgonzola',             price:9.50 },
+    { num:'168', name:'168. Bandnudeln Siziliana',              price:9.50 },
+    { num:'709', name:'709. Salmone al Gorgonzola',             price:12.00 },
+    { num:'710', name:'710. Maccheroni mit Lachs',              price:12.00 },
+    { num:'711', name:'711. Maccheroni mit Lachs und Broccoli', price:12.00 },
+  ],
+  'Rigatoni': [
+    { num:'60',  name:'60. Rigatoni Bolognese',              price:9.00 },
+    { num:'61',  name:'61. Rigatoni Italia',                 price:8.50 },
+    { num:'62',  name:'62. Rigatoni Quattro Formaggi',       price:9.00 },
+    { num:'63',  name:'63. Rigatoni Vegetaria',              price:9.00 },
+    { num:'64',  name:'64. Rigatoni nach Art des Hauses',    price:9.00 },
+    { num:'77',  name:'77. Rigatoni Carbonara',              price:9.00 },
+    { num:'78',  name:'78. Rigatoni al Forno',               price:9.00 },
+    { num:'79',  name:'79. Rigatoni Italia überbacken', price:9.50 },
+    { num:'104', name:'104. Rigatoni Pinocchio',             price:9.50 },
+  ],
+  'Spaghetti': [
+    { num:'47',  name:'47. Spaghetti Bolognese',                   price:8.50 },
+    { num:'48',  name:'48. Spaghetti alla Panna',                  price:8.50 },
+    { num:'49',  name:'49. Spaghetti alla Napolitana',             price:8.00 },
+    { num:'50',  name:'50. Spaghetti Carbonara',                   price:9.00 },
+    { num:'51',  name:'51. Spaghetti della Casa',                  price:9.00 },
+    { num:'52',  name:'52. Spaghetti Frutti di Mare',              price:9.00 },
+    { num:'53',  name:'53. Spaghetti Vegetaria',                   price:9.00 },
+    { num:'54',  name:'54. Spaghetti Gamberetti',                  price:9.00 },
+    { num:'55',  name:'55. Spaghetti Tonno',                       price:9.00 },
+    { num:'56',  name:'56. Spaghetti a la Gorgonzola',             price:9.00 },
+    { num:'57',  name:'57. Spaghetti Italia',                      price:9.00 },
+    { num:'58',  name:'58. Spaghetti a la Panna 2',                price:9.00 },
+    { num:'59',  name:'59. Spaghetti Vegetaria 2',                 price:9.00 },
+    { num:'80',  name:'80. Spaghetti al Forno',                    price:9.00 },
+    { num:'81',  name:'81. Spaghetti Carbonara al Forno',          price:9.00 },
+    { num:'82',  name:'82. Spaghetti Italia al Forno',             price:9.00 },
+    { num:'106', name:'106. Spaghetti Vegetaria überbacken',  price:9.00 },
+    { num:'162', name:'162. Spaghetti Caprese',                    price:10.00 },
+    { num:'163', name:'163. Spaghetti Aglio Olio e Peperoncino',   price:10.00 },
+    { num:'164', name:'164. Spaghetti de la Chef',                 price:10.00 },
+  ],
+  'Tortellini': [
+    { num:'65',  name:'65. Tortellini Bolognese',                  price:9.00 },
+    { num:'66',  name:'66. Tortellini alla Panna',                 price:9.00 },
+    { num:'67',  name:'67. Tortellini Carbonara',                  price:9.00 },
+    { num:'68',  name:'68. Tortellini alla Pinocchio',             price:9.00 },
+    { num:'69',  name:'69. Tortellini Gorgonzola',                 price:9.00 },
+    { num:'70',  name:'70. Tortellini nach Art des Hauses',        price:9.00 },
+    { num:'74',  name:'74. Tortellini alla Panna überbacken', price:9.50 },
+    { num:'75',  name:'75. Tortellini al Forno',                   price:9.00 },
+    { num:'76',  name:'76. Tortellini Italia',                     price:9.50 },
+    { num:'105', name:'105. Tortellini Rustikal',                  price:9.50 },
+  ],
+  'Gnocchi': [
+    { num:'123', name:'123. Gnocchi Vegetarier',  price:9.50 },
+    { num:'124', name:'124. Gnocchi Formaggio',   price:9.50 },
+    { num:'125', name:'125. Gnocchi alla Panna',  price:9.00 },
+  ],
+  'Aufläufe': [
+    { num:'108', name:'108. Broccoli-Auflauf',           price:9.50 },
+    { num:'109', name:'109. Gemüse di Pomodoro',    price:9.50 },
+    { num:'110', name:'110. Gemüse Spezialität', price:9.50 },
+    { num:'111', name:'111. Blumenkohl-Auflauf',         price:9.50 },
+    { num:'112', name:'112. Champignons-Auflauf',        price:9.50 },
+  ],
+  'Kartoffelauflauf': [
+    { num:'712', name:'712. Kartoffelauflauf Italia mit Hähnchen und Curry', price:11.50 },
+    { num:'713', name:'713. Kartoffelauflauf Italia mit Hähnchen und Sahne', price:11.50 },
+    { num:'714', name:'714. Kartoffelauflauf Italia mit Lachs',                   price:12.00 },
+  ],
+  'Salat': [
+    { num:'83',  name:'83. Insalata Mista',             price:6.50 },
+    { num:'83a', name:'83a. Gemischter Salat',          price:8.50 },
+    { num:'84',  name:'84. Insalata Pomodoro Cipolla',  price:6.50 },
+    { num:'85',  name:'85. Insalata di Cipolla',        price:6.50 },
+    { num:'86',  name:'86. Insalata Primavera',         price:9.50 },
+    { num:'87',  name:'87. Insalata de la Casa',        price:9.50 },
+    { num:'88',  name:'88. Insalata Roma',              price:9.50 },
+    { num:'89',  name:'89. Insalata Italia',            price:9.50 },
+    { num:'90',  name:'90. Insalata Frutti di Mare',    price:9.50 },
+    { num:'90a', name:'90a. Garnelen Salat',            price:11.00 },
+    { num:'91',  name:'91. Insalata Pinocchio',         price:9.50 },
+    { num:'92',  name:'92. Insalata Hawaii',            price:9.50 },
+    { num:'93',  name:'93. Insalata al Formaggio',      price:9.50 },
+    { num:'94',  name:'94. Insalata Milano',            price:9.50 },
+    { num:'95',  name:'95. Insalata de la Chef',        price:10.00 },
+    { num:'150', name:'150. Insalata Lachs',            price:10.00 },
+    { num:'151', name:'151. Insalata Kentucky',         price:10.00 },
+    { num:'152', name:'152. Tomaten-Mozzarella Salat',  price:9.50 },
+    { num:'153', name:'153. Shrimp Salat',              price:10.50 },
+    { num:'170', name:'170. Insalata Amore',            price:10.00 },
+    { num:'171', name:'171. Insalata Caprese',          price:10.00 },
+    { num:'172', name:'172. Insalata Siziliana',        price:10.00 },
+    { num:'173', name:'173. Insalata Mamma Mia',        price:9.50 },
+  ],
+  'Geflügelgerichte': [
+    { num:'138', name:'138. Hähnchengeschnetzeltes mit Currysauce',         price:10.00 },
+    { num:'139', name:'139. Hähnchengeschnetzeltes mit Pilzen',             price:10.00 },
+    { num:'140', name:'140. Hähnchengeschnetzeltes mit Zwiebeln',           price:10.00 },
+    { num:'141', name:'141. Hähnchengeschnetzeltes mit Tomaten und Pilzen', price:10.00 },
+    { num:'142', name:'142. Hähnchengeschnetzeltes mit Broccoli',           price:10.00 },
+    { num:'96',  name:'96. Putengeschnetzeltes mit Pilzen',                       price:10.00 },
+    { num:'97',  name:'97. Putengeschnetzeltes mit Currysauce',                   price:10.00 },
+    { num:'98',  name:'98. Putengeschnetzeltes mit Tomaten',                      price:10.00 },
+    { num:'159', name:'159. Putengeschnetzeltes gegrilltes Brustfilet',           price:11.00 },
+    { num:'160', name:'160. Pute al Forno',                                       price:11.00 },
+    { num:'161', name:'161. Putenauflauf',                                        price:11.00 },
+  ],
+  'Getränke': [
+    { num:'G1', name:'Coca Cola 1,0l',       price:3.50 },
+    { num:'G2', name:'Coca Cola 0,33l',      price:2.50 },
+    { num:'G3', name:'Fanta 1,0l',           price:3.50 },
+    { num:'G4', name:'Fanta 0,33l',          price:2.50 },
+    { num:'G5', name:'Sprite 1,0l',          price:3.50 },
+    { num:'G6', name:'Sprite 0,33l',         price:2.50 },
+    { num:'G7', name:'Coca Cola Zero 1,0l',  price:3.50 },
+    { num:'G8', name:'Coca Cola Zero 0,33l', price:2.50 },
+  ],
+};
+
+// ─── AUTH ────────────────────────────────────────────────────
+let token = sessionStorage.getItem('pinocchioToken') || '';
+
+async function doLogin(){
+  const pw = document.getElementById('loginPw').value.trim();
+  if (!pw) return;
+  document.getElementById('loginErr').style.display = 'none';
+  if (pw === DASHBOARD_PW) {
+    token = ADMIN_TOKEN;
+    sessionStorage.setItem('pinocchioToken', token);
+    showApp(); return;
+  }
+  try {
+    const r = await fetch(API_BASE+'/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) });
+    const d = await r.json();
+    if (d.token) { token=d.token; sessionStorage.setItem('pinocchioToken',token); showApp(); }
+    else document.getElementById('loginErr').style.display = 'block';
+  } catch { document.getElementById('loginErr').style.display = 'block'; }
+}
+function showApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  initDashboard();
+}
+function doLogout(){ sessionStorage.removeItem('pinocchioToken'); location.reload(); }
+if (token) showApp();
+
+function apiHeaders(){ return { 'Content-Type':'application/json', 'Authorization':'Bearer '+token }; }
+function api(path, opts={}){ return fetch(API_BASE+path, { ...opts, headers:{...apiHeaders(),...(opts.headers||{})} }); }
+
+// ─── STATE ───────────────────────────────────────────────────
+let allOrders=[], stripeOrders=[], selOrder=null, filter='all', sideTab='detail', manualOverride=false;
+let loadOrdersCtrl=null, dateChangeTimer=null;
+let knownIds = new Set(JSON.parse(localStorage.getItem('pinoKnownIds')||'[]'));
+const _kd = localStorage.getItem('pinoKnownDate');
+if (_kd !== new Date().toDateString()) {
+  knownIds = new Set();
+  localStorage.setItem('pinoKnownIds','[]');
+  localStorage.setItem('pinoKnownDate', new Date().toDateString());
+}
+let soldOutList=[], rawbtConnected=false, eposConnected=false;
+let currentPending=null, selectedTime=null, showCancelReason=false;
+let bonModalOrder=null, posCart=[], posMode='lieferung', posCategory='Pizza';
+
+// ─── UTILS ───────────────────────────────────────────────────
+function fmt(n){ return (n||0).toFixed(2).replace('.',',')+' €'; }
+function isToday(d){ const t=new Date(),dt=new Date(d); return dt.getDate()===t.getDate()&&dt.getMonth()===t.getMonth()&&dt.getFullYear()===t.getFullYear(); }
+const getDisplayStatus = s=>({confirmed:'Neu',preparing:'In Zubereitung',ready:'Fertiggestellt',delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend',awaiting_payment:'💳 Stripe ausstehend'}[s]||s);
+const getStatusClass   = s=>({confirmed:'b-new',preparing:'b-prep',ready:'b-ready',delivered:'b-del',cancelled:'b-cancel',awaiting_payment:'b-stripe-wait'}[s]||'b-new');
+const getNextStatus    = s=>({confirmed:'preparing',preparing:'ready',ready:'delivered'}[s]||null);
+const getNextLabel     = s=>({confirmed:'🔥 Zubereitung',preparing:'✅ Fertig',ready:'🚀 Geliefert'}[s]||null);
+const cleanName        = n=>n.replace(/[A-Z0-9](,[A-Z0-9])+$/,'').trimEnd();
+
+let toastT;
+function showToast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ─── CLOCK ───────────────────────────────────────────────────
+function startClock(){
+  function tick(){
+    const n=new Date();
+    document.getElementById('clock').textContent=n.toLocaleTimeString('de-DE');
+    document.getElementById('clockDate').textContent=n.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ─── LOAD ORDERS ─────────────────────────────────────────────
+function onDateChange(){
+  clearTimeout(dateChangeTimer);
+  document.getElementById('ordersList').innerHTML='<div class="empty-state">⏳ Lade…</div>';
+  dateChangeTimer=setTimeout(loadOrders,300);
+}
+
+async function loadOrders(){
+  if(loadOrdersCtrl)loadOrdersCtrl.abort();
+  loadOrdersCtrl=new AbortController();
+  const signal=loadOrdersCtrl.signal;
+  try{
+    const reportDateVal=document.getElementById('reportDate')?.value||'';
+    const todayStr=new Date().toISOString().slice(0,10);
+    const isToday=!reportDateVal||reportDateVal===todayStr;
+    const url=isToday?`${API_BASE}/admin/orders`:`${API_BASE}/admin/orders?date=${reportDateVal}`;
+    const r=await fetch(url,{headers:apiHeaders(),signal});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    // Split: awaiting_payment → stripeOrders, rest → allOrders
+    const raw=d.orders||[];
+    stripeOrders=raw.filter(o=>o.status==='awaiting_payment');
+    allOrders=raw.filter(o=>o.status!=='awaiting_payment');
+    updateStripeBadge();
+    const s=d.stats||{};
+    const dateLabel = isToday ? 'heute' : new Date(reportDateVal+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    const lRevenue = document.getElementById('lRevenue'); if(lRevenue) lRevenue.textContent = `Umsatz ${dateLabel}`;
+    const lDone = document.getElementById('lDone'); if(lDone) lDone.textContent = `Fertig ${dateLabel}`;
+    const lCancelledSub = document.getElementById('lCancelledSub'); if(lCancelledSub) lCancelledSub.textContent = dateLabel;
+    document.getElementById('sRevenue').textContent=(s.todayRevenue||0).toFixed(2).replace('.',',')+' €';
+    document.getElementById('sTodayCount').textContent=(s.todayCount||0)+' Bestellungen';
+    document.getElementById('sActive').textContent=s.active||0;
+    document.getElementById('sDone').textContent=s.done||0;
+    document.getElementById('sCancelled').textContent=s.cancelled||0;
+    document.getElementById('sUnpaid').textContent=s.unpaid||0;
+    renderOrders();
+    if(sideTab==='stats')renderStats();
+    if(sideTab==='history')renderHistory();
+    if(selOrder){selOrder=allOrders.find(o=>o._id===selOrder._id)||null;if(sideTab==='detail')renderDetail(document.getElementById('sideContent'));}
+  }catch(e){if(e.name==='AbortError')return;}
+}
+
+function updateStripeBadge(){
+  const btn=document.getElementById('btnStripePanel');
+  if(!btn)return;
+  if(stripeOrders.length>0){
+    btn.innerHTML=`💳 Stripe-Einbuchung <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:0 6px;font-size:.75rem;">${stripeOrders.length}</span>`;
+  }else{
+    btn.textContent='💳 Stripe-Einbuchung';
+  }
+}
+
+// ─── RENDER ORDERS ───────────────────────────────────────────
+function setFilter(f,el){
+  filter=f;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderOrders();
+}
+function renderOrders(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const reportDateVal=document.getElementById('reportDate')?.value||'';
+  const todayStr=new Date().toISOString().slice(0,10);
+  const isViewingToday=!reportDateVal||reportDateVal===todayStr;
+  let list=allOrders.filter(o=>{
+    const t=new Date(o.createdAt);
+    if(!q){
+      if(isViewingToday){const todayStart=new Date();todayStart.setHours(0,0,0,0);if(t<todayStart)return false;}
+      else if(reportDateVal){const from=new Date(reportDateVal+'T00:00:00'),to=new Date(reportDateVal+'T23:59:59');if(t<from||t>to)return false;}
+    }
+    if(filter==='neu')return o.status==='confirmed';
+    if(filter==='zubereitung')return o.status==='preparing';
+    if(filter==='fertig')return o.status==='ready';
+    if(filter==='geliefert')return o.status==='delivered';
+    if(filter==='storniert')return o.status==='cancelled';
+    return true;
+  });
+  if(q)list=list.filter(o=>String(o.orderNum).includes(q)||`${o.customer?.first} ${o.customer?.last}`.toLowerCase().includes(q));
+  const el=document.getElementById('ordersList');
+  if(!list.length){el.innerHTML='<div class="empty-state">📭<br>Keine Bestellungen</div>';return;}
+  el.innerHTML=list.map(o=>{
+    const next=getNextStatus(o.status),nextLabel=getNextLabel(o.status);
+    const items=(o.items||[]).slice(0,2).map(i=>`${i.qty}× ${cleanName(i.name)}`).join(', ');
+    const more=(o.items||[]).length>2?` +${o.items.length-2}`:''
+    const payIcon=o.payment==='stripe'?'💳':o.payment==='karte'?'💳 EC':'💵';
+    return `<div class="order-card${selOrder?._id===o._id?' selected':''}" onclick="selectOrder('${o._id}')">
+      <div class="oc-top">
+        <span class="oc-num">#${o.orderNum}</span>
+        <span class="oc-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''} ${payIcon}</span>
+        <div class="oc-badges">
+          <span class="badge ${getStatusClass(o.status)}">${getDisplayStatus(o.status)}</span>
+          <span class="badge ${o.paymentStatus==='paid'?'b-paid':'b-unpaid'}" onclick="togglePaid(event,'${o._id}',${o.paymentStatus==='paid'})">${o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen'}</span>
+        </div>
+      </div>
+      <div class="oc-items">${items}${more}</div>
+      <div class="oc-bottom">
+        <span class="oc-price">${fmt(o.total||0)}</span>
+        <div class="oc-actions">
+          ${next?`<button class="oc-btn next" onclick="nextStatus(event,'${o._id}','${next}')">${nextLabel}</button>`:''}
+          <button class="oc-btn" onclick="doPrint(event,'${o._id}')">🖨️</button>
+          <button class="oc-btn" onclick="showBon(event,'${o._id}')">📄</button>
+          ${o.status!=='cancelled'?`<button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})">✕</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectOrder(id){
+  selOrder=allOrders.find(o=>o._id===id)||null;
+  renderOrders();
+  setSideTab(sideTab);
+}
+async function nextStatus(e,id,status){
+  e.stopPropagation();
+  await api('/admin/orders/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});
+  await loadOrders();
+}
+async function togglePaid(e,id,wasPaid){
+  e.stopPropagation();
+  await api('/admin/orders/'+id+'/payment',{method:'PATCH',body:JSON.stringify({paymentStatus:wasPaid?'unpaid':'paid'})});
+  await loadOrders();
+}
+async function doCancel(e,id,num){
+  e.stopPropagation();
+  const reason=prompt(`Bestellung #${num} stornieren?\n\nGrund (optional):`);
+  if(reason===null)return;
+  const r=await api('/admin/orders/'+id,{method:'DELETE',body:JSON.stringify({cancelReason:reason})});
+  const d=await r.json();
+  await loadOrders();
+  showToast(`❌ Bestellung #${num} storniert${d.refundStatus==='succeeded'?' · Stripe-Refund':''}`);
+}
+
+// ─── SIDEBAR ─────────────────────────────────────────────────
+function setSideTab(tab,el){
+  sideTab=tab;
+  document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  else document.querySelectorAll('.sidebar-tab')[['detail','stats','history','soldout'].indexOf(tab)]?.classList.add('active');
+  const c=document.getElementById('sideContent');
+  if(tab==='detail')renderDetail(c);
+  if(tab==='stats')renderStats(c);
+  if(tab==='history')renderHistory(c);
+  if(tab==='soldout')renderSoldOut(c);
+}
+
+function renderDetail(c){
+  c=c||document.getElementById('sideContent');
+  if(!selOrder){c.innerHTML='<div class="no-sel">📋<br>Bestellung auswählen</div>';return;}
+  const o=selOrder;
+  const rows=(o.items||[]).map(i=>`
+    <div class="detail-item">
+      <span class="di-name">${i.qty}× ${cleanName(i.name)}${i.note?` <em style="font-size:.74rem;color:var(--muted)">(${i.note})</em>`:''}</span>
+      <span class="di-price">${fmt((i.price||0)*i.qty)}</span>
+    </div>
+    ${(i.extraDetails||[]).map(e=>`<div style="font-size:.74rem;color:var(--muted);padding:0 0 2px 16px;">↳ ${e.name}${e.price>0?' +'+fmt(e.price):''}</div>`).join('')}
+  `).join('');
+  c.innerHTML=`
+    <div class="detail-num">#${o.orderNum}</div>
+    <div class="detail-meta">${new Date(o.createdAt).toLocaleString('de-DE')} · ${o.source==='pos'?'📞 POS':'🌐 Online'}</div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Kunde</div>
+      <div style="font-size:.82rem;line-height:1.9;color:var(--muted)">
+        <strong style="color:var(--text)">${o.customer?.first} ${o.customer?.last}</strong><br>
+        ${o.customer?.phone||''}<br>
+        ${o.mode==='lieferung'?`${o.customer?.street} ${o.customer?.house}, ${o.customer?.city}`:'🏃 Abholung'}
+        ${o.note?`<br>📝 <em>${o.note}</em>`:''}
+      </div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Artikel</div>
+      ${rows}
+      ${o.deliveryFee>0?`<div class="detail-total"><span>Liefergebühr</span><span>${fmt(o.deliveryFee)}</span></div>`:''}
+      <div class="detail-total"><span>Servicegebühr</span><span>${fmt(o.serviceFee||0.99)}</span></div>
+      <div class="detail-total grand"><span>Gesamt</span><span>${fmt(o.total||0)}</span></div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Status</div>
+      <div class="mini-btns">
+        ${['confirmed','preparing','ready','delivered'].map(s=>`<div class="mini-btn${o.status===s?' active':''}" onclick="changeStatus('${o._id}','${s}')">${getDisplayStatus(s)}</div>`).join('')}
+      </div>
+      <div class="paid-row" onclick="togglePaidDetail('${o._id}',${o.paymentStatus==='paid'})">
+        <span style="color:var(--muted);font-size:.8rem">Bezahlt</span>
+        <span style="font-weight:700;color:${o.paymentStatus==='paid'?'var(--green)':'#ef5350'}">${o.paymentStatus==='paid'?'✅ Ja':'❌ Nein'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:.8rem;">
+        <span style="color:var(--muted)">Zahlungsart</span>
+        <span style="font-weight:700">${o.payment==='stripe'?'💳 Stripe':o.payment==='karte'?'💳 EC-Karte':'💵 Bar'}</span>
+      </div>
+    </div>
+    <div class="detail-btns">
+      ${getNextStatus(o.status)?`<button class="detail-btn primary" onclick="changeStatus('${o._id}','${getNextStatus(o.status)}')">➡️ ${getNextLabel(o.status)}</button>`:'<div style="flex:1"></div>'}
+      <button class="detail-btn" onclick="doPrint(event,'${o._id}')">🖨️</button>
+      <button class="detail-btn" onclick="showBon(event,'${o._id}')">📄</button>
+      ${o.status!=='cancelled'?`<button class="detail-btn danger" onclick="doCancel(event,'${o._id}',${o.orderNum})">✕</button>`:''}
+    </div>`;
+}
+
+async function changeStatus(id,status){
+  await api('/admin/orders/'+id+'/status',{method:'PATCH',body:JSON.stringify({status})});
+  await loadOrders();
+  if(selOrder?._id===id){selOrder=allOrders.find(o=>o._id===id);renderDetail();}
+}
+async function togglePaidDetail(id,wasPaid){
+  await api('/admin/orders/'+id+'/payment',{method:'PATCH',body:JSON.stringify({paymentStatus:wasPaid?'unpaid':'paid'})});
+  await loadOrders();
+  if(selOrder?._id===id){selOrder=allOrders.find(o=>o._id===id);renderDetail();}
+}
+
+// ─── STATS & HISTORY ─────────────────────────────────────────
+function renderStats(c){
+  c=c||document.getElementById('sideContent');
+  const counts={};
+  allOrders.filter(o=>o.status!=='cancelled').forEach(o=>(o.items||[]).forEach(i=>{counts[cleanName(i.name)]=(counts[cleanName(i.name)]||0)+i.qty;}));
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxI=top[0]?.[1]||1;
+  const hourly={}; for(let h=11;h<=22;h++)hourly[h]=0;
+  allOrders.filter(o=>isToday(o.createdAt)).forEach(o=>{const h=new Date(o.createdAt).getHours();if(hourly[h]!==undefined)hourly[h]++;});
+  const maxH=Math.max(...Object.values(hourly),1);
+  c.innerHTML=`<div class="detail-sec-title" style="margin-bottom:10px">Top Gerichte heute</div>
+    ${top.length?top.map(([n,v])=>`<div class="bar-row"><div class="bar-name" title="${n}">${n}</div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxI*100).toFixed(0)}%"></div></div><span class="bar-val">${v}</span></div>`).join(''):'<p style="color:var(--muted);font-size:.8rem">Noch keine Daten</p>'}
+    <div class="detail-sec-title" style="margin:16px 0 10px">Bestellungen nach Stunde</div>
+    ${Object.entries(hourly).map(([h,v])=>`<div class="bar-row"><div class="bar-name">${h}:00</div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxH*100).toFixed(0)}%"></div></div><span class="bar-val">${v}</span></div>`).join('')}`;
+}
+
+function renderHistory(c){
+  c=c||document.getElementById('sideContent');
+  const byDay={};
+  allOrders.forEach(o=>{
+    const day=new Date(o.createdAt).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+    if(!byDay[day])byDay[day]={orders:[],total:0};
+    byDay[day].orders.push(o);
+    if(o.status!=='cancelled')byDay[day].total+=(o.total||0);
+  });
+  c.innerHTML=Object.entries(byDay).map(([day,data])=>`
+    <div class="hist-day">
+      <div class="hist-day-hd"><span>${day}</span><span style="color:var(--gold)">${fmt(data.total)}</span></div>
+      ${data.orders.map(o=>`<div class="hist-item" onclick="selectOrder('${o._id}');setSideTab('detail')">
+        <span class="hi-num">#${o.orderNum}</span>
+        <span class="hi-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="hi-name">${o.customer?.first||''} ${o.customer?.last||''}</span>
+        <span class="hi-price">${fmt(o.total||0)}</span>
+      </div>`).join('')}
+    </div>`).join('')||'<p style="color:var(--muted);font-size:.8rem">Keine Einträge</p>';
+}
+
+// ─── SOLD OUT ────────────────────────────────────────────────
+async function loadSoldOut(){
+  try{const r=await api('/admin/availability');const d=await r.json();soldOutList=(d.items||[]).filter(i=>!i.available).map(i=>i.itemName);}catch(e){}
+}
+function renderSoldOut(c){
+  c=c||document.getElementById('sideContent');
+  const all=Object.values(POS_MENU).flat().map(i=>i.name);
+  c.innerHTML=`<div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">🟢 = Verfügbar · 🔴 = Ausverkauft auf Website</div>
+    ${all.map(name=>{const out=soldOutList.includes(name);return`<div class="so-item">
+      <span class="so-name">${name}</span>
+      <label class="so-toggle">
+        <input type="checkbox" ${out?'':'checked'} onchange="toggleSoldOut('${name.replace(/'/g,"\\'")}',this)">
+        <span class="so-slider"></span>
+      </label>
+    </div>`}).join('')}`;
+}
+async function toggleSoldOut(name,cb){
+  const available=cb.checked;
+  try{
+    await api('/admin/availability',{method:'PATCH',body:JSON.stringify({itemName:name,available})});
+    if(!available)soldOutList.push(name); else soldOutList=soldOutList.filter(n=>n!==name);
+    showToast(`${available?'✅ Verfügbar':'❌ Ausverkauft'}: ${name}`);
+  }catch(e){cb.checked=!cb.checked;showToast('❌ Fehler');}
+}
+
+// ─── MODE ────────────────────────────────────────────────────
+function applyModeUI(mode,manual){
+  manualOverride=manual;
+  ['modeOnline','modeNeutral','modeGeschlossen'].forEach(id=>document.getElementById(id).className='mode-btn');
+  const map={online:'modeOnline',neutral:'modeNeutral',geschlossen:'modeGeschlossen'};
+  if(map[mode])document.getElementById(map[mode]).className=`mode-btn active-${mode}`;
+  const badge=document.getElementById('autobadge');
+  badge.className=manual?'mode-auto-badge':'mode-auto-badge auto-on';
+  badge.title=manual?'Automatik deaktiviert':'Automatik aktiv';
+}
+async function setMode(mode){
+  applyModeUI(mode,true);
+  await api('/admin/status',{method:'PATCH',body:JSON.stringify({mode,manualOverride:true})});
+  showToast(`${mode==='online'?'🟢 Online':mode==='neutral'?'⚪ Neutral':'🔴 Geschlossen'} – manuell`);
+}
+async function toggleAuto(){
+  const newManual=!manualOverride;
+  await api('/admin/status',{method:'PATCH',body:JSON.stringify({manualOverride:newManual})});
+  await loadRestaurantStatus();
+}
+async function loadRestaurantStatus(){
+  try{const r=await api('/admin/status');const d=await r.json();applyModeUI(d.manualOverride?d.mode:(d.autoMode||'online'),d.manualOverride);}catch(e){}
+}
+
+// ─── PENDING MODAL ───────────────────────────────────────────
+async function pollPending(){
+  try{
+    const r=await api('/admin/orders/pending');
+    const d=await r.json();
+    const pending=d.pending||[];
+    const todayStart=new Date();todayStart.setHours(0,0,0,0);
+    for(const o of pending){
+      if(new Date(o.createdAt)<todayStart)continue;
+      if(!knownIds.has(o._id)){
+        knownIds.add(o._id);
+        localStorage.setItem('pinoKnownIds',JSON.stringify([...knownIds]));
+        playAlarm(); showPendingModal(o); break;
+      }
+    }
+  }catch(e){}
+}
+
+function showPendingModal(order){
+  currentPending=order;selectedTime=null;showCancelReason=false;
+  const isD=order.mode==='lieferung';
+  const addr=isD?`${order.customer?.street||''} ${order.customer?.house||''}, ${order.customer?.city||''}`:'Abholung im Lokal';
+  const items=(order.items||[]).map(i=>`<div class="il-item"><span>${i.qty}× ${cleanName(i.name)}</span><span>${fmt((i.price||0)*i.qty)}</span></div>`).join('');
+  document.getElementById('pendingModalBody').innerHTML=`
+    <div class="pending-info">
+      <div class="pi-row"><span class="pi-label">Bestellung</span><span class="pi-val" style="color:var(--gold)">#${order.orderNum}</span></div>
+      <div class="pi-row"><span class="pi-label">Art</span><span class="pi-val">${isD?'🛵 Lieferung':'🏃 Abholung'}</span></div>
+      <div class="pi-row"><span class="pi-label">Kunde</span><span class="pi-val">${order.customer?.first||''} ${order.customer?.last||''}</span></div>
+      <div class="pi-row"><span class="pi-label">Telefon</span><span class="pi-val">${order.customer?.phone||'–'}</span></div>
+      <div class="pi-row"><span class="pi-label">Adresse</span><span class="pi-val">${addr}</span></div>
+      <div class="pi-row"><span class="pi-label">Zahlung</span><span class="pi-val">${order.paymentStatus==='paid'?'✅ Online bezahlt':'💵 Bei Übergabe'}</span></div>
+    </div>
+    <div class="items-list">${items}<div class="il-total"><span>Gesamt</span><span>${fmt(order.total||0)}</span></div></div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600">⏱ Voraussichtliche Zeit:</div>
+    <div class="time-btns">
+      ${[20,30,45,60].map(m=>`<div class="time-btn" id="tbtn${m}" onclick="selectTime(${m})">${m} Min</div>`).join('')}
+    </div>
+    <button class="confirm-btn" id="confirmBtn" onclick="confirmOrder()" disabled>✅ Annehmen & E-Mail senden</button>
+    <button class="cancel-btn" onclick="toggleCancelInput()">❌ Ablehnen</button>
+    <textarea class="cancel-reason" id="cancelReasonTA" rows="2" placeholder="Stornierungsgrund…" style="display:none"></textarea>
+    <button class="cancel-btn" id="sendCancelBtn" style="display:none" onclick="cancelOrder()">Bestellung stornieren</button>`;
+  document.getElementById('pendingModal').classList.add('show');
+}
+function selectTime(m){
+  selectedTime=m;
+  document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('tbtn'+m)?.classList.add('selected');
+  document.getElementById('confirmBtn').disabled=false;
+}
+function toggleCancelInput(){
+  showCancelReason=!showCancelReason;
+  document.getElementById('cancelReasonTA').style.display=showCancelReason?'block':'none';
+  document.getElementById('sendCancelBtn').style.display=showCancelReason?'block':'none';
+}
+async function confirmOrder(){
+  if(!currentPending||!selectedTime)return;
+  const btn=document.getElementById('confirmBtn');
+  btn.disabled=true;btn.textContent='⏳...';
+  await api('/admin/orders/'+currentPending._id+'/confirm',{method:'PATCH',body:JSON.stringify({estimatedMinutes:selectedTime})});
+  const o=currentPending;
+  closePendingModal(); showToast(`✅ #${o.orderNum} bestätigt – ${selectedTime} Min`);
+  const saved=allOrders.find(x=>x._id===o._id)||o;
+  smartPrint(saved); await loadOrders();
+}
+async function cancelOrder(){
+  const reason=document.getElementById('cancelReasonTA')?.value||'';
+  const r=await api('/admin/orders/'+currentPending._id,{method:'DELETE',body:JSON.stringify({cancelReason:reason})});
+  const d=await r.json();
+  const o=currentPending; closePendingModal();
+  showToast(`❌ #${o.orderNum} storniert${d.refundStatus==='succeeded'?' · Refund':''}`);
+  await loadOrders();
+}
+function closePendingModal(){
+  document.getElementById('pendingModal').classList.remove('show');
+  currentPending=null;selectedTime=null;stopAlarm();
+}
+function dismissAlert(){ document.getElementById('alertBanner').classList.remove('show'); }
+
+// ─── ALARM ───────────────────────────────────────────────────
+let alarmIv=null;
+function playAlarm(){
+  beepOnce(); alarmIv=setInterval(beepOnce,1800);
+  let b=false;
+  const iv=setInterval(()=>{document.title=b?'🔴 NEUE BESTELLUNG!':'🍕 Pinocchio Dashboard';b=!b;},700);
+  setTimeout(()=>{clearInterval(iv);document.title='🍕 Pinocchio Dashboard';},15000);
+  document.getElementById('alertBanner').classList.add('show');
+}
+function stopAlarm(){ clearInterval(alarmIv); alarmIv=null; }
+function beepOnce(){
+  try{const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  [[880,0],[1100,.15]].forEach(([f,t])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.12);o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.12);});}catch(e){}
+}
+
+// ─── PRINTER ─────────────────────────────────────────────────
+function getEposUrl(){
+  const ip=localStorage.getItem('epos_ip')||'192.168.2.174';
+  return `http://${ip}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`;
+}
+function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function updatePrinterStatus(){
+  const el=document.getElementById('printerStatus');
+  if(!el)return;
+  if(eposConnected){el.textContent='🖨️ Epson OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else if(rawbtConnected){el.textContent='🖨️ RawBT OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else if(window.fully){el.textContent='🖨️ Fully OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else{el.textContent='🖨️ Getrennt';el.style.color='var(--muted)';el.style.borderColor='var(--border)';}
+}
+
+async function checkEpos(){
+  try{
+    await fetch(getEposUrl(),{method:'POST',headers:{'Content-Type':'text/xml; charset=utf-8','SOAPAction':'""'},
+      body:'<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"></epos-print></s:Body></s:Envelope>',
+      signal:AbortSignal.timeout(3000)});
+    eposConnected=true;
+  }catch(e){eposConnected=false;}
+  updatePrinterStatus();
+}
+async function checkRawbt(){
+  try{
+    await fetch(RAWBT_URL,{method:'POST',body:new Uint8Array([0]),signal:AbortSignal.timeout(2000)});
+    rawbtConnected=true;
+  }catch(e){
+    rawbtConnected=e.message?.includes('NetworkError')||e.name==='TypeError'?false:true;
+  }
+  updatePrinterStatus();
+}
+
+// Epson ePOS Direktdruck (SOAP XML)
+async function eposPrint(order){
+  const isD=order.mode==='lieferung';
+  const time=new Date(order.createdAt).toLocaleString('de-DE');
+  const x=(t,attr='')=>`<text${attr}>${xmlEsc(t)}&#10;</text>`;
+  const div=()=>`<text>--------------------------------&#10;</text>`;
+  let body='';
+  body+=`<text align="center" dh="true" dw="true" em="true">Pizzeria Pinocchio&#10;</text>`;
+  body+=`<text align="center">Bahnhofstr. 6 · 59320 Ennigerloh&#10;</text>`;
+  body+=`<text align="center">02524 / 000000&#10;</text>`;
+  body+=div();
+  body+=`<text align="center" dh="true" dw="true" em="true">#${order.orderNum}&#10;</text>`;
+  body+=`<text align="center">${xmlEsc(time)}&#10;</text>`;
+  body+=`<text align="center" em="true">${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}&#10;</text>`;
+  body+=div();
+  body+=x(`${order.customer?.first||''} ${order.customer?.last||''}`);
+  if(order.customer?.phone)body+=x(order.customer.phone);
+  if(isD){body+=x(`${order.customer?.street||''} ${order.customer?.house||''}`);body+=x(order.customer?.city||'');}
+  body+=div();
+  for(const i of(order.items||[])){
+    const label=`${i.qty}x ${cleanName(i.name)}`.substring(0,24).padEnd(24);
+    const price=i.price===0?'   GRATIS':`${((i.price||0)*i.qty).toFixed(2)} EUR`;
+    body+=`<text em="true">${xmlEsc(label+price.padStart(9))}&#10;</text>`;
+    const extras=i.extraDetails||[];
+    if(extras.length)extras.forEach(e=>{if(e.name)body+=x(`  ${e.name}`);});
+    else if(i.note)body+=x(`  ${i.note}`);
+  }
+  body+=div();
+  const pad=v=>String(v).padStart(14);
+  body+=x(`Zwischensumme:  ${pad((order.subtotal||0).toFixed(2)+' EUR')}`);
+  if((order.deliveryFee||0)>0)body+=x(`Liefergebuehr:  ${pad(order.deliveryFee.toFixed(2)+' EUR')}`);
+  body+=x(`Servicegebuehr: ${pad((order.serviceFee||0.99).toFixed(2)+' EUR')}`);
+  body+=`<text em="true">GESAMT:         ${xmlEsc(pad((order.total||0).toFixed(2)+' EUR'))}&#10;</text>`;
+  body+=div();
+  body+=x(`Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}`);
+  body+=x(order.paymentStatus==='paid'?'BEZAHLT':'!!! BITTE KASSIEREN !!!');
+  if(order.prepTime)body+=x(`Wartezeit: ca. ${order.prepTime} Minuten`);
+  if(order.note)body+=`<text em="true">${xmlEsc('Anm.: '+order.note)}&#10;</text>`;
+  body+=`<feed line="3"/><cut type="feed"/>`;
+  const xml=`<?xml version="1.0" encoding="utf-8">`
+    +`<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">`
+    +`<s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">`
+    +body+`</epos-print></s:Body></s:Envelope>`;
+  try{
+    await fetch(getEposUrl(),{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:xml,signal:AbortSignal.timeout(6000)});
+    eposConnected=true;updatePrinterStatus();return true;
+  }catch(e){eposConnected=false;updatePrinterStatus();return false;}
+}
+
+// RawBT plain-text Bon
+function buildBonText(order){
+  const isD=order.mode==='lieferung';
+  const sep='--------------------------------';
+  let txt='';
+  txt+='Pizzeria Pinocchio\n';
+  txt+='Bahnhofstr. 6 · 59320 Ennigerloh\n';
+  txt+='02524 / 000000\n';
+  txt+=sep+'\n';
+  txt+=`BESTELLUNG #${order.orderNum}\n`;
+  txt+=new Date(order.createdAt).toLocaleString('de-DE')+'\n';
+  txt+=(isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***')+'\n';
+  txt+=sep+'\n';
+  txt+=`${order.customer?.first||''} ${order.customer?.last||''}\n`;
+  if(order.customer?.phone)txt+=order.customer.phone+'\n';
+  if(isD){txt+=`${order.customer?.street||''} ${order.customer?.house||''}\n`;txt+=(order.customer?.city||'')+'\n';}
+  txt+=sep+'\n';
+  for(const i of(order.items||[])){
+    const name=cleanName(i.name).slice(0,22);
+    const price=i.price===0?'GRATIS':`${((i.price||0)*i.qty).toFixed(2)} EUR`;
+    txt+=`${i.qty}x ${name.padEnd(22)} ${price}\n`;
+    const extras=i.extraDetails||[];
+    if(extras.length)extras.forEach(e=>{if(e.name)txt+=`  ${e.name}\n`;});
+    else if(i.note)txt+=`  ${i.note}\n`;
+  }
+  txt+=sep+'\n';
+  txt+=`Zwischensumme:     ${(order.subtotal||0).toFixed(2)} EUR\n`;
+  if((order.deliveryFee||0)>0)txt+=`Liefergebuehr:     ${order.deliveryFee.toFixed(2)} EUR\n`;
+  txt+=`Servicegebuehr:    ${(order.serviceFee||0.99).toFixed(2)} EUR\n`;
+  txt+=sep+'\n';
+  txt+=`GESAMT:            ${(order.total||0).toFixed(2)} EUR\n`;
+  txt+=sep+'\n';
+  txt+=`Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}\n`;
+  txt+=(order.paymentStatus==='paid'?'BEZAHLT':'!!! BITTE KASSIEREN !!!')+'\n';
+  if(order.note)txt+=`Notiz: ${order.note}\n`;
+  txt+=sep+'\n';
+  txt+='Grazie! Vielen Dank!\n\n\n';
+  return txt;
+}
+
+async function rawbtPrint(order){
+  const txt=buildBonText(order);
+  // Versuch 1: RawBT HTTP API
+  try{
+    const res=await fetch('http://127.0.0.1:19100/rawbt',{method:'POST',body:new TextEncoder().encode(txt),headers:{'Content-Type':'application/octet-stream'},signal:AbortSignal.timeout(4000)});
+    if(res.ok||res.status<500){rawbtConnected=true;updatePrinterStatus();return true;}
+  }catch(e){}
+  // Versuch 2: Fully Kiosk loadURL
+  if(window.fully){
+    try{window.fully.loadURL('rawbt:print?text='+encodeURIComponent(txt));setTimeout(()=>window.fully.loadURL(window.location.href),2500);rawbtConnected=true;updatePrinterStatus();return true;}catch(e){}
+  }
+  // Versuch 3: rawbt: URL-Scheme via <a>
+  try{
+    const a=document.createElement('a');a.href='rawbt:print?text='+encodeURIComponent(txt);a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(()=>{try{document.body.removeChild(a);}catch(e){}},1000);
+    rawbtConnected=true;updatePrinterStatus();return true;
+  }catch(e){}
+  rawbtConnected=false;updatePrinterStatus();return false;
+}
+
+function buildBonHtml(order){
+  const isD=order.mode==='lieferung';
+  const rows=(order.items||[]).map(i=>{
+    const p=i.price===0?'GRATIS':fmt((i.price||0)*i.qty);
+    let html=`<tr><td style="vertical-align:top;padding-right:4px">${i.qty}×</td><td style="vertical-align:top">${cleanName(i.name)}${i.note?` (${i.note})`:''}</td><td style="text-align:right;vertical-align:top;white-space:nowrap">${p}</td></tr>`;
+    (i.extraDetails||[]).forEach(e=>{if(!e.name)return;html+=`<tr style="font-size:11px;color:#555"><td></td><td style="padding-left:10px">↳ ${e.name}</td><td style="text-align:right;white-space:nowrap">${e.price>0?'+'+fmt(e.price):'inkl.'}</td></tr>`;});
+    return html;
+  }).join('');
+  return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;background:#fff;color:#000">
+  <h2 style="text-align:center;font-size:14px">Pizzeria Pinocchio</h2>
+  <p style="text-align:center;font-size:11px">Bahnhofstr. 6 · 59320 Ennigerloh<br>02524 / 000000</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:6px 0">
+  <h3 style="text-align:center">BESTELLUNG #${order.orderNum}</h3>
+  <p style="text-align:center;font-size:11px">${new Date(order.createdAt).toLocaleString('de-DE')}</p>
+  <p style="text-align:center;font-weight:bold">${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:6px 0">
+  <p style="text-align:center;font-size:14px;font-weight:bold">${order.customer?.first||''} ${order.customer?.last||''}</p>
+  <p style="text-align:center;font-size:11px">${order.customer?.phone||''}</p>
+  ${order.customer?.street?`<p style="text-align:center;font-size:13px;font-weight:bold;border:2px solid #000;padding:3px;margin:4px 0">${order.customer.street} ${order.customer.house||''}<br>${order.customer.city||''}</p>`:''}
+  <hr style="border:none;border-top:1px dashed #000;margin:6px 0">
+  <table style="width:100%;border-collapse:collapse">${rows}</table>
+  <hr style="border:none;border-top:1px dashed #000;margin:6px 0">
+  <table style="width:100%;border-collapse:collapse">
+    ${order.deliveryFee>0?`<tr><td>Liefergebühr</td><td style="text-align:right">${fmt(order.deliveryFee)}</td></tr>`:''}
+    <tr><td>Servicegebühr</td><td style="text-align:right">${fmt(order.serviceFee||0.99)}</td></tr>
+    <tr style="font-weight:bold;font-size:14px;border-top:1px solid #000"><td>GESAMT</td><td style="text-align:right">${fmt(order.total||0)}</td></tr>
+  </table>
+  <hr style="border:none;border-top:1px dashed #000;margin:6px 0">
+  <p style="text-align:center">Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
+  <p style="text-align:center">${order.paymentStatus==='paid'?'✅ BEZAHLT':'!!! BITTE KASSIEREN !!!'}</p>
+  ${order.prepTime?`<p style="text-align:center">~${order.prepTime} Minuten</p>`:''}
+  ${order.note?`<hr style="border:none;border-top:1px dashed #000;margin:6px 0"><p style="font-weight:bold">📝 Notiz:</p><p>${order.note}</p>`:''}
+  <p style="text-align:center">Grazie! Vielen Dank!</p>
+  </div>`;
+}
+
+async function smartPrint(order){
+  const ok=await eposPrint(order);  // 1. Epson ePOS (primär)
+  if(ok)return;
+  await rawbtPrint(order);           // 2. RawBT (Fallback)
+}
+
+function doBrowserPrint(order){
+  const w=window.open('','_blank','width=400,height=600');
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${order.orderNum}</title></head><body>${buildBonHtml(order)}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+
+async function doPrint(e,id){
+  if(e?.stopPropagation)e.stopPropagation();
+  const o=allOrders.find(x=>x._id===id);
+  if(o)await smartPrint(o);
+  api('/admin/orders/'+id+'/print',{method:'POST'}).catch(()=>{});
+}
+
+function showBon(e,id){
+  if(e?.stopPropagation)e.stopPropagation();
+  bonModalOrder=allOrders.find(o=>o._id===id);
+  if(!bonModalOrder)return;
+  document.getElementById('bonContent').innerHTML=buildBonHtml(bonModalOrder);
+  document.getElementById('bonModal').style.display='flex';
+}
+function closeBonModal(){document.getElementById('bonModal').style.display='none';bonModalOrder=null;}
+function bonPrint(){if(bonModalOrder)smartPrint(bonModalOrder);}
+function bonPDF(){
+  if(!bonModalOrder)return;
+  const w=window.open('','_blank','width=420,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${bonModalOrder.orderNum}</title><style>@page{size:80mm auto;margin:0}body{margin:0;padding:0}</style></head><body>${buildBonHtml(bonModalOrder)}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),400);
+}
+document.getElementById('bonModal').addEventListener('click',e=>{if(e.target===document.getElementById('bonModal'))closeBonModal();});
+
+// ─── TAGESABSCHLUSS ──────────────────────────────────────────
+async function printDayReport(){
+  const dateStr=document.getElementById('reportDate').value||new Date().toISOString().slice(0,10);
+  const label=new Date(dateStr+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  showToast('⏳ Lade Bestellungen…');
+  let day=[];
+  try{
+    const r=await fetch(`${API_BASE}/admin/orders?date=${dateStr}`,{headers:apiHeaders()});
+    const d=await r.json();
+    day=(d.orders||[]).filter(o=>o.status!=='cancelled');
+  }catch(e){
+    const from=new Date(dateStr+'T00:00:00'),to=new Date(dateStr+'T23:59:59');
+    day=allOrders.filter(o=>{const t=new Date(o.createdAt);return t>=from&&t<=to&&o.status!=='cancelled';});
+  }
+  const total=day.reduce((s,o)=>s+(o.total||0),0);
+  const w=window.open('','_blank','width=520,height=750');
+  w.document.write(`<!DOCTYPE html><html><head><title>Tagesabschluss ${label}</title>
+  <style>body{font-family:monospace;font-size:12px;max-width:400px;margin:0 auto;padding:16px}
+  h2,h3{text-align:center}hr{border:none;border-top:1px dashed #000;margin:8px 0}
+  table{width:100%;border-collapse:collapse}td{padding:2px 4px}.sum{font-weight:bold}</style></head><body>
+  <h2>Pizzeria Pinocchio</h2><h3>Tagesabschluss</h3>
+  <p style="text-align:center">${label}</p><hr>
+  <table>
+    <tr><td>Bestellungen gesamt</td><td align="right"><b>${day.length}</b></td></tr>
+    <tr><td>&nbsp;Lieferung</td><td align="right">${day.filter(o=>o.mode==='lieferung').length}</td></tr>
+    <tr><td>&nbsp;Abholung</td><td align="right">${day.filter(o=>o.mode==='abholung').length}</td></tr>
+    <tr><td>&nbsp;Bar</td><td align="right">${day.filter(o=>o.payment==='bar').length}</td></tr>
+    <tr><td>&nbsp;Karte/Online</td><td align="right">${day.filter(o=>o.payment!=='bar').length}</td></tr>
+  </table><hr>
+  <table>
+    <tr><th align="left">Nr</th><th align="left">Zeit</th><th align="left">Kunde</th><th align="right">€</th></tr>
+    ${day.map(o=>`<tr><td>#${o.orderNum}</td><td>${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</td><td>${o.customer?.first||''} ${o.customer?.last||''}</td><td align="right">${(o.total||0).toFixed(2)}</td></tr>`).join('')}
+  </table><hr>
+  <table><tr class="sum"><td>GESAMTUMSATZ</td><td align="right">${total.toFixed(2)} €</td></tr></table><hr>
+  <p style="text-align:center;font-size:11px">Gedruckt: ${new Date().toLocaleString('de-DE')}</p>
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ─── STRIPE MODAL ────────────────────────────────────────────
+function openStripeModal(){
+  const listEl=document.getElementById('stripeModalList');
+  if(listEl){
+    if(!stripeOrders.length){
+      listEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">✓ Keine ausstehenden Stripe-Zahlungen</div>';
+    }else{
+      listEl.innerHTML=stripeOrders.map(o=>{
+        const isD=o.mode==='lieferung';
+        const addr=isD?`${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim():'Abholung im Lokal';
+        const itemRows=(o.items||[]).map(i=>{
+          const extras=(i.extraDetails||[]).filter(e=>e.name);
+          const legacyNote=!extras.length&&i.note?i.note:'';
+          const priceStr=i.price===0?'GRATIS':((i.price||0)*(i.qty||1)).toFixed(2).replace('.',',')+' €';
+          return `<div style="display:flex;flex-direction:column;gap:2px;font-size:.8rem;">
+            <div style="display:flex;justify-content:space-between;">
+              <span>${i.qty}× ${cleanName(i.name)}${legacyNote?' ('+legacyNote+')':''}</span>
+              <span>${priceStr}</span>
+            </div>
+            ${extras.map(e=>`<div style="font-size:.72rem;color:var(--muted);padding-left:16px;">↳ ${e.name}</div>`).join('')}
+          </div>`;
+        }).join('');
+        return `<div style="margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <div style="background:rgba(200,138,0,.15);padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+            <b>#${o.orderNum} · ${o.customer?.first||''} ${o.customer?.last||''}</b>
+            <span style="font-size:.75rem;color:var(--muted)">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+          </div>
+          <div style="padding:10px 12px;font-size:.8rem;">
+            <div style="color:var(--muted);margin-bottom:6px;">📍 ${addr}${o.customer?.phone?' · 📞 '+o.customer.phone:''}</div>
+            <div style="display:flex;flex-direction:column;gap:4px;">${itemRows}</div>
+            <div style="border-top:1px dashed var(--border);margin-top:8px;padding-top:6px;">
+              ${o.deliveryFee>0?`<div style="display:flex;justify-content:space-between;color:var(--muted)"><span>Liefergebühr</span><span>${o.deliveryFee.toFixed(2).replace('.',',')} €</span></div>`:''}
+              <div style="display:flex;justify-content:space-between;color:var(--muted)"><span>Servicegebühr</span><span>${(o.serviceFee||0.99).toFixed(2).replace('.',',')} €</span></div>
+              <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:4px;"><span>Gesamt</span><span>${(o.total||0).toFixed(2).replace('.',',')} €</span></div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+  document.getElementById('stripeModal').classList.add('show');
+}
+function closeStripeModal(){ document.getElementById('stripeModal').classList.remove('show'); }
+async function doRecoverStripe(){
+  const btn=document.getElementById('btnRecoverAction');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Prüfe…';}
+  try{
+    const r=await api('/admin/recover-stripe-orders',{method:'POST'});
+    const d=await r.json();
+    showToast(d.recovered?.length?`✅ ${d.recovered.length} Bestellung(en) eingebucht: #${d.recovered.join(', #')}`:'⚠️ Keine neuen Zahlungen gefunden');
+    await loadOrders();
+    closeStripeModal();
+  }catch(e){showToast('❌ Fehler beim Prüfen');}
+  finally{if(btn){btn.disabled=false;btn.textContent='🔁 Bei Stripe prüfen & einbuchen';}}
+}
+
+// ─── POS ─────────────────────────────────────────────────────
+function openPOS(){
+  posCart=[];posMode='lieferung';posCategory='Pizza';
+  document.getElementById('posModal').classList.add('show');
+  const cats=Object.keys(POS_MENU);
+  document.getElementById('posCatTabs').innerHTML=cats.map(c=>`<button class="pos-cat${c===posCategory?' active':''}" onclick="setPOSCat('${c}',this)">${c}</button>`).join('');
+  renderPOSItems();renderPOSCart();renderPOSTotals();
+  document.getElementById('posAddrFields').style.display='block';
+}
+function closePOS(){document.getElementById('posModal').classList.remove('show');}
+function setPOSMode(m){
+  posMode=m;
+  document.getElementById('posTabLief').classList.toggle('active',m==='lieferung');
+  document.getElementById('posTabAbh').classList.toggle('active',m==='abholung');
+  document.getElementById('posAddrFields').style.display=m==='lieferung'?'block':'none';
+  renderPOSTotals();
+}
+function setPOSCat(c,el){
+  posCategory=c;
+  document.querySelectorAll('.pos-cat').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderPOSItems();
+}
+function renderPOSItems(){
+  const q=document.getElementById('posSearch').value.toLowerCase();
+  let items=POS_MENU[posCategory]||[];
+  if(q)items=Object.values(POS_MENU).flat().filter(i=>i.name.toLowerCase().includes(q)||String(i.num).includes(q));
+  document.getElementById('posItems').innerHTML=items.map(i=>`
+    <div class="pos-item" onclick="addPOS('${i.num}','${i.name.replace(/'/g,"\\'")}',${i.price})">
+      <span class="pos-item-num">${i.num}</span>
+      <span class="pos-item-name">${i.name}</span>
+      <span class="pos-item-price">${i.price.toFixed(2).replace('.',',')} €</span>
+      <button class="pos-add-btn">+</button>
+    </div>`).join('');
+}
+function addPOS(num,name,price){
+  const idx=posCart.findIndex(i=>i.num===num);
+  if(idx>=0)posCart[idx].qty++;
+  else posCart.push({num,name,price,qty:1});
+  renderPOSCart();renderPOSTotals();
+}
+function renderPOSCart(){
+  const el=document.getElementById('posCartItems');
+  if(!posCart.length){el.innerHTML='<div class="pos-cart-empty">Leer – Artikel auswählen</div>';return;}
+  el.innerHTML=posCart.map((i,idx)=>`<div class="pos-cart-item">
+    <span class="pci-qty">${i.qty}×</span>
+    <span class="pci-name">${i.name}</span>
+    <span class="pci-price">${((i.price||0)*i.qty).toFixed(2).replace('.',',')} €</span>
+    <button class="pci-del" onclick="removePOS(${idx})">–</button>
+  </div>`).join('');
+}
+function removePOS(idx){posCart[idx].qty--;if(posCart[idx].qty<1)posCart.splice(idx,1);renderPOSCart();renderPOSTotals();}
+function renderPOSTotals(){
+  const sub=posCart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+  const city=document.getElementById('posCity')?.value||'Ennigerloh';
+  const fee=posMode==='lieferung'?(DELIVERY_FEES[city]||0):0;
+  const total=sub+fee+SERVICE_FEE;
+  document.getElementById('posTotals').innerHTML=`
+    <div class="pos-total-row"><span>Speisen</span><span>${fmt(sub)}</span></div>
+    ${fee>0?`<div class="pos-total-row"><span>Liefergebühr</span><span>${fmt(fee)}</span></div>`:''}
+    <div class="pos-total-row"><span>Servicegebühr</span><span>${fmt(SERVICE_FEE)}</span></div>
+    <div class="pos-total-row grand"><span>Gesamt</span><span>${fmt(total)}</span></div>`;
+}
+async function submitPOS(){
+  if(!posCart.length){showToast('⚠️ Warenkorb leer');return;}
+  const first=document.getElementById('posFirst').value.trim();
+  const last=document.getElementById('posLast').value.trim();
+  if(!first||!last){showToast('⚠️ Name fehlt');return;}
+  const sub=posCart.reduce((s,i)=>s+(i.price||0)*i.qty,0);
+  const city=document.getElementById('posCity')?.value||'Ennigerloh';
+  const fee=posMode==='lieferung'?(DELIVERY_FEES[city]||0):0;
+  const total=sub+fee+SERVICE_FEE;
+  const payload={
+    mode:posMode,source:'pos',payment:document.getElementById('posPayment').value,paymentStatus:'paid',
+    customer:{first,last,email:document.getElementById('posEmail').value,phone:document.getElementById('posPhone').value,city,street:posMode==='lieferung'?document.getElementById('posStreet').value:'',house:posMode==='lieferung'?document.getElementById('posHouse').value:''},
+    items:posCart.map(i=>({name:i.name,price:i.price,qty:i.qty,note:'',extraDetails:[]})),
+    subtotal:sub,deliveryFee:fee,serviceFee:SERVICE_FEE,total,prepTime:20,
+  };
+  const btn=document.getElementById('posSubmitBtn');
+  btn.disabled=true;btn.textContent='⏳ Wird gespeichert…';
+  try{
+    const r=await fetch(API_BASE+'/orders',{method:'POST',headers:apiHeaders(),body:JSON.stringify(payload)});
+    const d=await r.json();
+    closePOS();showToast(`✅ Bestellung #${d.orderNum} gespeichert`);
+    await loadOrders();
+    const saved=allOrders.find(o=>o.orderNum===d.orderNum)||{...payload,orderNum:d.orderNum,createdAt:new Date().toISOString()};
+    smartPrint(saved);
+  }catch(e){showToast('❌ Fehler');btn.disabled=false;btn.textContent='✅ Speichern & Drucken';}
+}
+
+// ─── INIT ────────────────────────────────────────────────────
+function initDashboard(){
+  startClock();
+  loadOrders();
+  setInterval(()=>{pollPending();loadOrders();},5000);
+  pollPending();
+  loadSoldOut();
+  loadRestaurantStatus();
+  setInterval(loadRestaurantStatus,30000);
+  document.getElementById('reportDate').value=new Date().toISOString().slice(0,10);
+  if(Notification&&Notification.permission==='default')Notification.requestPermission();
+  checkEpos();checkRawbt();setInterval(()=>{checkEpos();checkRawbt();},30000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pizzeria Parma – Hamm | Online Bestellen</title>
+<meta name="description" content="Pizzeria Parma in Hamm – frische Pizza, Pasta, Salate online bestellen. Lieferung in Hamm ab 15 €.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --terra:#b5451b;--terra-dark:#8b3310;--terra-light:#fdf0ea;
+  --olive:#5c6e2a;--olive-dark:#445219;--olive-light:#eef2e4;
+  --gold:#C8A851;
+  --bg:#f5f0e4;--white:#fff;
+  --text:#1e1208;--muted:#7a6a55;--border:#ddd5c0;
+  --warm:#3d1505;--warm2:#260e03;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-weight:400}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:'Inter',sans-serif}
+img{max-width:100%}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+header{
+  background:var(--warm);
+  position:sticky;top:0;z-index:500;
+  box-shadow:0 3px 20px rgba(0,0,0,.3);
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;gap:20px;height:64px;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.65rem;font-style:italic;font-weight:600;
+  color:#fff;white-space:nowrap;letter-spacing:.02em;
+}
+.logo em{color:var(--gold);font-style:italic}
+.header-sep{width:1px;height:24px;background:rgba(255,255,255,.15);flex-shrink:0}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#4ae06a;box-shadow:0 0 8px #4ae06a88;flex-shrink:0;animation:pulse 2s infinite}
+.status-dot.closed{background:#e53935;box-shadow:0 0 8px #e5393588;animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.header-phone{font-size:.75rem;color:rgba(255,255,255,.5);white-space:nowrap}
+.header-spacer{flex:1}
+.cart-header-btn{
+  display:flex;align-items:center;gap:9px;
+  background:var(--terra);color:#fff;
+  border:none;border-radius:50px;padding:9px 18px;
+  font-weight:600;font-size:.82rem;
+  transition:all .2s;position:relative;
+}
+.cart-header-btn:hover{background:var(--terra-dark);transform:scale(1.03)}
+.cart-header-badge{
+  background:var(--gold);color:#fff;border-radius:50%;
+  width:20px;height:20px;display:none;
+  align-items:center;justify-content:center;font-size:.65rem;font-weight:700;
+}
+.cart-header-badge.visible{display:flex}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero{
+  background:linear-gradient(160deg,#260e03,#7a3010 60%,#3d1505);
+  color:#fff;padding:40px 24px 32px;
+  overflow:hidden;position:relative;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 50%,rgba(200,168,81,.08) 0%,transparent 60%);
+}
+.hero-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1.9rem,4.5vw,2.9rem);font-style:italic;font-weight:600;
+  margin-bottom:6px;line-height:1.1;
+}
+.hero h1 em{color:var(--gold);font-style:italic}
+.hero-sub{color:rgba(255,255,255,.65);font-size:.9rem;margin-bottom:20px;font-weight:300}
+.hero-badges{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.hero-badge{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:50px;padding:6px 14px;font-size:.78rem;
+  display:flex;align-items:center;gap:7px;font-weight:400;
+}
+.hero-badge.open{background:rgba(40,180,80,.18);border-color:rgba(60,200,80,.3)}
+.hero-cta{
+  background:var(--terra);color:#fff;border:none;
+  border-radius:50px;padding:10px 22px;font-size:.82rem;font-weight:600;
+  transition:all .2s;cursor:pointer;font-family:'Inter',sans-serif;
+}
+.hero-cta:hover{background:var(--terra-dark);transform:scale(1.03)}
+
+/* ─── CLOSED BANNER ─────────────────────────────────────── */
+#closedBanner{
+  display:none;
+  background:rgba(181,69,27,.12);border-bottom:1px solid rgba(181,69,27,.25);
+  color:rgba(30,18,8,.8);text-align:center;padding:11px 20px;
+  font-size:.8rem;font-weight:500;
+}
+#closedBanner.show{display:block}
+
+/* ─── CATEGORY NAV ──────────────────────────────────────── */
+.cat-nav{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:64px;z-index:400;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.cat-nav-inner{
+  max-width:1200px;margin:0 auto;padding:10px 24px;
+  display:flex;gap:4px;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.cat-nav-inner::-webkit-scrollbar{display:none}
+.cat-pill{
+  padding:7px 16px;border-radius:50px;
+  font-size:.82rem;font-weight:500;color:var(--muted);
+  border:none;background:none;white-space:nowrap;flex-shrink:0;
+  transition:all .2s;cursor:pointer;
+}
+.cat-pill:hover{background:var(--olive-light);color:var(--olive)}
+.cat-pill.active{background:var(--olive);color:#fff}
+
+/* ─── MENU ───────────────────────────────────────────────── */
+.menu-section{max-width:1200px;margin:0 auto;padding:36px 24px 8px}
+.section-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.section-icon{font-size:1.2rem}
+.section-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.5rem;font-style:italic;font-weight:700;
+  color:var(--warm);letter-spacing:.01em;
+}
+.section-line{flex:1;height:1px;background:var(--border)}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px}
+
+.item-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;
+  transition:box-shadow .2s,transform .15s;
+  display:flex;flex-direction:column;
+  padding:14px;
+}
+.item-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.13);transform:translateY(-3px)}
+.item-card.sold-out{opacity:.5;cursor:default;pointer-events:none}
+.item-card.sold-out:hover{box-shadow:none;transform:none}
+.sold-out-label{
+  display:inline-block;background:#aaa;color:#fff;
+  font-size:.62rem;font-weight:700;padding:2px 7px;
+  border-radius:4px;letter-spacing:.3px;margin-bottom:6px;text-transform:uppercase;
+}
+.item-num{
+  display:inline-block;font-size:.72rem;font-weight:700;
+  color:var(--white);background:var(--terra);
+  border-radius:4px;padding:1px 7px;margin-bottom:7px;
+  letter-spacing:.3px;line-height:1.6;
+}
+.item-name{font-weight:600;font-size:.94rem;color:var(--text);margin-bottom:3px;line-height:1.3}
+.item-desc{font-size:.79rem;color:var(--muted);line-height:1.4;flex:1;margin-bottom:10px}
+.item-footer{display:flex;align-items:center;justify-content:space-between}
+.item-price{font-weight:700;font-size:.98rem;color:var(--warm)}
+.item-add-btn{
+  background:var(--terra);color:#fff;border:none;
+  border-radius:50%;width:32px;height:32px;font-size:1.3rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.item-add-btn:hover{background:var(--terra-dark);transform:scale(1.12)}
+.item-options-hint{font-size:.72rem;color:var(--olive);margin-top:4px;font-style:italic}
+
+/* ─── MODAL / POPUP ─────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(10,4,0,.6);backdrop-filter:blur(4px);
+  z-index:1000;display:none;align-items:flex-end;justify-content:center;padding:0;
+}
+.modal-overlay.show{display:flex}
+@media(min-width:600px){
+  .modal-overlay{align-items:center;padding:20px}
+}
+.modal-box{
+  background:var(--white);
+  border:1px solid var(--border);
+  width:100%;max-width:520px;
+  border-radius:22px 22px 0 0;
+  max-height:92vh;display:flex;flex-direction:column;
+  overflow:hidden;animation:slideUp .28s ease;
+  box-shadow:0 -10px 50px rgba(0,0,0,.2);
+}
+@media(min-width:600px){.modal-box{border-radius:var(--radius);animation:fadeIn .22s ease;box-shadow:0 20px 60px rgba(0,0,0,.2)}}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.modal-head{
+  padding:20px 20px 0;
+  display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;
+  border-bottom:1px solid var(--border);padding-bottom:16px;
+}
+.modal-head h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.3rem;font-weight:700;font-style:italic;
+  color:var(--text);flex:1;padding-right:12px;line-height:1.3;
+}
+.modal-close-btn{
+  background:rgba(0,0,0,.06);border:none;
+  border-radius:50%;width:30px;height:30px;font-size:.9rem;
+  color:var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .2s;
+}
+.modal-close-btn:hover{background:rgba(0,0,0,.12)}
+.modal-body{overflow-y:auto;padding:16px 20px;flex:1}
+.modal-footer{
+  padding:16px 20px;
+  border-top:1px solid var(--border);flex-shrink:0;
+  background:var(--white);
+}
+
+/* Popup option groups */
+.option-group{margin-bottom:18px}
+.option-group-title{
+  font-size:.72rem;font-weight:700;color:var(--olive-dark);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;
+}
+.option-pills{display:flex;gap:8px;flex-wrap:wrap}
+.option-pill{
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:9px;padding:7px 14px;
+  font-size:.82rem;font-weight:400;color:var(--text);
+  cursor:pointer;transition:all .15s;
+}
+.option-pill:hover{border-color:var(--olive);background:var(--olive-light);color:var(--olive-dark)}
+.option-pill.selected{background:var(--olive-light);border-color:var(--olive);color:var(--olive-dark);font-weight:600}
+.option-pill.selected-size{background:var(--olive-light);border-color:var(--olive);color:var(--olive-dark);font-weight:600}
+
+/* Topping grid */
+.topping-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.topping-item{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1.5px solid var(--border);
+  border-radius:9px;padding:8px 10px;cursor:pointer;
+  transition:all .15s;font-size:.82rem;font-weight:400;color:var(--text);
+}
+.topping-item:hover{border-color:var(--olive);background:var(--olive-light);color:var(--olive-dark)}
+.topping-item.selected{background:var(--olive-light);border-color:var(--olive);color:var(--olive-dark)}
+.topping-item.disabled{opacity:.3;pointer-events:none}
+.topping-check{
+  width:15px;height:15px;border-radius:3px;
+  border:1.5px solid var(--border);background:transparent;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;
+}
+.topping-item.selected .topping-check{background:var(--olive);border-color:var(--olive);color:#fff}
+.topping-hint{font-size:.72rem;color:var(--muted);margin-bottom:8px}
+
+/* Note input */
+.note-input{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:9px;padding:10px 12px;
+  font-size:.85rem;font-family:'Inter',sans-serif;
+  color:var(--text);resize:none;outline:none;
+  background:var(--bg);transition:border-color .15s;
+}
+.note-input:focus{border-color:var(--terra)}
+.note-input::placeholder{color:var(--muted)}
+
+/* ─── CART ────────────────────────────────────────────────── */
+#cartModal .modal-box{max-width:560px}
+.cart-item-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.cart-item-row:last-child{border:none}
+.ci-qty-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ci-qty-btn{
+  background:var(--terra-light);border:none;
+  border-radius:50%;width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:700;color:var(--terra);
+  transition:all .15s;
+}
+.ci-qty-btn:hover{background:var(--terra);color:#fff}
+.ci-qty{font-size:.88rem;font-weight:700;min-width:18px;text-align:center;color:var(--text)}
+.ci-info{flex:1}
+.ci-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.ci-extras{font-size:.72rem;color:var(--muted);margin-top:2px}
+.ci-price{font-size:.9rem;font-weight:700;color:var(--warm);white-space:nowrap}
+.cart-totals{padding:14px 0 0}
+.cart-total-row{
+  display:flex;justify-content:space-between;
+  font-size:.85rem;color:var(--muted);padding:4px 0;
+}
+.cart-total-row.grand{
+  font-size:1.02rem;font-weight:700;color:var(--text);
+  border-top:1px solid var(--border);padding-top:12px;margin-top:8px;
+}
+.cart-total-row.grand span:last-child{color:var(--warm)}
+.cart-empty{text-align:center;color:var(--muted);padding:36px 20px;font-size:.9rem;line-height:2}
+.cart-min-warn{
+  background:var(--terra-light);border:1px solid rgba(181,69,27,.3);
+  border-radius:8px;padding:10px 14px;font-size:.8rem;
+  color:var(--terra-dark);margin-top:10px;
+}
+
+/* Checkout */
+.checkout-section{margin-bottom:20px}
+.checkout-section-title{
+  font-size:.75rem;font-weight:700;color:var(--olive-dark);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-row.single{grid-template-columns:1fr}
+.form-input{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:9px;padding:11px 13px;
+  font-size:.85rem;font-family:'Inter',sans-serif;
+  color:var(--text);outline:none;
+  background:var(--white);transition:border-color .15s;
+}
+.form-input:focus{border-color:var(--terra)}
+.form-input::placeholder{color:var(--muted)}
+.form-select{
+  width:100%;border:1.5px solid var(--border);
+  border-radius:9px;padding:11px 13px;
+  font-size:.85rem;font-family:'Inter',sans-serif;
+  color:var(--text);background:var(--white);outline:none;
+}
+.payment-opts{display:flex;gap:8px;flex-wrap:wrap}
+.payment-opt{
+  flex:1;min-width:100px;
+  background:var(--white);border:2px solid var(--border);
+  border-radius:9px;padding:10px;text-align:center;cursor:pointer;
+  transition:all .15s;font-size:.8rem;font-weight:500;color:var(--text);
+}
+.payment-opt:hover{border-color:var(--gold);background:#fffbf0}
+.payment-opt.selected{background:#fffbf0;border-color:var(--gold);color:var(--warm);font-weight:600}
+.checkbox-row{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:.8rem;color:var(--muted);margin-bottom:8px;cursor:pointer;
+}
+.checkbox-row input{accent-color:var(--terra);width:15px;height:15px;flex-shrink:0;margin-top:2px}
+.checkbox-row a{color:var(--terra)}
+.order-btn{
+  width:100%;
+  background:var(--terra);color:#fff;
+  border:none;border-radius:12px;padding:15px;
+  font-size:.9rem;font-weight:700;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.order-btn:hover{background:var(--terra-dark);transform:translateY(-1px)}
+.order-btn:disabled{background:#aaa;color:#fff;cursor:not-allowed;transform:none}
+.step-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.step-tab{
+  flex:1;padding:12px;text-align:center;
+  font-size:.7rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:default;
+}
+.step-tab.active{color:var(--terra);border-bottom-color:var(--terra)}
+.step-tab.done{color:var(--text)}
+
+/* Danke modal */
+#dankeModal .modal-box{max-width:420px;text-align:center}
+.danke-icon{font-size:3.5rem;margin:24px 0 12px}
+.danke-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.7rem;font-style:italic;font-weight:700;
+  color:var(--warm);margin-bottom:10px;
+}
+.danke-text{font-size:.85rem;color:var(--muted);line-height:1.8;margin-bottom:20px}
+.danke-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:700;color:var(--terra);letter-spacing:.05em;
+}
+
+/* Legal modals */
+.legal-modal .modal-box{max-width:640px;border-radius:var(--radius)}
+.legal-modal .modal-overlay{align-items:center;padding:20px}
+.legal-body{font-size:.84rem;line-height:1.8;color:var(--muted)}
+.legal-body h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;font-style:italic;font-weight:700;
+  margin:20px 0 8px;color:var(--warm);
+}
+.legal-body h4{font-size:.84rem;font-weight:700;margin:14px 0 6px;color:var(--text)}
+.legal-body p{margin-bottom:10px}
+.legal-body a{color:var(--terra)}
+.legal-body ul{margin:8px 0 8px 20px}
+
+/* ─── FLOAT CART ─────────────────────────────────────────── */
+#floatCart{
+  position:fixed;bottom:24px;right:20px;z-index:450;
+  background:var(--terra);color:#fff;
+  border:none;border-radius:50px;padding:13px 20px;
+  display:flex;align-items:center;gap:10px;
+  font-weight:600;font-size:.82rem;
+  box-shadow:0 6px 28px rgba(181,69,27,.4);
+  transition:all .25s;transform:translateY(100px);opacity:0;
+}
+#floatCart.visible{transform:none;opacity:1}
+#floatCart:hover{background:var(--terra-dark);transform:translateY(-2px);box-shadow:0 10px 36px rgba(181,69,27,.5)}
+#floatCartCount{
+  background:var(--olive);color:#fff;
+  border-radius:50%;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:700;
+}
+#floatCartTotal{font-size:.82rem;opacity:.9}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer{
+  background:var(--warm);color:rgba(255,255,255,.6);
+  padding:40px 24px 28px;margin-top:48px;font-size:.85rem;line-height:2;
+}
+.footer-inner{
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:28px;
+}
+.footer-col h4{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:1.05rem;font-weight:700;
+  color:#fff;margin-bottom:8px;display:block;
+}
+.footer-col p,.footer-col a{
+  font-size:.82rem;line-height:2;color:rgba(255,255,255,.55);
+  display:block;transition:color .15s;
+}
+.footer-col a:hover{color:var(--gold)}
+.footer-divider{
+  max-width:1200px;margin:28px auto 0;
+  border:none;border-top:1px solid rgba(255,255,255,.1);
+}
+.footer-bottom{
+  max-width:1200px;margin:18px auto 0;
+  display:flex;gap:16px;flex-wrap:wrap;
+  justify-content:space-between;
+  font-size:.72rem;color:rgba(255,255,255,.3);
+}
+.footer-bottom a{color:rgba(255,255,255,.28);transition:color .15s}
+.footer-bottom a:hover{color:var(--gold)}
+
+/* ─── MISC ───────────────────────────────────────────────── */
+.allergen-row{font-size:.7rem;color:var(--muted);margin-top:8px}
+.spinner{
+  display:inline-block;width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);border-top-color:#fff;
+  border-radius:50%;animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(30px);
+  background:var(--olive-dark);color:#fff;
+  padding:12px 22px;border-radius:50px;
+  font-size:.88rem;font-weight:600;z-index:9999;
+  opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:600px){
+  .menu-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .topping-grid{grid-template-columns:1fr 1fr}
+  .hero{padding:32px 20px 28px}
+  .menu-section{padding:28px 16px 8px}
+}
+@media(max-width:380px){
+  .menu-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo"><em>Pizzeria</em> Parma</div>
+    <div class="header-sep"></div>
+    <div class="header-phone">(02381) 94 107 02</div>
+    <div class="header-spacer"></div>
+    <button class="cart-header-btn" onclick="openCart()">
+      🛒 Warenkorb
+      <div class="cart-header-badge" id="cartHeaderBadge">0</div>
+    </button>
+  </div>
+</header>
+
+<!-- CLOSED BANNER -->
+<div id="closedBanner">
+  Momentan geschlossen — Wir sind täglich von 11:30 bis 24:00 Uhr für Sie da
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Pizzeria <em>Parma</em></h1>
+    <p class="hero-sub">Über 200 Gerichte – Pizza, Pasta, Gnocchi &amp; Aufläufe. Täglich frisch aus Hamm.</p>
+    <div class="hero-badges">
+      <div class="hero-badge open" id="heroBadge">
+        <div class="status-dot" id="headerDot"></div>
+        <span id="headerStatus">Geöffnet</span>
+      </div>
+      <div class="hero-badge">🕐 11:30 – 24:00 Uhr</div>
+      <div class="hero-badge">🛵 Lieferung ab 15 €</div>
+      <button class="hero-cta" onclick="scrollToMenu()">Jetzt bestellen</button>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY NAV -->
+<nav class="cat-nav" id="catNav">
+  <div class="cat-nav-inner" id="catNavInner">
+    <button class="cat-pill active" onclick="scrollToSection('pizza')">Pizza</button>
+    <button class="cat-pill" onclick="scrollToSection('salate')">Salate</button>
+    <button class="cat-pill" onclick="scrollToSection('nudeln')">Nudeln</button>
+    <button class="cat-pill" onclick="scrollToSection('tortellini')">Tortellini</button>
+    <button class="cat-pill" onclick="scrollToSection('tagliatelle')">Tagliatelle</button>
+    <button class="cat-pill" onclick="scrollToSection('gnocchi')">Gnocchi</button>
+    <button class="cat-pill" onclick="scrollToSection('auflaeufe')">Aufläufe</button>
+    <button class="cat-pill" onclick="scrollToSection('spezial')">Spezial</button>
+    <button class="cat-pill" onclick="scrollToSection('getraenke')">Getränke</button>
+  </div>
+</nav>
+
+<!-- MENU CONTAINER -->
+<div id="menuContainer"></div>
+
+<!-- FLOAT CART -->
+<button id="floatCart" onclick="openCart()">
+  🛒 <div id="floatCartCount">0</div> <span id="floatCartTotal"></span>
+</button>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <h4>Pizzeria Parma</h4>
+      <p>Bahnhofstr. 37<br>59065 Hamm</p>
+      <p style="margin-top:8px">(02381) 94 107 02<br>0174 27 96 744</p>
+    </div>
+    <div class="footer-col">
+      <h4>Öffnungszeiten</h4>
+      <p>Täglich<br>11:30 – 24:00 Uhr</p>
+      <p style="margin-top:8px;font-size:.68rem;opacity:.5">Kein Ruhetag</p>
+    </div>
+    <div class="footer-col">
+      <h4>Lieferung</h4>
+      <p>Hamm &amp; Umgebung</p>
+      <p>Mindestbestellwert: 15 €</p>
+      <p>Liefergebühr: 2,50 €</p>
+    </div>
+    <div class="footer-col">
+      <h4>Rechtliches</h4>
+      <a href="#" onclick="openLegal('impressum');return false">Impressum</a>
+      <a href="#" onclick="openLegal('agb');return false">AGB</a>
+      <a href="#" onclick="openLegal('datenschutz');return false">Datenschutz</a>
+    </div>
+  </div>
+  <hr class="footer-divider">
+  <div class="footer-bottom">
+    <span>© 2025 Pizzeria Parma — Alle Rechte vorbehalten</span>
+    <span>
+      <a href="#" onclick="openLegal('impressum');return false">Impressum</a> ·
+      <a href="#" onclick="openLegal('agb');return false">AGB</a> ·
+      <a href="#" onclick="openLegal('datenschutz');return false">Datenschutz</a>
+    </span>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     ITEM POPUP MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="itemModal" onclick="if(event.target===this)closeItemModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div style="font-size:.62rem;color:var(--muted);margin-bottom:4px;letter-spacing:.08em;text-transform:uppercase" id="popupNum"></div>
+        <h3 id="popupName"></h3>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:4px;font-weight:300" id="popupDesc"></div>
+      </div>
+      <button class="modal-close-btn" onclick="closeItemModal()">✕</button>
+    </div>
+    <div class="modal-body" id="popupBody"></div>
+    <div class="modal-footer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--terra)" id="popupTotalDisplay">0,00 €</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px 13px;font-size:.9rem;font-weight:600;color:var(--text2)" onclick="changePopupQty(-1)">−</button>
+          <span id="popupQtyDisp" style="font-weight:600;font-size:1rem;min-width:20px;text-align:center;color:var(--text)">1</span>
+          <button style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:6px 13px;font-size:.9rem;font-weight:600;color:var(--text2)" onclick="changePopupQty(1)">+</button>
+        </div>
+      </div>
+      <button class="order-btn" id="popupAddBtn" onclick="addFromPopup()">In den Warenkorb</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CART / CHECKOUT MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="cartModal" onclick="if(event.target===this)closeCart()">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-head" style="padding-bottom:0;border-bottom:none">
+      <h3>Meine Bestellung</h3>
+      <button class="modal-close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div style="padding:0 20px">
+      <div class="step-tabs">
+        <div class="step-tab" id="stab1">1 Warenkorb</div>
+        <div class="step-tab" id="stab2">2 Adresse</div>
+        <div class="step-tab" id="stab3">3 Bezahlen</div>
+      </div>
+    </div>
+    <div class="modal-body" id="cartBody"></div>
+    <div class="modal-footer" id="cartFooter"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DANKE MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="dankeModal" onclick="if(event.target===this)closeDanke()">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-head" style="justify-content:flex-end;border-bottom:none">
+      <button class="modal-close-btn" onclick="closeDanke()">✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;padding:8px 28px 28px">
+      <div class="danke-icon">✦</div>
+      <div class="danke-title">Grazie mille!</div>
+      <div id="dankeOrderNum" class="danke-num" style="margin-bottom:12px"></div>
+      <div class="danke-text" id="dankeText">Deine Bestellung wurde erfolgreich aufgegeben. Wir bereiten sie so schnell wie möglich vor!</div>
+      <button class="order-btn" onclick="closeDanke()" style="margin-top:8px">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     LEGAL MODALS
+══════════════════════════════════════════════ -->
+<div class="modal-overlay legal-modal" id="legalModal" onclick="if(event.target===this)closeLegal()" style="align-items:center;padding:20px">
+  <div class="modal-box" style="border-radius:var(--radius);animation:fadeIn .25s ease">
+    <div class="modal-head">
+      <h3 id="legalTitle"></h3>
+      <button class="modal-close-btn" onclick="closeLegal()">✕</button>
+    </div>
+    <div class="modal-body legal-body" id="legalBody"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const BACKEND_URL = 'https://pizzeria-parma.onrender.com';
+const SERVICE_FEE = 0.99;
+const AREA_CONFIG = {
+  'hamm': { min: 15.00, fee: 2.50, label: 'Hamm und Umgebung' }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// INGREDIENT LISTS
+// ═══════════════════════════════════════════════════════════════
+const PIZZA_TOPPINGS = [
+  'Brokkoli','Pilze','Spinat','Mais','Paprika','Oliven','Zwiebeln','Spargel','Peperoni',
+  'Artischocken','Tomaten','Ananas','Salami','Schinken','Sucuk','Hähnchen','Rucola',
+  'Lachs','Krabben','Gyros','Döner','Schafskäse','Mozzarella','Sardellen','Kapern',
+  'Gorgonzola','Thunfisch'
+];
+const PASTA_TOPPINGS = [
+  'Hähnchen','Gyros','Thunfisch','Spinat','Champignons','Brokkoli','Krabben','Lachs',
+  'Frutti di Mare','Peperoni','Knoblauch','Zwiebeln','Bolognese-Sauce','Carbonara-Sauce',
+  'Sahnesauce','Tomatensauce','Gorgonzola','4 Käsesorten'
+];
+const SALAT_TOPPINGS = [
+  'Hähnchen','Thunfisch','Krabben','Lachs','Schinken','Eier','Tomaten','Gurken',
+  'Schafskäse','Mais','Oliven','Paprika','Zwiebeln','Brokkoli','Ananas','Champignons'
+];
+const SALAT_DRESSINGS = ['French','Joghurt','Balsamico','Kräuter','Thousand Island','Zitrone & Olivenöl'];
+
+// ═══════════════════════════════════════════════════════════════
+// MENU DATA
+// ═══════════════════════════════════════════════════════════════
+const MENU = [
+  {
+    id:'pizza', label:'Pizza', icon:'🍕',
+    items:[
+      {num:'1', name:'Pizza Margherita',                         price:7.00,  desc:'Mit Tomaten, Käse, Sauce Hollandaise'},
+      {num:'2', name:'Pizza Brokkoli',                          price:10.00, desc:'Brokkoli'},
+      {num:'3', name:'Pizza Pilze',                             price:10.00, desc:'Champignons'},
+      {num:'4', name:'Pizza Spinat',                            price:10.00, desc:'Spinat'},
+      {num:'5', name:'Pizza Mais',                              price:10.00, desc:'Mais'},
+      {num:'6', name:'Pizza Paprika',                           price:10.00, desc:'Paprika'},
+      {num:'7', name:'Pizza Oliven',                            price:10.00, desc:'Oliven'},
+      {num:'8', name:'Pizza Zwiebeln',                          price:10.00, desc:'Zwiebeln'},
+      {num:'9', name:'Pizza Spargel',                           price:10.00, desc:'Spargel'},
+      {num:'10',name:'Pizza Peperoni',                          price:10.00, desc:'Peperoni (scharf)'},
+      {num:'11',name:'Pizza Artischocken',                      price:10.00, desc:'Artischocken'},
+      {num:'12',name:'Pizza Tomaten',                           price:10.00, desc:'Frische Tomaten'},
+      {num:'13',name:'Pizza Ananas',                            price:10.00, desc:'Ananas'},
+      {num:'14',name:'Pizza Vegetarisch',                       price:10.00, desc:'Frische Tomaten, Spinat, Brokkoli, Zwiebeln, Paprika'},
+      {num:'15',name:'Pizza Salami',                            price:10.00, desc:'Salami'},
+      {num:'16',name:'Pizza Schinken',                          price:10.00, desc:'Schinken'},
+      {num:'17',name:'Pizza Sucuk',                             price:10.00, desc:'Sucuk (Knoblauchwurst)'},
+      {num:'18',name:'Pizza Hawaii',                            price:10.00, desc:'Schinken, Ananas'},
+      {num:'19',name:'Pizza Bolognese',                         price:10.00, desc:'Hackfleisch-Bolognese'},
+      {num:'20',name:'Pizza Thunfisch mit Zwiebeln',            price:10.00, desc:'Thunfisch, Zwiebeln'},
+      {num:'21',name:'Pizza Hähnchen',                          price:10.00, desc:'Hähnchenfilet'},
+      {num:'22',name:'Pizza Rucola',                            price:10.00, desc:'Rucola'},
+      {num:'23',name:'Pizza Lachs',                             price:10.00, desc:'Lachs'},
+      {num:'24',name:'Pizza Krabben',                           price:10.00, desc:'Krabben'},
+      {num:'25',name:'Pizza Frutti di Mare',                    price:10.00, desc:'Meeresfrüchte, Knoblauch'},
+      {num:'26',name:'Pizza Gyros',                             price:10.00, desc:'Gyros'},
+      {num:'27',name:'Pizza Döner',                             price:10.00, desc:'Dönerfleisch'},
+      {num:'28',name:'Pizza Schafskäse',                        price:10.00, desc:'Schafskäse'},
+      {num:'29',name:'Pizza Mozzarella',                        price:10.00, desc:'Frischer Mozzarella'},
+      {num:'30',name:'Pizza Sardellen',                         price:10.00, desc:'Sardellen'},
+      {num:'31',name:'Pizza Kapern',                            price:10.00, desc:'Kapern'},
+      {num:'32',name:'Pizza Gorgonzola',                        price:10.00, desc:'Gorgonzola'},
+      {num:'33',name:'Pizza Hähnchen Brokkoli',                 price:10.00, desc:'Hähnchen, Brokkoli, Sauce Hollandaise'},
+      {num:'34',name:'Pizza Hähnchen Ananas',                   price:10.00, desc:'Hähnchen, Ananas, Currysauce'},
+      {num:'35',name:'Pizza Hähnchen Paprika',                  price:10.00, desc:'Hähnchen, Paprika, Zwiebeln'},
+      {num:'36',name:'Pizza Hähnchen Pilze',                    price:10.00, desc:'Hähnchen, Pilze, Sauce Hollandaise'},
+      {num:'37',name:'Pizza Hähnchen Spinat',                   price:10.00, desc:'Hähnchen, Spinat, Schafskäse'},
+      {num:'38',name:'Pizza Hähnchen Thunfisch',                price:10.00, desc:'Hähnchen, Thunfisch, scharfe Peperoni, Zwiebeln'},
+      {num:'39',name:'Pizza Hähnchen Salami',                   price:10.00, desc:'Hähnchen, Salami, Pilze, Paprika, Zwiebeln'},
+      {num:'40',name:'Pizza Hähnchen Mais',                     price:10.00, desc:'Hähnchen, Mais, Sauce Hollandaise'},
+      {num:'41',name:'Pizza Salami Pilze',                      price:10.00, desc:'Salami, Pilze, Zwiebeln, Paprika'},
+      {num:'42',name:'Pizza Salami Schinken',                   price:10.00, desc:'Salami, Schinken, Thunfisch, Zwiebeln'},
+      {num:'43',name:'Pizza Schinken Rucola',                   price:10.00, desc:'Schinken, frische Tomaten, Rucola, Parmesankäse'},
+      {num:'44',name:'Pizza Thunfisch Spinat',                  price:10.00, desc:'Thunfisch, Zwiebeln, Pilze, frische Tomaten, Spinat'},
+      {num:'45',name:'Pizza Schinken Oliven',                   price:10.00, desc:'Schinken, Oliven, Mais, Sauce Hollandaise'},
+      {num:'46',name:'Pizza Thunfisch Brokkoli',                price:10.00, desc:'Thunfisch, Brokkoli, Pilze, Oliven'},
+      {num:'47',name:'Pizza Thunfisch Peperoni',                price:10.00, desc:'Thunfisch, Sauce Hollandaise, milde Peperoni'},
+      {num:'48',name:'Pizza Lachs Brokkoli',                    price:10.00, desc:'Lachs, Brokkoli, Sauce Hollandaise'},
+      {num:'49',name:'Pizza Krabben Brokkoli',                  price:10.00, desc:'Krabben, Brokkoli, Sauce Hollandaise'},
+      {num:'50',name:'Pizza Gyros Zwiebeln',                    price:10.00, desc:'Gyros, Zwiebeln, Paprika'},
+      {num:'51',name:'Pizza Schinken Brokkoli',                 price:10.00, desc:'Schinken, Brokkoli, Mais, Sauce Hollandaise'},
+      {num:'52',name:'Pizza Gyros Tomaten',                     price:10.00, desc:'Gyros, frische Tomaten, Champignons'},
+      {num:'53',name:'Pizza Lachs Spinat',                      price:10.00, desc:'Lachs, Spinat, Schafskäse'},
+      {num:'54',name:'Pizza Thunfisch Salami',                  price:10.00, desc:'Thunfisch, Salami, Schafskäse, milde Peperoni'},
+      {num:'55',name:'Pizza Schinken Brokkoli Hollandaise',     price:10.00, desc:'Schinken, Brokkoli, Sauce Hollandaise'},
+      {num:'56',name:'Pizza Schinken Pilze',                    price:10.00, desc:'Schinken, Pilze, Paprika, Spinat'},
+      {num:'57',name:'Pizza Döner Paprika',                     price:10.00, desc:'Döner, Paprika, Pilze, Zwiebeln, Sauce Hollandaise'},
+      {num:'58',name:'Pizza Döner Brokkoli',                    price:10.00, desc:'Döner, Sauce Hollandaise, Pilze, Brokkoli, Oliven'},
+      {num:'59',name:'Pizza Sucuk Zwiebeln',                    price:10.00, desc:'Sucuk, Zwiebeln, Peperoni'},
+      {num:'60',name:'Pizza Sucuk Pilze',                       price:10.00, desc:'Sucuk, Sauce Hollandaise, Pilze'},
+      {num:'61',name:'Pizza Sucuk Tomaten',                     price:10.00, desc:'Sucuk, frische Tomaten, milde Peperoni, Paprika'},
+      {num:'62',name:'Pizza Calzone Schinken',                  price:10.00, desc:'Gefüllt: Schinken, Salami, Thunfisch, Brokkoli, Pilze'},
+      {num:'63',name:'Pizza Calzone Vegetarier',                price:10.00, desc:'Gefüllt: Gemüse nach Saison'},
+      {num:'64',name:'Pizza Calzone Hähnchen',                  price:10.00, desc:'Gefüllt: Hähnchen, Zwiebeln, Pilze, Paprika, Sauce Hollandaise, Mais'},
+      {num:'65',name:'Pizza Calzone Sucuk',                     price:10.00, desc:'Gefüllt: Sucuk, Brokkoli, Mais, Pilze, Sauce Hollandaise, milde Peperoni'},
+      {num:'WP', name:'Wunsch Pizza',                           price:10.00, desc:'Wähle 3 Zutaten nach Wunsch – 28cm oder 32cm', type:'wunsch-pizza'},
+      {num:'FP', name:'Familienpizza',                          price:27.00, desc:'40×60 cm – wähle 3 Zutaten nach Wunsch',        type:'familien-pizza'},
+    ]
+  },
+  {
+    id:'salate', label:'Salate', icon:'🥗',
+    items:[
+      {num:'80',name:'Salat Hawaii',       price:10.00,desc:'Gemischter Salat, Ananas, Schinken'},
+      {num:'81',name:'Salat Thunfisch',    price:10.00,desc:'Gemischter Salat, Thunfisch, Zwiebeln, Paprika, Oliven, Mais'},
+      {num:'82',name:'Krabben Salat',      price:10.00,desc:'Gemischter Salat, Krabben, Peperoni, Mais, Oliven, Ananas, Käse, Petersilie'},
+      {num:'83',name:'Hähnchen Salat',     price:10.00,desc:'Gemischter Salat, gebr. Hähnchen, Oliven, Rucola, Zwiebeln, Peperoni, Mais, Gouda'},
+      {num:'84',name:'Tomaten Salat',      price:10.00,desc:'Frische Tomaten, Zwiebeln'},
+      {num:'85',name:'Salat Primavera',    price:10.00,desc:'Gemischter Salat, Mozzarella, Thunfisch, Salami'},
+      {num:'86',name:'Salat Capricciosa',  price:10.00,desc:'Gemischter Salat, Thunfisch, Schinken, Käse, Paprika'},
+      {num:'87',name:'Salat Caprese',      price:10.00,desc:'Frische Tomaten, Mozzarella'},
+      {num:'88',name:'Rose Salat',         price:10.00,desc:'Gurken, Tomaten, Zwiebeln, Rucola, Oliven, Peperoni, Schafskäse, Mais'},
+      {num:'89',name:'Döner Salat',        price:10.00,desc:'Gemischter Salat, Zwiebeln, Paprika, Peperoni, Oliven'},
+      {num:'90',name:'Salat Salmone',      price:10.00,desc:'Gemischter Salat, Lachs, Sardellen, Kapern, Käse'},
+      {num:'91',name:'Gurken Salat',       price:10.00,desc:'Gurken'},
+      {num:'92',name:'Wunsch Salat',       price:10.00,desc:'Nach Ihren Wünschen – 3 Zutaten + Dressing wählen', type:'wunsch-salat'},
+    ]
+  },
+  {
+    id:'nudeln', label:'Nudeln', icon:'🍝',
+    items:[
+      {num:'100',name:'Penne mit Hähnchen',              price:10.00,desc:'Hähnchen'},
+      {num:'101',name:'Penne mit Gyros',                 price:10.00,desc:'Gyros, Pilze'},
+      {num:'102',name:'Penne mit Thunfisch',             price:10.00,desc:'Thunfisch, Zwiebeln'},
+      {num:'103',name:'Penne Hähnchen Spinat',           price:10.00,desc:'Hähnchen, Spinat, Zwiebeln, Schafskäse'},
+      {num:'104',name:'Penne Hähnchen Pilze',            price:10.00,desc:'Hähnchen, Pilze'},
+      {num:'105',name:'Penne Hähnchen Brokkoli',         price:10.00,desc:'Hähnchen, Brokkoli, Mais'},
+      {num:'106',name:'Penne mit Krabben',               price:10.00,desc:'Krabben, Brokkoli, Mais'},
+      {num:'107',name:'Penne Vegetarisch',               price:10.00,desc:'Vegetarisch'},
+      {num:'108',name:'Penne Bolognese',                 price:10.00,desc:'Bolognese, Pilze, Rindfleisch'},
+      {num:'109',name:'Penne Tomatensauce',              price:10.00,desc:'Tomatensauce, Knoblauch'},
+      {num:'110',name:'Penne mit Lachs',                 price:10.00,desc:'Lachs, Spinat, Schafskäse'},
+      {num:'111',name:'Penne Frutti di Mare',            price:10.00,desc:'Tomatensauce, Frutti di Mare, Knoblauch'},
+      {num:'112',name:'Penne Quattro Formaggie',         price:10.00,desc:'Vier Käsesorten'},
+      {num:'113',name:'Penne Carbonara',                 price:10.00,desc:'Carbonara'},
+      {num:'114',name:'Wunsch Penne',                    price:10.00,desc:'Penne – 3 Zutaten nach Wunsch', type:'wunsch-pasta'},
+      {num:'115',name:'Spaghetti Hähnchen Brokkoli',     price:10.00,desc:'Hähnchen, Brokkoli, Mais'},
+      {num:'116',name:'Spaghetti Hähnchen Spinat',       price:10.00,desc:'Hähnchen, Spinat, Paprika'},
+      {num:'117',name:'Spaghetti Quattro Formaggie',     price:10.00,desc:'Vier Käsesorten'},
+      {num:'118',name:'Spaghetti Carbonara',             price:10.00,desc:'Carbonara'},
+      {num:'119',name:'Spaghetti Bolognese',             price:10.00,desc:'Bolognese mit Rindfleisch'},
+      {num:'120',name:'Spaghetti Tomatensauce',          price:10.00,desc:'Tomatensauce'},
+      {num:'121',name:'Spaghetti Lachs Spinat',          price:10.00,desc:'Lachs, Spinat'},
+      {num:'122',name:'Spaghetti Thunfisch',             price:10.00,desc:'Thunfisch, Zwiebeln'},
+      {num:'123',name:'Spaghetti Brokkoli',              price:10.00,desc:'Brokkoli, Paprika, Oliven, Mais'},
+      {num:'124',name:'Spaghetti Krabben',               price:10.00,desc:'Krabben, Brokkoli, Mais'},
+      {num:'125',name:'Spaghetti Vegetarisch',           price:10.00,desc:'Vegetarisch'},
+      {num:'126',name:'Spaghetti Frutti di Mare',        price:10.00,desc:'Tomatensauce, Frutti di Mare'},
+      {num:'127',name:'Spaghetti Gyros Pilze',           price:10.00,desc:'Gyros, Pilze, frische Tomaten'},
+      {num:'128',name:'Spaghetti Gyros Peperoni',        price:10.00,desc:'Gyros, Zwiebeln, Paprika, Peperoni'},
+      {num:'129',name:'Spaghetti Peperoni Knoblauch',    price:10.00,desc:'Scharfe Peperoni, Knoblauch, Olivenöl'},
+      {num:'130',name:'Wunsch Spaghetti',                price:10.00,desc:'Spaghetti – 3 Zutaten nach Wunsch', type:'wunsch-pasta'},
+    ]
+  },
+  {
+    id:'tortellini', label:'Tortellini', icon:'🍝',
+    items:[
+      {num:'160',name:'Tortellini Gyros',             price:10.00,desc:'Gyros, Pilze, Sahnesauce'},
+      {num:'161',name:'Tortellini Carbonara',         price:10.00,desc:'Carbonara'},
+      {num:'162',name:'Tortellini Champignons',       price:10.00,desc:'Champignons'},
+      {num:'163',name:'Tortellini Hähnchen',          price:10.00,desc:'Hähnchen, Brokkoli, Mais, Sahnesauce'},
+      {num:'164',name:'Tortellini Vegetarier',        price:10.00,desc:'Vegetarisch'},
+      {num:'165',name:'Tortellini Krabben',           price:10.00,desc:'Krabben, Brokkoli, Mais, Paprika'},
+      {num:'166',name:'Tortellini Thunfisch',         price:10.00,desc:'Thunfisch, Zwiebeln, Sahnesauce'},
+      {num:'167',name:'Tortellini Tomatensauce',      price:10.00,desc:'Tomatensauce, Knoblauch'},
+      {num:'168',name:'Tortellini Lachs Spinat',      price:10.00,desc:'Lachs, Spinat, Sahnesauce'},
+      {num:'169',name:'Tortellini Bolognese',         price:10.00,desc:'Bolognese mit Rindfleisch'},
+      {num:'170',name:'Tortellini Krabben Pilze',     price:10.00,desc:'Krabben, Pilze, Brokkoli'},
+      {num:'171',name:'Tortellini Gyros Zwiebeln',    price:10.00,desc:'Gyros, Zwiebeln'},
+      {num:'172',name:'Tortellini Frutti di Mare',    price:10.00,desc:'Frutti di Mare, Tomatensauce'},
+      {num:'173',name:'Tortellini Peperoni',          price:10.00,desc:'Scharfe Peperoni, Knoblauch, Olivenöl'},
+      {num:'174',name:'Tortellini Hähnchen Spinat',   price:10.00,desc:'Hähnchen, Spinat, Zwiebeln, Schafskäse'},
+      {num:'175',name:'Tortellini Bolognese Hähnchen',price:10.00,desc:'Bolognese, Hähnchen, Krabben'},
+      {num:'176',name:'Wunsch Tortellini',            price:10.00,desc:'Tortellini – 3 Zutaten nach Wunsch', type:'wunsch-pasta'},
+    ]
+  },
+  {
+    id:'tagliatelle', label:'Tagliatelle', icon:'🍝',
+    items:[
+      {num:'180',name:'Tagliatelle Gyros',              price:10.00,desc:'Gyros, Pilze, Sahnesauce'},
+      {num:'181',name:'Tagliatelle Carbonara',          price:10.00,desc:'Carbonara'},
+      {num:'182',name:'Tagliatelle Champignons',        price:10.00,desc:'Champignons'},
+      {num:'183',name:'Tagliatelle Hähnchen',           price:10.00,desc:'Hähnchen, Brokkoli, Mais, Sahnesauce'},
+      {num:'184',name:'Tagliatelle Vegetarier',         price:10.00,desc:'Vegetarisch'},
+      {num:'185',name:'Tagliatelle Krabben',            price:10.00,desc:'Krabben, Brokkoli, Mais, Paprika'},
+      {num:'186',name:'Tagliatelle Thunfisch',          price:10.00,desc:'Thunfisch, Zwiebeln, Sahnesauce'},
+      {num:'187',name:'Tagliatelle Tomatensauce',       price:10.00,desc:'Tomatensauce, Knoblauch'},
+      {num:'188',name:'Tagliatelle Lachs Spinat',       price:10.00,desc:'Lachs, Spinat, Sahnesauce'},
+      {num:'189',name:'Tagliatelle Bolognese',          price:10.00,desc:'Bolognese mit Rindfleisch'},
+      {num:'190',name:'Tagliatelle Gyros Zwiebeln',     price:10.00,desc:'Gyros, Zwiebeln'},
+      {num:'191',name:'Tagliatelle Frutti di Mare',     price:10.00,desc:'Frutti di Mare, Tomatensauce'},
+      {num:'192',name:'Tagliatelle Peperoni',           price:10.00,desc:'Scharfe Peperoni, Knoblauch, Olivenöl'},
+      {num:'193',name:'Tagliatelle Hähnchen Spinat',    price:10.00,desc:'Hähnchen, Spinat, Zwiebeln, Schafskäse'},
+      {num:'194',name:'Tagliatelle Bolognese Hähnchen', price:10.00,desc:'Bolognese, Hähnchen, Krabben'},
+      {num:'195',name:'Wunsch Tagliatelle',             price:10.00,desc:'Tagliatelle – 3 Zutaten nach Wunsch', type:'wunsch-pasta'},
+    ]
+  },
+  {
+    id:'gnocchi', label:'Gnocchi', icon:'🍝',
+    items:[
+      {num:'200',name:'Gnocchi Gyros',              price:10.00,desc:'Gyros, Pilze, Sahnesauce'},
+      {num:'201',name:'Gnocchi Carbonara',          price:10.00,desc:'Carbonara'},
+      {num:'202',name:'Gnocchi Champignons',        price:10.00,desc:'Champignons'},
+      {num:'203',name:'Gnocchi Hähnchen',           price:10.00,desc:'Hähnchen, Brokkoli, Mais, Sahnesauce'},
+      {num:'204',name:'Gnocchi Vegetarier',         price:10.00,desc:'Vegetarisch'},
+      {num:'205',name:'Gnocchi Krabben',            price:10.00,desc:'Krabben, Brokkoli, Mais, Paprika'},
+      {num:'206',name:'Gnocchi Thunfisch',          price:10.00,desc:'Thunfisch, Zwiebeln, Sahnesauce'},
+      {num:'207',name:'Gnocchi Tomatensauce',       price:10.00,desc:'Tomatensauce, Knoblauch'},
+      {num:'208',name:'Gnocchi Lachs Spinat',       price:10.00,desc:'Lachs, Spinat, Sahnesauce'},
+      {num:'209',name:'Gnocchi Bolognese',          price:10.00,desc:'Bolognese mit Rindfleisch'},
+      {num:'210',name:'Gnocchi Krabben Pilze',      price:10.00,desc:'Krabben, Pilze, Brokkoli'},
+      {num:'211',name:'Gnocchi Gyros Zwiebeln',     price:10.00,desc:'Gyros, Zwiebeln'},
+      {num:'213',name:'Gnocchi Frutti di Mare',     price:10.00,desc:'Frutti di Mare, Tomatensauce'},
+      {num:'214',name:'Gnocchi Peperoni',           price:10.00,desc:'Scharfe Peperoni, Knoblauch, Olivenöl'},
+      {num:'215',name:'Gnocchi Hähnchen Spinat',    price:10.00,desc:'Hähnchen, Spinat, Zwiebeln, Schafskäse'},
+      {num:'216',name:'Gnocchi Bolognese Hähnchen', price:10.00,desc:'Bolognese, Hähnchen, Krabben'},
+      {num:'217',name:'Wunsch Gnocchi',             price:10.00,desc:'Gnocchi – 3 Zutaten nach Wunsch', type:'wunsch-pasta'},
+    ]
+  },
+  {
+    id:'auflaeufe', label:'Aufläufe & Lasagne', icon:'🫕',
+    items:[
+      {num:'140',name:'Kartoffelauflauf Hähnchen',          price:10.00,desc:'Hähnchen, Sauce Hollandaise, überbacken'},
+      {num:'141',name:'Kartoffelauflauf Lachs Spinat',      price:10.00,desc:'Lachs, Spinat, Sahnesauce, überbacken'},
+      {num:'142',name:'Kartoffelauflauf Hähnchen Brokkoli', price:10.00,desc:'Hähnchen, Brokkoli, Mais, überbacken'},
+      {num:'143',name:'Kartoffelauflauf Hähnchen Spinat',   price:10.00,desc:'Hähnchen, Spinat, Zwiebeln, Schafskäse, überbacken'},
+      {num:'144',name:'Kartoffelauflauf Bolognese',         price:10.00,desc:'Bolognese mit Rindfleisch, überbacken'},
+      {num:'145',name:'Kartoffelauflauf Tomatensauce',      price:10.00,desc:'Tomatensauce, überbacken'},
+      {num:'146',name:'Kartoffelauflauf Krabben',           price:10.00,desc:'Krabben, Champignons, überbacken'},
+      {num:'147',name:'Kartoffelauflauf Vegetarisch',       price:10.00,desc:'Vegetarisch, Sahnesauce, überbacken'},
+      {num:'148',name:'Kartoffelauflauf Gyros',             price:10.00,desc:'Gyros, Champignons, Paprika, überbacken'},
+      {num:'220',name:'Lasagne Cannelloni Hackfleisch',     price:10.00,desc:'Hackfleisch, Tomatensauce, überbacken'},
+      {num:'221',name:'Lasagne Cannelloni Hähnchen',        price:10.00,desc:'Hähnchen, Brokkoli, Pilze, Sahnesauce, überbacken'},
+      {num:'222',name:'Lasagne Cannelloni Hähnchen Sahne',  price:10.00,desc:'Hähnchen, Sahnesauce, überbacken'},
+      {num:'223',name:'Lasagne Cannelloni Lachs Spinat',    price:10.00,desc:'Lachs, Spinat, Sahnesauce, überbacken'},
+      {num:'224',name:'Lasagne Cannelloni Vegetarisch',     price:10.00,desc:'Vegetarisch, Tomaten- oder Sahnesauce, überbacken'},
+      {num:'225',name:'Lasagne Cannelloni Wunsch',          price:10.00,desc:'3 Zutaten nach Wunsch, überbacken', type:'wunsch-pasta'},
+    ]
+  },
+  {
+    id:'spezial', label:'Spezial', icon:'⭐',
+    items:[
+      {num:'PB15',name:'15 Pizzabrötchen',         price:5.00, desc:'15 Stück – Kräuterbutter oder Knoblauch', type:'pizzabroetchen'},
+      {num:'PB12',name:'12 gefüllte Pizzabrötchen',price:9.00, desc:'12 Stück gefüllt – 3 Zutaten nach Wunsch', type:'gefuellte-broetchen'},
+      {num:'M1',  name:'Menü 1',                   price:30.00,desc:'1 Nudel + 1 Pizza 28cm + 1 kleiner Salat + 1 Getränk + 15 Pizzabrötchen'},
+      {num:'M2',  name:'Menü 2',                   price:45.00,desc:'6 Pizzen 28cm nach Wahl + 1 Liter Getränk'},
+    ]
+  },
+  {
+    id:'getraenke', label:'Getränke', icon:'🥤',
+    items:[
+      {num:'G1', name:'Cola 0,33L',      price:2.00,desc:'Cola / Cola Light'},
+      {num:'G3', name:'Cola 1,0L',       price:3.00,desc:'Cola / Cola Light'},
+      {num:'G4', name:'Fanta 0,33L',     price:2.00,desc:'Fanta Orange'},
+      {num:'G6', name:'Fanta 1,0L',      price:3.00,desc:'Fanta Orange'},
+      {num:'G7', name:'Sprite 0,33L',    price:2.00,desc:'Sprite'},
+      {num:'G9', name:'Mezzo Mix 0,33L', price:2.00,desc:'Mezzo Mix'},
+      {num:'G11',name:'Uludag 0,33L',    price:2.00,desc:'Uludag Mineralwasser'},
+      {num:'G13',name:'Ice Tea 0,25L',   price:1.50,desc:'Eistee'},
+      {num:'G14',name:'Ayran 0,5L',      price:1.80,desc:'Türkischer Joghurtdrink'},
+      {num:'G15',name:'Wasser',          price:1.50,desc:'Mineralwasser'},
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let cart = [];
+let isRestaurantOpen = true;
+let disabledItems = [];
+let cartStep = 1;
+let checkoutData = {};
+
+let popupItem     = null;
+let popupQty      = 1;
+let popupSize     = '28cm';
+let popupToppings = [];
+let popupDressing = '';
+let popupNote     = '';
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER MENU
+// ═══════════════════════════════════════════════════════════════
+function renderMenu() {
+  const container = document.getElementById('menuContainer');
+  container.innerHTML = MENU.map(cat => `
+    <section class="menu-section" id="sec-${cat.id}">
+      <div class="section-header">
+        <span class="section-icon">${cat.icon}</span>
+        <h2 class="section-title">${cat.label}</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="menu-grid">
+        ${cat.items.map(item => renderCard(item)).join('')}
+      </div>
+    </section>
+  `).join('');
+}
+
+function renderCard(item) {
+  const soldOut  = disabledItems.includes(item.name);
+  const hasOpts  = item.type;
+  const priceStr = item.num === 'WP' ? 'ab 10,00 €' : fmt(item.price);
+  return `
+    <div class="item-card${soldOut?' sold-out':''}" id="card-${item.num}" onclick="openItemPopup('${item.num}')">
+      ${soldOut?'<div class="sold-out-label">Ausverkauft</div>':''}
+      <div class="item-num">Nr. ${item.num}</div>
+      <div class="item-name">${item.name}</div>
+      <div class="item-desc">${item.desc}</div>
+      ${hasOpts?`<div class="item-options-hint">Anpassbar</div>`:''}
+      <div class="item-footer">
+        <div class="item-price">${priceStr}</div>
+        <button class="item-add-btn" onclick="event.stopPropagation();openItemPopup('${item.num}')">+</button>
+      </div>
+    </div>
+  `;
+}
+
+function fmt(v) { return (v||0).toFixed(2).replace('.',',') + ' €'; }
+
+// ═══════════════════════════════════════════════════════════════
+// ITEM POPUP
+// ═══════════════════════════════════════════════════════════════
+function findItem(num) {
+  for (const cat of MENU) {
+    const found = cat.items.find(i => i.num === num);
+    if (found) return found;
+  }
+  return null;
+}
+
+function openItemPopup(num) {
+  if (!isRestaurantOpen) { showToast('Wir haben gerade geschlossen'); return; }
+  const item = findItem(num);
+  if (!item) return;
+  popupItem     = item;
+  popupQty      = 1;
+  popupSize     = '28cm';
+  popupToppings = [];
+  popupDressing = SALAT_DRESSINGS[0];
+  popupNote     = '';
+
+  document.getElementById('popupNum').textContent  = 'Nr. ' + item.num;
+  document.getElementById('popupName').textContent  = item.name;
+  document.getElementById('popupDesc').textContent  = item.desc;
+
+  renderPopupBody();
+  updatePopupTotal();
+  document.getElementById('itemModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderPopupBody() {
+  const item = popupItem;
+  let html = '';
+
+  if (item.type === 'wunsch-pizza' || item.num === 'WP') {
+    html += renderSizeSelector();
+    html += renderToppingSelector(PIZZA_TOPPINGS, 3);
+    html += renderNoteField();
+  } else if (item.type === 'familien-pizza' || item.num === 'FP') {
+    html += renderToppingSelector(PIZZA_TOPPINGS, 3);
+    html += renderNoteField();
+  } else if (item.type === 'wunsch-salat') {
+    html += renderDressingSelector();
+    html += renderToppingSelector(SALAT_TOPPINGS, 3);
+    html += renderNoteField();
+  } else if (item.type === 'wunsch-pasta') {
+    html += renderToppingSelector(PASTA_TOPPINGS, 3);
+    html += renderNoteField();
+  } else if (item.type === 'pizzabroetchen') {
+    html += `<div class="option-group">
+      <div class="option-group-title">Sauce</div>
+      <div class="option-pills">
+        <div class="option-pill${popupDressing==='Kräuterbutter'?' selected':''}" onclick="selectDressing('Kräuterbutter')">Kräuterbutter</div>
+        <div class="option-pill${popupDressing==='Knoblauch'?' selected':''}" onclick="selectDressing('Knoblauch')">Knoblauch</div>
+      </div>
+    </div>`;
+    if (!popupDressing) { popupDressing = 'Kräuterbutter'; }
+    html += renderNoteField();
+  } else if (item.type === 'gefuellte-broetchen') {
+    html += renderToppingSelector(PIZZA_TOPPINGS, 3);
+    html += renderNoteField();
+  } else {
+    if (item.num && /^\d+$/.test(item.num) && parseInt(item.num) >= 1 && parseInt(item.num) <= 65) {
+      html += renderSizeSelector();
+    }
+    html += renderNoteField();
+  }
+
+  document.getElementById('popupBody').innerHTML = html;
+  if (item.type === 'pizzabroetchen' && !popupDressing) selectDressing('Kräuterbutter');
+}
+
+function renderSizeSelector() {
+  return `<div class="option-group">
+    <div class="option-group-title">Größe wählen</div>
+    <div class="option-pills">
+      <div class="option-pill${popupSize==='28cm'?' selected':''}" onclick="selectSize('28cm')">28 cm — ${fmt(popupItem.price)}</div>
+      <div class="option-pill${popupSize==='32cm'?' selected':''}" onclick="selectSize('32cm')">32 cm — ${fmt(popupItem.price+2)}</div>
+    </div>
+  </div>`;
+}
+
+function renderDressingSelector() {
+  return `<div class="option-group">
+    <div class="option-group-title">Dressing</div>
+    <div class="option-pills">
+      ${SALAT_DRESSINGS.map(d=>`<div class="option-pill${popupDressing===d?' selected':''}" onclick="selectDressing('${d}')">${d}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderToppingSelector(list, max) {
+  return `<div class="option-group">
+    <div class="option-group-title">Zutaten (max. ${max})</div>
+    <div class="topping-hint">${popupToppings.length}/${max} ausgewählt</div>
+    <div class="topping-grid">
+      ${list.map(t => {
+        const sel      = popupToppings.includes(t);
+        const disabled = !sel && popupToppings.length >= max;
+        return `<div class="topping-item${sel?' selected':''}${disabled?' disabled':''}" onclick="toggleTopping('${t}',${max})">
+          <div class="topping-check">${sel?'✓':''}</div>${t}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderNoteField() {
+  return `<div class="option-group">
+    <div class="option-group-title">Anmerkung (optional)</div>
+    <textarea class="note-input" rows="2" placeholder="z. B. ohne Zwiebeln, extra scharf…" oninput="popupNote=this.value">${popupNote}</textarea>
+  </div>`;
+}
+
+function selectSize(sz) { popupSize = sz; renderPopupBody(); updatePopupTotal(); }
+function selectDressing(d) { popupDressing = d; renderPopupBody(); }
+
+function toggleTopping(t, max) {
+  const idx = popupToppings.indexOf(t);
+  if (idx > -1) {
+    popupToppings.splice(idx, 1);
+  } else {
+    if (popupToppings.length >= max) { showToast('Maximal ' + max + ' Zutaten'); return; }
+    popupToppings.push(t);
+  }
+  renderPopupBody();
+  updatePopupTotal();
+}
+
+function getPopupPrice() {
+  if (!popupItem) return 0;
+  let p = popupItem.price;
+  if (popupSize === '32cm' && popupItem.num !== 'FP' && popupItem.num !== 'WP') p += 2;
+  if (popupItem.num === 'WP' && popupSize === '32cm') p = 12;
+  return p;
+}
+
+function updatePopupTotal() {
+  const price = getPopupPrice() * popupQty;
+  document.getElementById('popupTotalDisplay').textContent = fmt(price);
+  document.getElementById('popupQtyDisp').textContent = popupQty;
+}
+
+function changePopupQty(delta) {
+  popupQty = Math.max(1, popupQty + delta);
+  updatePopupTotal();
+}
+
+function closeItemModal() {
+  document.getElementById('itemModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function addFromPopup() {
+  const item = popupItem;
+  if (!item) return;
+  if ((item.type === 'wunsch-pizza' || item.type === 'familien-pizza' || item.type === 'gefuellte-broetchen' || item.type === 'wunsch-pasta') && popupToppings.length < 3) {
+    showToast('Bitte 3 Zutaten auswählen'); return;
+  }
+  if (item.type === 'wunsch-salat' && popupToppings.length < 3) {
+    showToast('Bitte 3 Zutaten auswählen'); return;
+  }
+  const price = getPopupPrice();
+  let name = item.name;
+  if (popupSize === '32cm' && item.num !== 'FP') name += ' (32cm)';
+  if (item.type === 'pizzabroetchen' && popupDressing) name += ' – ' + popupDressing;
+  const extras = [];
+  if (popupToppings.length) extras.push({ name: popupToppings.join(', '), price: 0 });
+  if (popupDressing && item.type !== 'pizzabroetchen') extras.push({ name: 'Dressing: ' + popupDressing, price: 0 });
+  addToCart({ name, price, num: item.num, extras, note: popupNote, qty: popupQty });
+  closeItemModal();
+  showToast('Zum Warenkorb hinzugefügt');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CART
+// ═══════════════════════════════════════════════════════════════
+function addToCart(entry) {
+  cart.push({ ...entry, id: Date.now() + Math.random() });
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const total = cartTotal();
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const badge = document.getElementById('cartHeaderBadge');
+  badge.textContent = count;
+  if (count > 0) badge.classList.add('visible'); else badge.classList.remove('visible');
+  const fc = document.getElementById('floatCart');
+  document.getElementById('floatCartCount').textContent = count;
+  document.getElementById('floatCartTotal').textContent = fmt(total);
+  if (count > 0) fc.classList.add('visible'); else fc.classList.remove('visible');
+}
+
+function cartSubtotal() { return cart.reduce((s, i) => s + i.price * i.qty, 0); }
+function cartTotal() {
+  const sub = cartSubtotal();
+  const fee = sub >= 15 ? AREA_CONFIG.hamm.fee : 0;
+  return sub + fee + SERVICE_FEE;
+}
+
+function openCart() {
+  cartStep = 1; checkoutData = {};
+  renderCartStep();
+  document.getElementById('cartModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cartModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function renderCartStep() {
+  ['stab1','stab2','stab3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.toggle('active', i + 1 === cartStep);
+    el.classList.toggle('done', i + 1 < cartStep);
+  });
+  if (cartStep === 1) renderCartItems();
+  if (cartStep === 2) renderAddressForm();
+  if (cartStep === 3) renderPaymentStep();
+}
+
+function renderCartItems() {
+  const body = document.getElementById('cartBody');
+  const footer = document.getElementById('cartFooter');
+  if (!cart.length) {
+    body.innerHTML = '<div class="cart-empty">🛒<br><br>Dein Warenkorb ist leer.</div>';
+    footer.innerHTML = '';
+    return;
+  }
+  const sub  = cartSubtotal();
+  const fee  = sub >= 15 ? AREA_CONFIG.hamm.fee : 0;
+  const total = sub + fee + SERVICE_FEE;
+  const minOk = sub >= AREA_CONFIG.hamm.min;
+  body.innerHTML = `
+    ${cart.map(ci => `
+      <div class="cart-item-row">
+        <div class="ci-qty-ctrl">
+          <button class="ci-qty-btn" onclick="changeCartQty(${ci.id},-1)">−</button>
+          <span class="ci-qty">${ci.qty}</span>
+          <button class="ci-qty-btn" onclick="changeCartQty(${ci.id},1)">+</button>
+        </div>
+        <div class="ci-info">
+          <div class="ci-name">${ci.name}</div>
+          ${ci.extras&&ci.extras.length?`<div class="ci-extras">${ci.extras.map(e=>e.name).join(' · ')}</div>`:''}
+          ${ci.note?`<div class="ci-extras">📝 ${ci.note}</div>`:''}
+        </div>
+        <div class="ci-price">${fmt(ci.price * ci.qty)}</div>
+      </div>
+    `).join('')}
+    <div class="cart-totals">
+      <div class="cart-total-row"><span>Zwischensumme</span><span>${fmt(sub)}</span></div>
+      <div class="cart-total-row"><span>Liefergebühr</span><span>${fee>0?fmt(fee):'–'}</span></div>
+      <div class="cart-total-row"><span>Servicegebühr</span><span>${fmt(SERVICE_FEE)}</span></div>
+      <div class="cart-total-row grand"><span>Gesamt</span><span>${fmt(total)}</span></div>
+    </div>
+    ${!minOk?`<div class="cart-min-warn">Mindestbestellwert ${fmt(AREA_CONFIG.hamm.min)} – noch ${fmt(AREA_CONFIG.hamm.min - sub)} fehlen.</div>`:''}
+  `;
+  footer.innerHTML = `<button class="order-btn" ${!minOk?'disabled':''} onclick="cartStep=2;renderCartStep()">Weiter zur Adresse</button>`;
+}
+
+function changeCartQty(id, delta) {
+  const ci = cart.find(i => i.id === id);
+  if (!ci) return;
+  ci.qty = Math.max(0, ci.qty + delta);
+  if (ci.qty === 0) cart = cart.filter(i => i.id !== id);
+  updateCartUI();
+  renderCartItems();
+}
+
+function renderAddressForm() {
+  const body = document.getElementById('cartBody');
+  const footer = document.getElementById('cartFooter');
+  body.innerHTML = `
+    <div class="checkout-section">
+      <div class="checkout-section-title">Lieferart</div>
+      <div class="payment-opts">
+        <div class="payment-opt${checkoutData.mode!=='abholung'?' selected':''}" onclick="checkoutData.mode='lieferung';renderAddressForm()">🛵 Lieferung</div>
+        <div class="payment-opt${checkoutData.mode==='abholung'?' selected':''}" onclick="checkoutData.mode='abholung';renderAddressForm()">🏃 Abholung</div>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <div class="checkout-section-title">Persönliche Daten</div>
+      <div class="form-row">
+        <input class="form-input" type="text" placeholder="Vorname *" id="cFirst" value="${checkoutData.first||''}" oninput="checkoutData.first=this.value">
+        <input class="form-input" type="text" placeholder="Nachname *" id="cLast" value="${checkoutData.last||''}" oninput="checkoutData.last=this.value">
+      </div>
+      <div class="form-row single">
+        <input class="form-input" type="email" placeholder="E-Mail" id="cEmail" value="${checkoutData.email||''}" oninput="checkoutData.email=this.value">
+      </div>
+      <div class="form-row single">
+        <input class="form-input" type="tel" placeholder="Telefon *" id="cPhone" value="${checkoutData.phone||''}" oninput="checkoutData.phone=this.value">
+      </div>
+    </div>
+    ${checkoutData.mode !== 'abholung' ? `
+    <div class="checkout-section">
+      <div class="checkout-section-title">Lieferadresse</div>
+      <div class="form-row">
+        <input class="form-input" placeholder="Straße *" id="cStreet" value="${checkoutData.street||''}" oninput="checkoutData.street=this.value" style="flex:2">
+        <input class="form-input" placeholder="Nr. *" id="cHouse" value="${checkoutData.house||''}" oninput="checkoutData.house=this.value" style="flex:1">
+      </div>
+      <div class="form-row single">
+        <input class="form-input" placeholder="Stadt *" id="cCity" value="${checkoutData.city||'Hamm'}" oninput="checkoutData.city=this.value">
+      </div>
+    </div>` : ''}
+    <div class="checkout-section">
+      <div class="checkout-section-title">Anmerkung</div>
+      <textarea class="note-input" rows="2" placeholder="Anmerkungen zur Bestellung…" oninput="checkoutData.note=this.value">${checkoutData.note||''}</textarea>
+    </div>
+  `;
+  footer.innerHTML = `
+    <div style="display:flex;gap:10px">
+      <button class="order-btn" style="flex:0 0 auto;background:transparent;color:var(--text2);border:1px solid var(--border)" onclick="cartStep=1;renderCartStep()">← Zurück</button>
+      <button class="order-btn" onclick="validateAddress()">Weiter zur Zahlung</button>
+    </div>
+  `;
+}
+
+function validateAddress() {
+  if (!checkoutData.first || !checkoutData.last) { showToast('Bitte Vor- und Nachname angeben'); return; }
+  if (!checkoutData.phone) { showToast('Bitte Telefonnummer angeben'); return; }
+  if (checkoutData.mode !== 'abholung') {
+    if (!checkoutData.street || !checkoutData.house) { showToast('Bitte vollständige Adresse angeben'); return; }
+    if (!checkoutData.city) checkoutData.city = 'Hamm';
+  }
+  cartStep = 3; renderCartStep();
+}
+
+function renderPaymentStep() {
+  const sub  = cartSubtotal();
+  const fee  = checkoutData.mode === 'abholung' ? 0 : (sub >= 15 ? AREA_CONFIG.hamm.fee : 0);
+  const total = sub + fee + SERVICE_FEE;
+  checkoutData.subtotal    = sub;
+  checkoutData.deliveryFee = fee;
+  checkoutData.total       = total;
+  const body = document.getElementById('cartBody');
+  const footer = document.getElementById('cartFooter');
+  body.innerHTML = `
+    <div class="checkout-section">
+      <div class="checkout-section-title">Bestellübersicht</div>
+      ${cart.map(ci => `<div style="display:flex;justify-content:space-between;font-size:.8rem;padding:3px 0;color:var(--muted)"><span>${ci.qty}× ${ci.name}</span><span style="color:var(--terra);font-weight:600">${fmt(ci.price*ci.qty)}</span></div>`).join('')}
+      <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+        <div class="cart-total-row"><span>Liefergebühr</span><span>${fmt(fee)}</span></div>
+        <div class="cart-total-row"><span>Servicegebühr</span><span>${fmt(SERVICE_FEE)}</span></div>
+        <div class="cart-total-row grand"><span>Gesamt</span><span>${fmt(total)}</span></div>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <div class="checkout-section-title">Zahlungsart</div>
+      <div class="payment-opts">
+        <div class="payment-opt${checkoutData.payment==='bar'?' selected':''}" onclick="checkoutData.payment='bar';renderPaymentStep()">💵 Bar</div>
+        <div class="payment-opt${checkoutData.payment==='karte'?' selected':''}" onclick="checkoutData.payment='karte';renderPaymentStep()">💳 EC-Karte</div>
+        <div class="payment-opt${checkoutData.payment==='stripe'?' selected':''}" onclick="checkoutData.payment='stripe';renderPaymentStep()">🔒 Online zahlen</div>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <label class="checkbox-row"><input type="checkbox" id="cbAgb"> Ich akzeptiere die <a href="#" onclick="openLegal('agb');return false">AGB</a> *</label>
+      <label class="checkbox-row"><input type="checkbox" id="cbDsgvo"> Ich stimme der <a href="#" onclick="openLegal('datenschutz');return false">Datenschutzerklärung</a> zu *</label>
+    </div>
+  `;
+  if (!checkoutData.payment) checkoutData.payment = 'bar';
+  footer.innerHTML = `
+    <div style="display:flex;gap:10px">
+      <button class="order-btn" style="flex:0 0 auto;background:transparent;color:var(--text2);border:1px solid var(--border)" onclick="cartStep=2;renderCartStep()">← Zurück</button>
+      <button class="order-btn" id="submitOrderBtn" onclick="submitOrder()">
+        ${checkoutData.payment==='stripe'?'🔒 Online bezahlen':'Jetzt bestellen'}
+      </button>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMIT ORDER
+// ═══════════════════════════════════════════════════════════════
+async function submitOrder() {
+  if (!document.getElementById('cbAgb')?.checked)   { showToast('Bitte AGB akzeptieren'); return; }
+  if (!document.getElementById('cbDsgvo')?.checked) { showToast('Bitte Datenschutzerklärung akzeptieren'); return; }
+  if (!checkoutData.payment) { showToast('Bitte Zahlungsart wählen'); return; }
+
+  const btn = document.getElementById('submitOrderBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const payload = {
+    mode: checkoutData.mode || 'lieferung',
+    payment: checkoutData.payment,
+    source: 'web',
+    items: cart.map(ci => ({
+      name: ci.name, price: ci.price, qty: ci.qty,
+      note: ci.note || '', extraDetails: ci.extras || []
+    })),
+    customer: {
+      first: checkoutData.first, last: checkoutData.last,
+      email: checkoutData.email || '', phone: checkoutData.phone,
+      street: checkoutData.street || '', house: checkoutData.house || '',
+      city: checkoutData.city || 'Hamm'
+    },
+    subtotal: checkoutData.subtotal, deliveryFee: checkoutData.deliveryFee,
+    serviceFee: SERVICE_FEE, total: checkoutData.total,
+    note: checkoutData.note || ''
+  };
+
+  if (checkoutData.payment === 'stripe') {
+    try {
+      const r = await fetch(BACKEND_URL + '/api/create-stripe-checkout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json();
+      if (d.url) { window.location.href = d.url; return; }
+      showToast('Stripe-Fehler: ' + (d.message || 'Unbekannt'));
+    } catch { showToast('Verbindungsfehler'); }
+    btn.disabled = false;
+    btn.textContent = '🔒 Online bezahlen';
+    return;
+  }
+
+  try {
+    const r = await fetch(BACKEND_URL + '/api/orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    if (r.ok && d.orderNum) {
+      cart = []; updateCartUI(); closeCart();
+      showDanke(d.orderNum, checkoutData.payment);
+    } else {
+      showToast(d.message || 'Fehler beim Bestellen');
+      btn.disabled = false; btn.textContent = 'Jetzt bestellen';
+    }
+  } catch {
+    showToast('Verbindungsfehler – bitte erneut versuchen');
+    btn.disabled = false; btn.textContent = 'Jetzt bestellen';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DANKE MODAL
+// ═══════════════════════════════════════════════════════════════
+function showDanke(orderNum, payment) {
+  document.getElementById('dankeOrderNum').textContent = '#' + orderNum;
+  const payMap = { bar:'Barzahlung bei Übergabe', karte:'EC-Karte bei Übergabe', stripe:'Online bezahlt' };
+  document.getElementById('dankeText').textContent =
+    'Deine Bestellung wurde aufgegeben. Zahlungsart: ' + (payMap[payment]||payment) + '. Wir melden uns bald!';
+  document.getElementById('dankeModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeDanke() {
+  document.getElementById('dankeModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STRIPE RETURN
+// ═══════════════════════════════════════════════════════════════
+(async function handleStripeReturn() {
+  const params    = new URLSearchParams(location.search);
+  const sessionId = params.get('session_id');
+  const orderNum  = params.get('order');
+  const cancelled = params.get('payment');
+  if (cancelled === 'cancelled') { history.replaceState({}, '', '/'); showToast('Zahlung abgebrochen'); return; }
+  if (sessionId && orderNum) {
+    history.replaceState({}, '', '/');
+    try {
+      const r = await fetch(BACKEND_URL + '/api/verify-payment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+      const d = await r.json();
+      if (d.ok) showDanke(d.orderNum || orderNum, 'stripe');
+      else showToast('Zahlung wird verarbeitet – Bestellung #' + orderNum);
+    } catch { showToast('Bestellung #' + orderNum + ' – Zahlung wird verarbeitet'); }
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// STATUS + AVAILABILITY
+// ═══════════════════════════════════════════════════════════════
+async function loadStatus() {
+  try {
+    const r = await fetch(BACKEND_URL + '/api/status');
+    const d = await r.json();
+    isRestaurantOpen = d.isOpen;
+    const dot    = document.getElementById('headerDot');
+    const txt    = document.getElementById('headerStatus');
+    const banner = document.getElementById('closedBanner');
+    const badge = document.getElementById('heroBadge');
+    if (d.isOpen) {
+      dot.className   = 'status-dot';
+      txt.textContent = 'Geöffnet';
+      banner.classList.remove('show');
+      if (badge) badge.classList.add('open');
+    } else {
+      dot.className   = 'status-dot closed';
+      txt.textContent = 'Geschlossen';
+      banner.classList.add('show');
+      if (badge) badge.classList.remove('open');
+    }
+  } catch {}
+}
+
+async function loadAvailability() {
+  try {
+    const r = await fetch(BACKEND_URL + '/api/availability');
+    const d = await r.json();
+    disabledItems = d.disabled || [];
+    applyAvailability();
+  } catch {}
+}
+
+function applyAvailability() {
+  document.querySelectorAll('.item-card').forEach(card => {
+    const num  = card.id.replace('card-', '');
+    const item = findItem(num);
+    if (!item) return;
+    const soldOut = disabledItems.includes(item.name);
+    card.classList.toggle('sold-out', soldOut);
+    const lbl = card.querySelector('.sold-out-label');
+    if (soldOut && !lbl) {
+      const d = document.createElement('div');
+      d.className   = 'sold-out-label';
+      d.textContent = 'Ausverkauft';
+      card.prepend(d);
+    } else if (!soldOut && lbl) lbl.remove();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LEGAL MODALS
+// ═══════════════════════════════════════════════════════════════
+const LEGAL_CONTENT = {
+  impressum: {
+    title: 'Impressum',
+    body: `<h3>Angaben gemäß § 5 TMG</h3>
+<p><strong>Pizzeria Parma</strong><br>Bahnhofstr. 37<br>59065 Hamm</p>
+<h4>Kontakt</h4>
+<p>Telefon: (02381) 94 107 02<br>Mobil: 0174 27 96 744<br>E-Mail: [INHABER-EMAIL-PLATZHALTER]</p>
+<h4>Vertreten durch</h4>
+<p>[NAME DES INHABERS – PLATZHALTER]</p>
+<h4>Umsatzsteuer-ID</h4>
+<p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG: [USt-IdNr. – PLATZHALTER]</p>
+<h4>Steuernummer</h4>
+<p>[Steuernummer – PLATZHALTER]</p>
+<h4>Streitschlichtung</h4>
+<p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank">https://ec.europa.eu/consumers/odr</a>. Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>`
+  },
+  agb: {
+    title: 'Allgemeine Geschäftsbedingungen',
+    body: `<h3>1. Geltungsbereich</h3>
+<p>Diese AGB gelten für alle Bestellungen über unsere Website.</p>
+<h3>2. Vertragsschluss</h3>
+<p>Ihre Bestellung stellt ein verbindliches Angebot dar. Der Vertrag kommt zustande, wenn wir Ihre Bestellung bestätigen.</p>
+<h3>3. Preise</h3>
+<p>Alle Preise verstehen sich in Euro inklusive der gesetzlichen Mehrwertsteuer.</p>
+<h3>4. Lieferung</h3>
+<p>Die Lieferung erfolgt im Liefergebiet Hamm und Umgebung. Mindestbestellwert: 15,00 €. Liefergebühr: 2,50 €.</p>
+<h3>5. Zahlung</h3>
+<p>Wir akzeptieren Barzahlung, EC-Karte und Online-Zahlung über Stripe.</p>
+<h3>6. Widerrufsrecht</h3>
+<p>Da es sich um Lebensmittel handelt, besteht kein Widerrufsrecht gemäß § 312g Abs. 2 Nr. 1 BGB.</p>
+<h3>7. Haftung</h3>
+<p>Wir haften für Schäden nur bei Vorsatz und grober Fahrlässigkeit.</p>`
+  },
+  datenschutz: {
+    title: 'Datenschutzerklärung',
+    body: `<h3>1. Datenschutz auf einen Blick</h3>
+<p>Wir nehmen den Schutz Ihrer Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend der DSGVO.</p>
+<h3>2. Datenerhebung bei Bestellungen</h3>
+<p>Bei der Bestellung erheben wir: Name, Adresse, E-Mail, Telefonnummer. Diese Daten werden ausschließlich zur Bestellabwicklung verwendet und nach gesetzlichen Fristen gelöscht.</p>
+<h3>3. Stripe</h3>
+<p>Für Online-Zahlungen nutzen wir Stripe Payments Europe Ltd. Stripe verarbeitet Zahlungsdaten gemäß deren Datenschutzrichtlinie: <a href="https://stripe.com/de/privacy" target="_blank">stripe.com/de/privacy</a>.</p>
+<h3>4. Google Fonts</h3>
+<p>Diese Website verwendet Google Fonts. Beim Laden der Seite werden Verbindungen zu Google-Servern hergestellt. Weitere Infos: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a>.</p>
+<h3>5. Ihre Rechte</h3>
+<p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten. Kontakt: [INHABER-EMAIL-PLATZHALTER]</p>
+<h3>6. Verantwortlicher</h3>
+<p>Pizzeria Parma, Bahnhofstr. 37, 59065 Hamm</p>`
+  }
+};
+
+function openLegal(key) {
+  const c = LEGAL_CONTENT[key];
+  if (!c) return;
+  document.getElementById('legalTitle').textContent = c.title;
+  document.getElementById('legalBody').innerHTML = c.body;
+  document.getElementById('legalModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLegal() {
+  document.getElementById('legalModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function scrollToSection(id) {
+  const el = document.getElementById('sec-' + id);
+  if (!el) return;
+  const offset = 60 + 50;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
+}
+function scrollToMenu() {
+  const el = document.getElementById('sec-pizza');
+  if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: 'smooth' });
+}
+
+function setupScrollspy() {
+  const sections = MENU.map(c => document.getElementById('sec-' + c.id)).filter(Boolean);
+  const pills    = document.querySelectorAll('.cat-pill');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = sections.indexOf(entry.target);
+        if (idx >= 0) {
+          pills.forEach(p => p.classList.remove('active'));
+          pills[idx]?.classList.add('active');
+        }
+      }
+    });
+  }, { rootMargin: '-60px 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  renderMenu();
+  setupScrollspy();
+  loadStatus();
+  loadAvailability();
+  setInterval(loadStatus, 60000);
+  setInterval(loadAvailability, 120000);
+});
+</script>
+</body>
+</html>

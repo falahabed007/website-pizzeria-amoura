@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<title>Pizzeria Pinocchio Ennigerloh – Online Bestellen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+:root {
+  --red:#c0392b; --red2:#9b2115; --cream:#fdfaf6; --dark:#1c0a00;
+  --gold:#d4a76a; --border:#e8ddd0; --muted:#8a7a6a; --green:#27ae60;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);overflow-x:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;}
+
+/* ── HERO ── */
+.hero{
+  position:relative;
+  background:linear-gradient(160deg,rgba(28,10,0,.72) 0%,rgba(140,30,20,.55) 100%),
+             url('https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1400&q=80') center/cover no-repeat;
+  min-height:480px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;color:#fff;padding:80px 20px 50px;
+}
+.hero-badge{background:rgba(212,167,106,.25);border:1px solid var(--gold);border-radius:50px;
+  padding:6px 18px;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,6vw,3.8rem);font-weight:900;
+  line-height:1.1;text-shadow:0 2px 20px rgba(0,0,0,.4);margin-bottom:12px;}
+.hero p{font-size:1.05rem;opacity:.88;max-width:520px;margin:0 auto 28px;}
+.hero-cta{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;
+  border:none;border-radius:50px;padding:14px 32px;font-size:1rem;font-weight:700;
+  box-shadow:0 6px 24px rgba(192,57,43,.45);transition:all .2s;}
+.hero-cta:hover{background:var(--red2);transform:translateY(-2px);}
+.hero-strip{position:absolute;bottom:0;left:0;right:0;background:rgba(28,10,0,.7);
+  display:flex;justify-content:center;gap:40px;padding:14px 20px;flex-wrap:wrap;}
+.hero-strip-item{display:flex;align-items:center;gap:8px;font-size:.82rem;opacity:.9;}
+.hero-strip-item span{font-size:1.1rem;}
+
+/* ── INFO BAR ── */
+.info-bar{background:#fff;border-bottom:1px solid var(--border);padding:28px 20px;}
+.info-bar-inner{max-width:1000px;margin:0 auto;display:flex;gap:30px;flex-wrap:wrap;justify-content:center;}
+.info-item{display:flex;align-items:flex-start;gap:12px;}
+.info-icon{font-size:1.5rem;margin-top:2px;}
+.info-text h4{font-size:.9rem;font-weight:700;color:var(--dark);margin-bottom:3px;}
+.info-text p{font-size:.82rem;color:var(--muted);line-height:1.5;}
+
+/* ── MODE BTNS (sticky top) ── */
+.sticky-nav{position:sticky;top:0;z-index:500;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.sticky-nav::-webkit-scrollbar{display:none;}
+.cat-pill{flex-shrink:0;padding:14px 20px;font-size:.85rem;font-weight:600;color:var(--muted);
+  border:none;background:transparent;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;}
+.cat-pill:hover{color:var(--red);}
+.cat-pill.active{color:var(--red);border-bottom-color:var(--red);}
+
+/* ── MAIN LAYOUT ── */
+.main-wrap{max-width:1100px;margin:0 auto;padding:32px 20px 120px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
+  color:var(--dark);margin:40px 0 6px;display:flex;align-items:center;gap:10px;}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);margin-left:12px;}
+.section-sub{color:var(--muted);font-size:.84rem;margin-bottom:18px;}
+
+/* ── PRODUCT GRID ── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:4px;}
+.product-item{background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:box-shadow .2s,transform .15s;overflow:hidden;display:flex;flex-direction:column;}
+.product-item:hover{box-shadow:0 8px 30px rgba(0,0,0,.12);transform:translateY(-3px);}
+.card-body{padding:13px 14px 12px;flex:1;display:flex;flex-direction:column;}
+.item-num{display:inline-block;font-size:.7rem;font-weight:700;color:#fff;
+  background:var(--red);border-radius:4px;padding:2px 7px;margin-bottom:7px;align-self:flex-start;}
+.item-name{font-size:.93rem;font-weight:700;color:var(--dark);margin-bottom:4px;line-height:1.3;}
+.item-desc{font-size:.78rem;color:var(--muted);line-height:1.4;flex:1;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+.item-price{font-weight:700;font-size:.97rem;color:var(--dark);}
+.card-add-btn{background:var(--red);color:#fff;border:none;border-radius:50%;
+  width:32px;height:32px;font-size:1.3rem;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;line-height:1;}
+.card-add-btn:hover{background:var(--red2);transform:scale(1.12);}
+
+/* ── FLOATING CART ── */
+.cart-fab{position:fixed;bottom:24px;right:24px;z-index:4000;
+  background:var(--red);color:#fff;border:none;border-radius:50px;
+  padding:14px 22px;font-size:.95rem;font-weight:700;
+  display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(192,57,43,.5);
+  transition:all .2s;min-width:140px;justify-content:space-between;}
+.cart-fab:hover{background:var(--red2);transform:translateY(-2px);}
+.cart-fab-badge{background:rgba(255,255,255,.25);border-radius:50px;padding:2px 10px;font-size:.85rem;font-weight:700;}
+.cart-fab-price{font-size:.85rem;opacity:.85;}
+
+/* ── SIDE PANEL (Cart) ── */
+.panel-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;}
+.panel-ov.show{display:block;}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:#fff;
+  display:flex;flex-direction:column;box-shadow:-8px 0 40px rgba(0,0,0,.2);z-index:5001;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);}
+.panel.open{transform:translateX(0);}
+.panel-header{padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-header h3{font-family:'Playfair Display',serif;font-size:1.2rem;}
+.panel-close{background:none;border:1px solid var(--border);border-radius:8px;width:36px;height:36px;
+  font-size:1.1rem;display:flex;align-items:center;justify-content:center;}
+.panel-close:hover{background:var(--cream);}
+.panel-mode{display:flex;background:var(--cream);border-radius:10px;padding:4px;margin:16px;gap:4px;}
+.mode-tab{flex:1;border:none;background:transparent;padding:10px;border-radius:8px;font-weight:600;
+  font-size:.85rem;color:var(--muted);transition:all .2s;}
+.mode-tab.active{background:#fff;color:var(--red);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.panel-scroll{flex:1;overflow-y:auto;}
+.panel-body{padding:0 16px 16px;}
+.cart-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.cart-empty .icon{font-size:3rem;margin-bottom:12px;}
+.cart-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
+.ci-qty-ctrl{display:flex;align-items:center;gap:6px;}
+.ci-btn{background:var(--cream);border:1px solid var(--border);border-radius:6px;
+  width:26px;height:26px;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
+.ci-btn:hover{background:var(--border);}
+.ci-qty{font-weight:700;min-width:20px;text-align:center;font-size:.9rem;}
+.ci-info{flex:1;}
+.ci-name{font-size:.85rem;font-weight:600;color:var(--dark);}
+.ci-extras{font-size:.75rem;color:var(--muted);margin-top:2px;}
+.ci-price{font-weight:700;font-size:.9rem;white-space:nowrap;}
+.ci-del{background:none;border:none;color:#ccc;font-size:1rem;padding:4px;}
+.ci-del:hover{color:var(--red);}
+
+/* DELIVERY INFO */
+.delivery-fields{padding:0 16px;}
+.delivery-fields label{display:block;font-size:.8rem;font-weight:600;color:var(--dark);margin-bottom:4px;margin-top:12px;}
+.delivery-fields input,.delivery-fields select{
+  width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--dark);background:#fff;}
+.delivery-fields input:focus,.delivery-fields select:focus{outline:none;border-color:var(--red);}
+.delivery-fields .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fee-note{background:var(--cream);border-radius:8px;padding:10px 12px;font-size:.8rem;color:var(--muted);margin-top:12px;}
+
+/* ORDER SUMMARY */
+.order-summary{padding:16px;border-top:1px solid var(--border);}
+.sum-row{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted);margin-bottom:6px;}
+.sum-row.total{font-size:1.05rem;font-weight:700;color:var(--dark);border-top:1px solid var(--border);padding-top:10px;margin-top:6px;}
+.pay-select{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 12px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--dark);background:#fff;margin:12px 0;}
+.pay-select:focus{outline:none;border-color:var(--red);}
+#payment-logos{display:none;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;}
+.checkbox-row{display:flex;align-items:flex-start;gap:8px;font-size:.78rem;color:var(--muted);margin-bottom:8px;}
+.checkbox-row input{margin-top:2px;accent-color:var(--red);}
+.checkbox-row a{color:var(--red);text-decoration:underline;cursor:pointer;}
+.btn-order{width:100%;background:var(--red);color:#fff;border:none;border-radius:10px;
+  padding:15px;font-size:1rem;font-weight:700;transition:all .2s;margin-top:8px;}
+.btn-order:disabled{background:#ccc;color:#888;cursor:not-allowed;}
+.btn-order:not(:disabled):hover{background:var(--red2);}
+
+/* ── POPUP MODAL ── */
+.popup-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:6000;align-items:center;justify-content:center;padding:20px;}
+.popup-ov.show{display:flex;}
+.popup-box{background:#fff;border-radius:18px;max-width:480px;width:100%;max-height:90vh;
+  display:flex;flex-direction:column;overflow:hidden;animation:popIn .22s ease;}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.popup-img{width:100%;height:200px;object-fit:cover;background:linear-gradient(135deg,#f5e6d0,#e8c89a);
+  display:flex;align-items:center;justify-content:center;font-size:4rem;flex-shrink:0;}
+.popup-body{padding:20px 22px;overflow-y:auto;flex:1;}
+.popup-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:4px;}
+.popup-desc{font-size:.84rem;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+.popup-section{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--muted);margin:14px 0 8px;}
+.size-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.size-btn{border:2px solid var(--border);border-radius:10px;padding:8px 14px;font-size:.84rem;
+  font-weight:600;background:#fff;color:var(--dark);cursor:pointer;transition:all .2s;}
+.size-btn.active,.size-btn:hover{border-color:var(--red);background:#fff5f5;color:var(--red);}
+.extras-grid{display:flex;flex-direction:column;gap:6px;}
+.extra-cb{display:flex;align-items:center;justify-content:space-between;
+  background:var(--cream);border-radius:8px;padding:8px 12px;cursor:pointer;}
+.extra-cb:hover{background:#f0e8e0;}
+.extra-cb input{accent-color:var(--red);}
+.extra-cb label{flex:1;padding-left:8px;font-size:.85rem;cursor:pointer;}
+.extra-cb .eprice{font-size:.8rem;color:var(--muted);font-weight:600;}
+.popup-footer{padding:16px 22px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.popup-price-tag{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--red);}
+.btn-add-popup{flex:1;background:var(--red);color:#fff;border:none;border-radius:10px;
+  padding:14px;font-size:.95rem;font-weight:700;transition:all .2s;}
+.btn-add-popup:hover{background:var(--red2);}
+.btn-popup-close{background:none;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:1rem;}
+
+/* ALLERGEN NOTE */
+.allergen-note{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.5;
+  background:var(--cream);border-radius:8px;padding:8px 10px;}
+
+/* ── DANKE MODAL ── */
+#dankeModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:9000;align-items:center;justify-content:center;}
+.danke-box{background:#fff;border-radius:20px;padding:44px 36px;max-width:400px;text-align:center;
+  animation:popIn .3s ease;}
+.danke-icon{font-size:3.5rem;margin-bottom:16px;}
+.danke-box h2{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:10px;}
+.danke-box p{color:var(--muted);font-size:.88rem;margin-bottom:20px;line-height:1.6;}
+.danke-num{font-size:1.4rem;font-weight:700;color:var(--red);margin:8px 0 20px;}
+.danke-box button{background:var(--red);color:#fff;border:none;border-radius:10px;
+  padding:13px 28px;font-size:.95rem;font-weight:700;}
+
+/* ── CLOSED BANNER ── */
+#closedBanner{display:none;position:sticky;top:0;z-index:600;
+  padding:13px 20px;text-align:center;font-weight:700;font-size:.9rem;color:#fff;}
+
+/* ── LEGAL MODALS ── */
+.legal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;
+  overflow-y:auto;padding:40px 20px;}
+.legal-ov.show{display:block;}
+.legal-box{background:#fff;max-width:680px;margin:0 auto;border-radius:16px;padding:40px;
+  position:relative;}
+.legal-box h2{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:20px;color:var(--dark);}
+.legal-box h3{font-size:1rem;margin:20px 0 8px;color:var(--dark);}
+.legal-box p,.legal-box li{font-size:.88rem;color:#555;line-height:1.7;margin-bottom:8px;}
+.legal-close{position:absolute;top:20px;right:20px;background:none;border:1px solid var(--border);
+  border-radius:8px;width:36px;height:36px;font-size:1rem;display:flex;align-items:center;justify-content:center;}
+.legal-close:hover{background:var(--cream);}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);color:rgba(255,255,255,.8);padding:48px 20px 30px;}
+.footer-inner{max-width:1000px;margin:0 auto;}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:36px;margin-bottom:36px;}
+.footer-col h4{font-family:'Playfair Display',serif;font-size:1rem;color:#fff;margin-bottom:14px;}
+.footer-col p,.footer-col a{font-size:.84rem;line-height:2;color:rgba(255,255,255,.65);}
+.footer-col a:hover{color:var(--gold);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:.8rem;color:rgba(255,255,255,.4);}
+.footer-links{display:flex;gap:18px;}
+.footer-links a{color:rgba(255,255,255,.5);font-size:.8rem;}
+.footer-links a:hover{color:var(--gold);}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1c0a00;color:#fff;padding:11px 20px;border-radius:50px;font-size:.85rem;
+  font-weight:600;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .product-grid{grid-template-columns:1fr 1fr;gap:9px;}
+  .card-body{padding:10px 11px;}
+  .item-name{font-size:.85rem;}
+  .hero{min-height:360px;padding:60px 16px 40px;}
+  .panel{width:100vw;}
+  .info-bar-inner{flex-direction:column;align-items:center;text-align:center;}
+  .legal-box{padding:28px 20px;}
+  .hero-strip{gap:16px;}
+}
+@media(max-width:360px){.product-grid{grid-template-columns:1fr;}}
+
+/* STAGGERED ENTRANCE */
+.product-item{animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── VISUAL DESIGN REFRESH ── */
+
+/* Card emoji header strip */
+.card-img-strip{
+  height:82px;display:flex;align-items:center;justify-content:center;
+  font-size:2.7rem;flex-shrink:0;position:relative;
+  border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+}
+.ci-angebote  {background:linear-gradient(135deg,#b03a2e 0%,#e74c3c 100%);}
+.ci-menues    {background:linear-gradient(135deg,#ca6f1e 0%,#e67e22 100%);}
+.ci-mittag    {background:linear-gradient(135deg,#d68910 0%,#f4d03f 100%);}
+.ci-pizza     {background:linear-gradient(135deg,#b03a2e 0%,#e74c3c 100%);}
+.ci-famiglia  {background:linear-gradient(135deg,#7b241c 0%,#b03a2e 100%);}
+.ci-snacks    {background:linear-gradient(135deg,#7e5109 0%,#ca9c3a 100%);}
+.ci-pasta     {background:linear-gradient(135deg,#7d6608 0%,#c9a227 100%);}
+.ci-salat     {background:linear-gradient(135deg,#1a7a40 0%,#27ae60 100%);}
+.ci-geflügel  {background:linear-gradient(135deg,#7d6608 0%,#d4ac0d 100%);}
+.ci-getraenke {background:linear-gradient(135deg,#1a5276 0%,#2980b9 100%);}
+
+/* Popular / Scharf badge inside strip */
+.strip-badge{
+  position:absolute;top:8px;right:8px;
+  background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.45);
+  border-radius:20px;padding:2px 8px;font-size:.58rem;color:#fff;
+  font-weight:700;letter-spacing:.5px;text-transform:uppercase;line-height:1.6;
+}
+
+/* Price as pill badge */
+.item-price{
+  background:var(--cream);border:1.5px solid var(--border);
+  border-radius:20px;padding:3px 10px;
+  font-weight:700;font-size:.88rem;color:var(--dark);
+}
+
+/* Section title with left accent bar */
+.section-title{
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
+  color:var(--dark);margin:40px 0 6px;display:flex;align-items:center;gap:10px;
+  padding-left:14px;border-left:4px solid var(--red);
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);margin-left:12px;}
+
+/* Category pills – solid active state */
+.cat-pill.active{
+  color:#fff;background:var(--red);border-bottom-color:transparent;border-radius:4px;
+}
+
+/* Section wrapper – subtle alternating bg */
+.main-wrap > div:nth-child(even){
+  background:rgba(212,167,106,.06);border-radius:16px;padding:12px;margin:-12px;
+}
+</style>
+</head>
+<body>
+
+<!-- CLOSED BANNER -->
+<div id="closedBanner"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🍕 Seit 1998 – Ennigerloh</div>
+  <h1>Pizzeria<br>Pinocchio</h1>
+  <p>Authentische italienische Küche – frisch zubereitet mit Leidenschaft</p>
+  <button class="hero-cta" onclick="openPanel()">🛒 Jetzt bestellen</button>
+  <div class="hero-strip">
+    <div class="hero-strip-item"><span>🛵</span> Lieferung ab 12 €</div>
+    <div class="hero-strip-item"><span>🏃</span> Abholung möglich</div>
+    <div class="hero-strip-item"><span>🕐</span> Täglich 11:00 – 22:30</div>
+    <div class="hero-strip-item"><span>📍</span> Ennigerloh</div>
+  </div>
+</section>
+
+<!-- INFO BAR -->
+<div class="info-bar">
+  <div class="info-bar-inner">
+    <div class="info-item">
+      <div class="info-icon">📍</div>
+      <div class="info-text">
+        <h4>Adresse</h4>
+        <p>Bahnhofstraße 6<br>59320 Ennigerloh</p>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">🕐</div>
+      <div class="info-text">
+        <h4>Öffnungszeiten</h4>
+        <p id="openInfo">Täglich 11:00 – 22:30 Uhr</p>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">📞</div>
+      <div class="info-text">
+        <h4>Telefon</h4>
+        <p><a href="tel:+492524000000">02524 / 000000</a></p>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="info-icon">🛵</div>
+      <div class="info-text">
+        <h4>Lieferung</h4>
+        <p>Ennigerloh ab 0,00 €<br>Beckum ab 2,50 €</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY CATEGORY NAV -->
+<nav class="sticky-nav" id="catNav">
+  <button class="cat-pill active" onclick="scrollTo('angebote',this)">🎯 Angebote</button>
+  <button class="cat-pill" onclick="scrollTo('menues',this)">🍽️ Menüs</button>
+  <button class="cat-pill" onclick="scrollTo('mittagsangebot',this)">☀️ Mittag</button>
+  <button class="cat-pill" onclick="scrollTo('pizza',this)">🍕 Pizza</button>
+  <button class="cat-pill" onclick="scrollTo('familienpizza',this)">👨‍👩‍👧 Familienpizza</button>
+  <button class="cat-pill" onclick="scrollTo('pizzabroetchen',this)">🥖 Snacks</button>
+  <button class="cat-pill" onclick="scrollTo('pasta',this)">🍝 Pasta</button>
+  <button class="cat-pill" onclick="scrollTo('rigatoni',this)">🍝 Rigatoni</button>
+  <button class="cat-pill" onclick="scrollTo('spaghetti',this)">🍝 Spaghetti</button>
+  <button class="cat-pill" onclick="scrollTo('tortellini',this)">🍝 Tortellini</button>
+  <button class="cat-pill" onclick="scrollTo('gnocchi',this)">🥟 Gnocchi</button>
+  <button class="cat-pill" onclick="scrollTo('auflaeufe',this)">🥘 Aufläufe</button>
+  <button class="cat-pill" onclick="scrollTo('kartoffelauflauf',this)">🥔 Kartoffelauflauf</button>
+  <button class="cat-pill" onclick="scrollTo('salat',this)">🥗 Salat</button>
+  <button class="cat-pill" onclick="scrollTo('gefluegelgerichte',this)">🍗 Geflügel</button>
+  <button class="cat-pill" onclick="scrollTo('getraenke',this)">🥤 Getränke</button>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main-wrap">
+
+
+  <!-- ANGEBOTE -->
+  <div id="angebote">
+    <div class="section-title">🎯 Pinocchio Angebote</div>
+    <p class="section-sub">Unsere Spezialangebote – Rundum-Sorglos-Pakete</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Pinocchio Angebot 1','28.00','2x Pizza nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l','')"><div class="card-body"><span class="item-num">A1</span><div class="item-name">Pinocchio Angebot 1</div><div class="item-desc">2x Pizza nach Wahl, 1x Großer Salat, 1x Cola 1,0l</div><div class="card-footer"><span class="item-price">28,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Pinocchio Angebot 2','28.00','2x Nudelgericht nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l','')"><div class="card-body"><span class="item-num">A2</span><div class="item-name">Pinocchio Angebot 2</div><div class="item-desc">2x Nudelgericht nach Wahl, 1x Großer Salat, 1x Cola 1,0l</div><div class="card-footer"><span class="item-price">28,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Pinocchio Angebot 3','28.00','40 cm Pizza, 1x Großer Salat, 1 Flasche Coca Cola 1,0l','')"><div class="card-body"><span class="item-num">A3</span><div class="item-name">Pinocchio Angebot 3</div><div class="item-desc">40 cm Pizza, 1x Großer Salat, 1x Cola 1,0l</div><div class="card-footer"><span class="item-price">28,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Pinocchio Angebot 4','28.00','2x Hähnchen- oder Putengeschnetzeltes, 1x Großer Salat, 1 Flasche Coca Cola 1,0l','')"><div class="card-body"><span class="item-num">A4</span><div class="item-name">Pinocchio Angebot 4</div><div class="item-desc">2x Hähnchen- oder Putengeschnetzeltes, 1x Großer Salat, 1x Cola 1,0l</div><div class="card-footer"><span class="item-price">28,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- MENÜS -->
+  <div id="menues">
+    <div class="section-title">🍽️ Menüs</div>
+    <p class="section-sub">Montag – Freitag von 11:30 – 14:30 Uhr</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Menü 1','8.50','1x Pizza (28 cm) nach Wahl, 1x kleiner Salat','A,G')"><div class="card-body"><span class="item-num">M1</span><div class="item-name">Menü 1</div><div class="item-desc">1x Pizza (28 cm) nach Wahl, 1x kleiner Salat</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Menü 2','8.50','1x Nudelgericht, Pizzabrötchen','A,G')"><div class="card-body"><span class="item-num">M2</span><div class="item-name">Menü 2</div><div class="item-desc">1x Nudelgericht, Pizzabrötchen</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Menü 3','8.50','1x Großer Salat, Pizzabrötchen','A,G')"><div class="card-body"><span class="item-num">M3</span><div class="item-name">Menü 3</div><div class="item-desc">1x Großer Salat, Pizzabrötchen</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Menü 4','8.50','1x Putengeschnetzeltes, Pizzabrötchen','A,G')"><div class="card-body"><span class="item-num">M4</span><div class="item-name">Menü 4</div><div class="item-desc">1x Putengeschnetzeltes, Pizzabrötchen</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Menü 5','8.50','1x Hähnchengeschnetzeltes, Pizzabrötchen','A,G')"><div class="card-body"><span class="item-num">M5</span><div class="item-name">Menü 5</div><div class="item-desc">1x Hähnchengeschnetzeltes, Pizzabrötchen</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Menü 6','8.50','1x kleine Pizza nach Wahl, 1 kleiner gem. Salat','A,G')"><div class="card-body"><span class="item-num">M6</span><div class="item-name">Menü 6</div><div class="item-desc">1x kleine Pizza nach Wahl, 1 kleiner gem. Salat</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- MITTAGSANGEBOT -->
+  <div id="mittagsangebot">
+    <div class="section-title">☀️ Mittagsangebot</div>
+    <p class="section-sub">Montag – Freitag von 11:30 – 14:30 Uhr</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Mittagsangebot Pizza','5.50','Pizza nach Wahl','A,G')"><div class="card-body"><span class="item-num">MA</span><div class="item-name">Mittagsangebot Pizza</div><div class="item-desc">Pizza nach Wahl</div><div class="card-footer"><span class="item-price">5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- PIZZA -->
+  <div id="pizza">
+    <div class="section-title">🍕 Pizza</div>
+    <p class="section-sub">Alle Pizzen mit Tomatensoße und Käse zubereitet</p>
+    <div class="product-grid">
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:8px;">Klassische Pizzen</div>
+      <div class="product-item" onclick="openPizza('1. Pizza Margherita','5.00','mit Tomaten und Käse','')"><div class="card-body"><span class="item-num">1</span><div class="item-name">1. Pizza Margherita</div><div class="item-desc">mit Tomaten und Käse</div><div class="card-footer"><span class="item-price">ab 5,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('2. Pizza Cipolla','5.50','mit Zwiebeln','')"><div class="card-body"><span class="item-num">2</span><div class="item-name">2. Pizza Cipolla</div><div class="item-desc">mit Zwiebeln</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('3. Pizza Funghi','5.50','mit Pilzen','')"><div class="card-body"><span class="item-num">3</span><div class="item-name">3. Pizza Funghi</div><div class="item-desc">mit Pilzen</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('4. Pizza Paprika','5.50','mit Paprika','')"><div class="card-body"><span class="item-num">4</span><div class="item-name">4. Pizza Paprika</div><div class="item-desc">mit Paprika</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('5. Pizza Prosciutto','5.50','mit Schinken','')"><div class="card-body"><span class="item-num">5</span><div class="item-name">5. Pizza Prosciutto</div><div class="item-desc">mit Schinken</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('6. Pizza Salami','5.50','mit Salami','')"><div class="card-body"><span class="item-num">6</span><div class="item-name">6. Pizza Salami</div><div class="item-desc">mit Salami</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('7. Pizza Tonno','5.50','mit Thunfisch','')"><div class="card-body"><span class="item-num">7</span><div class="item-name">7. Pizza Tonno</div><div class="item-desc">mit Thunfisch</div><div class="card-footer"><span class="item-price">ab 5,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('8. Pizza Tonno Cipolla','6.00','mit Thunfisch und Zwiebeln','')"><div class="card-body"><span class="item-num">8</span><div class="item-name">8. Pizza Tonno Cipolla</div><div class="item-desc">mit Thunfisch und Zwiebeln</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('9. Pizza Primavera','6.00','mit Salami und Pilzen','')"><div class="card-body"><span class="item-num">9</span><div class="item-name">9. Pizza Primavera</div><div class="item-desc">mit Salami und Pilzen</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('10. Pizza Romana','6.00','mit Schinken und Pilzen','')"><div class="card-body"><span class="item-num">10</span><div class="item-name">10. Pizza Romana</div><div class="item-desc">mit Schinken und Pilzen</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('11. Pizza Dallas','6.00','mit Spinat, Krabben und Knoblauch','')"><div class="card-body"><span class="item-num">11</span><div class="item-name">11. Pizza Dallas</div><div class="item-desc">mit Spinat, Krabben und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('12. Pizza Hawaii','6.00','mit Schinken und Ananas','')"><div class="card-body"><span class="item-num">12</span><div class="item-name">12. Pizza Hawaii</div><div class="item-desc">mit Schinken und Ananas</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('13. Pizza Atlanta','6.00','mit Spinat, Gorgonzola und Knoblauch','')"><div class="card-body"><span class="item-num">13</span><div class="item-name">13. Pizza Atlanta</div><div class="item-desc">mit Spinat, Gorgonzola und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('14. Pizza Quattro Stagioni','6.00','mit Schinken, Artischocken, Paprika und Pilzen','')"><div class="card-body"><span class="item-num">14</span><div class="item-name">14. Pizza Quattro Stagioni</div><div class="item-desc">mit Schinken, Artischocken, Paprika und Pilzen</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('15. Pizza Vegetaria','6.00','mit frischen Tomaten, Spinat, Broccoli, Zwiebeln und Paprika','')"><div class="card-body"><span class="item-num">15</span><div class="item-name">15. Pizza Vegetaria</div><div class="item-desc">mit frischen Tomaten, Spinat, Broccoli, Zwiebeln und Paprika</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('16. Calzone','6.00','gefüllt mit Pilzen, Schinken und Salami','')"><div class="card-body"><span class="item-num">16</span><div class="item-name">16. Calzone</div><div class="item-desc">gefüllt mit Pilzen, Schinken und Salami</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('17. Pizza Texas','6.00','mit Broccoli, Zwiebeln, Pilzen und Mais','')"><div class="card-body"><span class="item-num">17</span><div class="item-name">17. Pizza Texas</div><div class="item-desc">mit Broccoli, Zwiebeln, Pilzen und Mais</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('18. Pizza Gamberetti','6.00','mit Scampi, Knoblauch und Muscheln','')"><div class="card-body"><span class="item-num">18</span><div class="item-name">18. Pizza Gamberetti</div><div class="item-desc">mit Scampi, Knoblauch und Muscheln</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('19. Pizza nach Art des Hauses','6.00','mit Schinken, Salami, Pilzen und Thunfisch','')"><div class="card-body"><span class="item-num">19</span><div class="item-name">19. Pizza nach Art des Hauses</div><div class="item-desc">mit Schinken, Salami, Pilzen und Thunfisch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('20. Pizza Frutti di Mare','6.00','mit Thunfisch, Meeresfrüchten und Knoblauch','')"><div class="card-body"><span class="item-num">20</span><div class="item-name">20. Pizza Frutti di Mare</div><div class="item-desc">mit Thunfisch, Meeresfrüchten und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('21. Pizza Mista','6.00','mit Schinken, Salami und Pilzen','')"><div class="card-body"><span class="item-num">21</span><div class="item-name">21. Pizza Mista</div><div class="item-desc">mit Schinken, Salami und Pilzen</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('22. Pizza Italia','6.00','mit Schinken, Thunfisch und Salami','')"><div class="card-body"><span class="item-num">22</span><div class="item-name">22. Pizza Italia</div><div class="item-desc">mit Schinken, Thunfisch und Salami</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('23. Pizza Picante','6.00','mit Schinken, Artischocken, Peperoni, Kapern, Spargel und Sardellen','')"><div class="card-body"><span class="item-num">23</span><div class="item-name">23. Pizza Picante</div><div class="item-desc">mit Schinken, Artischocken, Peperoni, Kapern, Spargel und Sardellen</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('24. Pizza Gorgonzola','6.00','mit Gorgonzola und Schinken','')"><div class="card-body"><span class="item-num">24</span><div class="item-name">24. Pizza Gorgonzola</div><div class="item-desc">mit Gorgonzola und Schinken</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('25. Pizza Mozzarella','6.00','mit Mozzarella','')"><div class="card-body"><span class="item-num">25</span><div class="item-name">25. Pizza Mozzarella</div><div class="item-desc">mit Mozzarella</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('26. Pizza 3 Formaggio','6.00','mit drei verschiedenen Käsesorten','')"><div class="card-body"><span class="item-num">26</span><div class="item-name">26. Pizza 3 Formaggio</div><div class="item-desc">mit drei verschiedenen Käsesorten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('27. Pizza Spaghetti','6.00','mit Fleischsauce, Mozzarella und Spaghetti, ohne Tomaten','')"><div class="card-body"><span class="item-num">27</span><div class="item-name">27. Pizza Spaghetti</div><div class="item-desc">mit Fleischsauce, Mozzarella und Spaghetti, ohne Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('28. Calzone Mafiose','6.00','gefüllt mit Thunfisch, Artischocken und Schinken','')"><div class="card-body"><span class="item-num">28</span><div class="item-name">28. Calzone Mafiose</div><div class="item-desc">gefüllt mit Thunfisch, Artischocken und Schinken</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('29. Pizza Muscheln','6.00','mit Thunfisch, Muscheln und Knoblauch','')"><div class="card-body"><span class="item-num">29</span><div class="item-name">29. Pizza Muscheln</div><div class="item-desc">mit Thunfisch, Muscheln und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('30. Pizza Scampi','6.00','mit Scampis und Knoblauch','')"><div class="card-body"><span class="item-num">30</span><div class="item-name">30. Pizza Scampi</div><div class="item-desc">mit Scampis und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('30a. Pizza Garnelen','7.00','mit gebratenen Garnelen und Knoblauch','')"><div class="card-body"><span class="item-num">30a</span><div class="item-name">30a. Pizza Garnelen</div><div class="item-desc">mit gebratenen Garnelen und Knoblauch</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('31. Pizza Capricciosa','6.00','mit Salami, Kapern, Sardellen und Oliven','')"><div class="card-body"><span class="item-num">31</span><div class="item-name">31. Pizza Capricciosa</div><div class="item-desc">mit Salami, Kapern, Sardellen und Oliven</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('32. Pizza Popey','6.00','mit frischen Tomaten, Blattspinat und Mozzarella','')"><div class="card-body"><span class="item-num">32</span><div class="item-name">32. Pizza Popey</div><div class="item-desc">mit frischen Tomaten, Blattspinat und Mozzarella</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('33. Pizza Inferno','6.00','extra scharf – mit Schinken, Pilzen und Artischocken','')"><div class="card-body"><span class="item-num">33</span><div class="item-name">33. Pizza Inferno 🌶️</div><div class="item-desc">extra scharf – mit Schinken, Pilzen und Artischocken</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('34. Pizza Sizilliana','6.00','mit Zwiebeln, Paprika, Peperoni und Knoblauch','')"><div class="card-body"><span class="item-num">34</span><div class="item-name">34. Pizza Sizilliana</div><div class="item-desc">mit Zwiebeln, Paprika, Peperoni und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('35. Pizza Pinocchio','6.00','von Allem etwas','')"><div class="card-body"><span class="item-num">35</span><div class="item-name">35. Pizza Pinocchio</div><div class="item-desc">von Allem etwas</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('36. Pizza Broccoli','6.00','mit frischen Tomaten und Broccoli','')"><div class="card-body"><span class="item-num">36</span><div class="item-name">36. Pizza Broccoli</div><div class="item-desc">mit frischen Tomaten und Broccoli</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('37. Pizza Vesuvia','6.00','mit Paprika, Artischocken, Pilzen, Oliven und Ei','')"><div class="card-body"><span class="item-num">37</span><div class="item-name">37. Pizza Vesuvia</div><div class="item-desc">mit Paprika, Artischocken, Pilzen, Oliven und Ei</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('38. Pizza Tonorella','6.00','mit gekochtem Ei, Thunfisch, Zwiebeln und Peperoni','')"><div class="card-body"><span class="item-num">38</span><div class="item-name">38. Pizza Tonorella</div><div class="item-desc">mit gekochtem Ei, Thunfisch, Zwiebeln und Peperoni</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('39. Pizza Phoenix','6.00','mit Broccoli, Spinat, Pilzen und Paprika','')"><div class="card-body"><span class="item-num">39</span><div class="item-name">39. Pizza Phoenix</div><div class="item-desc">mit Broccoli, Spinat, Pilzen und Paprika</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('40. Pizza Marinara','6.00','mit Salami, Artischocken, Spargel, Paprika und Oliven','')"><div class="card-body"><span class="item-num">40</span><div class="item-name">40. Pizza Marinara</div><div class="item-desc">mit Salami, Artischocken, Spargel, Paprika und Oliven</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Neuheiten</div>
+      <div class="product-item" onclick="openPizza('44. Pizza Lachs','6.00','mit Lachs, Spinat und Knoblauch','')"><div class="card-body"><span class="item-num">44</span><div class="item-name">44. Pizza Lachs 🆕</div><div class="item-desc">mit Lachs, Spinat und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('45. Pizza Chicken','6.00','mit Hähnchen und Ananas','')"><div class="card-body"><span class="item-num">45</span><div class="item-name">45. Pizza Chicken 🆕</div><div class="item-desc">mit Hähnchen und Ananas</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('46. Pizza Bolognese','6.00','mit Fleischsauce, ohne Tomaten','')"><div class="card-body"><span class="item-num">46</span><div class="item-name">46. Pizza Bolognese 🆕</div><div class="item-desc">mit Fleischsauce, ohne Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Spezial-Pizzen</div>
+      <div class="product-item" onclick="openPizza('99. Pizza Amore','6.00','mit Mozzarella, Spinat, Zwiebeln, Paprika und Knoblauch','')"><div class="card-body"><span class="item-num">99</span><div class="item-name">99. Pizza Amore</div><div class="item-desc">mit Mozzarella, Spinat, Zwiebeln, Paprika und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('100. Pizza Ramacca','6.00','mit Zwiebeln, frischen Pilzen, frischer Paprika und Knoblauch','')"><div class="card-body"><span class="item-num">100</span><div class="item-name">100. Pizza Ramacca</div><div class="item-desc">mit Zwiebeln, frischen Pilzen, frischer Paprika und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('101. Pizza Jungfrau','6.00','mit frischer Paprika, Spargel und Mais','')"><div class="card-body"><span class="item-num">101</span><div class="item-name">101. Pizza Jungfrau</div><div class="item-desc">mit frischer Paprika, Spargel und Mais</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('102. Pizza Widder','6.00','mit Spinat, Knoblauch und Spiegelei','')"><div class="card-body"><span class="item-num">102</span><div class="item-name">102. Pizza Widder</div><div class="item-desc">mit Spinat, Knoblauch und Spiegelei</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('103. Calzone Spezial','6.00','mit Spinat, Broccoli, Champignons und Knoblauch','')"><div class="card-body"><span class="item-num">103</span><div class="item-name">103. Calzone Spezial</div><div class="item-desc">mit Spinat, Broccoli, Champignons und Knoblauch</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Gyros-Pizzen</div>
+      <div class="product-item" onclick="openPizza('113. Pizza Miami','6.00','mit Gyros und Zwiebeln','')"><div class="card-body"><span class="item-num">113</span><div class="item-name">113. Pizza Miami</div><div class="item-desc">mit Gyros und Zwiebeln</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('114. Pizza Santa Fe','6.00','mit Gyros, Feta und frischen Tomaten','')"><div class="card-body"><span class="item-num">114</span><div class="item-name">114. Pizza Santa Fe</div><div class="item-desc">mit Gyros, Feta und frischen Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('115. Pizza Alaska','6.00','mit Gyros, Peperoni und Salami','')"><div class="card-body"><span class="item-num">115</span><div class="item-name">115. Pizza Alaska</div><div class="item-desc">mit Gyros, Peperoni und Salami</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('116. Pizza Manhattan','6.00','mit Gyros, Zwiebeln, Salat, frischen Tomaten, Gurken und Joghurt','')"><div class="card-body"><span class="item-num">116</span><div class="item-name">116. Pizza Manhattan</div><div class="item-desc">mit Gyros, Zwiebeln, Salat, Tomaten, Gurken und Joghurt</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Asia-Pizzen</div>
+      <div class="product-item" onclick="openPizza('117. Pizza Hongkong','6.00','mit Hähnchen, Zwiebeln und Gemüse','')"><div class="card-body"><span class="item-num">117</span><div class="item-name">117. Pizza Hongkong</div><div class="item-desc">mit Hähnchen, Zwiebeln und Gemüse</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('118. Pizza Tokio','6.00','mit Hähnchen, Schinken, Ananas und Gemüse','')"><div class="card-body"><span class="item-num">118</span><div class="item-name">118. Pizza Tokio</div><div class="item-desc">mit Hähnchen, Schinken, Ananas und Gemüse</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('119. Pizza Bangkok','6.00','mit Hähnchen, Thunfisch, Zwiebeln und Gemüse','')"><div class="card-body"><span class="item-num">119</span><div class="item-name">119. Pizza Bangkok</div><div class="item-desc">mit Hähnchen, Thunfisch, Zwiebeln und Gemüse</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('120. Pizza Shanghai','6.00','mit Hähnchen, Zwiebeln, Gemüse, Salat, frischen Tomaten, Gurken und Joghurt','')"><div class="card-body"><span class="item-num">120</span><div class="item-name">120. Pizza Shanghai</div><div class="item-desc">mit Hähnchen, Zwiebeln, Gemüse, Salat, Tomaten, Gurken und Joghurt</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Sauce Hollandaise</div>
+      <div class="product-item" onclick="openPizza('121. Pizza Palermo','6.00','mit Sahnesauce, Krabben, Knoblauch und Sauce Hollandaise, ohne Tomaten','')"><div class="card-body"><span class="item-num">121</span><div class="item-name">121. Pizza Palermo</div><div class="item-desc">mit Sahnesauce, Krabben, Knoblauch und Sauce Hollandaise</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('122. Pizza Diavolo','6.00','mit Sauce Hollandaise, Broccoli, Spargel und Schinken','')"><div class="card-body"><span class="item-num">122</span><div class="item-name">122. Pizza Diavolo</div><div class="item-desc">mit Sauce Hollandaise, Broccoli, Spargel und Schinken</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Rucola-Pizzen</div>
+      <div class="product-item" onclick="openPizza('201. Pizza Rucola-Schinken','6.00','mit Schinken, Rucola und frischen Tomaten','')"><div class="card-body"><span class="item-num">201</span><div class="item-name">201. Pizza Rucola-Schinken</div><div class="item-desc">mit Schinken, Rucola und frischen Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('202. Pizza Rucola-Champignons','6.00','mit Champignons, Rucola und frischen Tomaten','')"><div class="card-body"><span class="item-num">202</span><div class="item-name">202. Pizza Rucola-Champignons</div><div class="item-desc">mit Champignons, Rucola und frischen Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('203. Pizza Rucola-Mozzarella','6.00','mit Mozzarella, Rucola und frischen Tomaten','')"><div class="card-body"><span class="item-num">203</span><div class="item-name">203. Pizza Rucola-Mozzarella</div><div class="item-desc">mit Mozzarella, Rucola und frischen Tomaten</div><div class="card-footer"><span class="item-price">ab 6,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">Döner-Pizzen</div>
+      <div class="product-item" onclick="openPizza('204. Pizza Dönerfleisch','6.50','mit Dönerfleisch, Mais, Broccoli, Sauce Hollandaise','')"><div class="card-body"><span class="item-num">204</span><div class="item-name">204. Pizza Dönerfleisch</div><div class="item-desc">mit Dönerfleisch, Mais, Broccoli, Sauce Hollandaise</div><div class="card-footer"><span class="item-price">ab 6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('205. Pizza Dönerfleisch','6.50','mit Dönerfleisch, Zwiebeln, Jalapenos, frische Tomaten','')"><div class="card-body"><span class="item-num">205</span><div class="item-name">205. Pizza Dönerfleisch</div><div class="item-desc">mit Dönerfleisch, Zwiebeln, Jalapenos, frischen Tomaten</div><div class="card-footer"><span class="item-price">ab 6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('206. Pizza Dönerfleisch','6.50','mit Dönerfleisch, Schafskäse, Peperoni, Paprika, Zwiebeln','')"><div class="card-body"><span class="item-num">206</span><div class="item-name">206. Pizza Dönerfleisch</div><div class="item-desc">mit Dönerfleisch, Schafskäse, Peperoni, Paprika, Zwiebeln</div><div class="card-footer"><span class="item-price">ab 6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('207. Döner Calzone','6.50','mit Dönerfleisch, Sauce Hollandaise, BBQ-Sauce, Zwiebeln, Peperoni','')"><div class="card-body"><span class="item-num">207</span><div class="item-name">207. Döner Calzone</div><div class="item-desc">mit Dönerfleisch, Sauce Hollandaise, BBQ-Sauce, Zwiebeln, Peperoni</div><div class="card-footer"><span class="item-price">ab 6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('208. Pizza Sucuk','6.50','mit Knoblauchwurst, Peperoni und Spiegelei','')"><div class="card-body"><span class="item-num">208</span><div class="item-name">208. Pizza Sucuk</div><div class="item-desc">mit Knoblauchwurst, Peperoni und Spiegelei</div><div class="card-footer"><span class="item-price">ab 6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div style="grid-column:1/-1;font-weight:700;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-top:16px;">American Pizzen</div>
+      <div class="product-item" onclick="openPizza('209. American Pizza New York','7.00','Barbeque-Sauce, Käse, Mozzarella, Paprika, Mais, Zwiebeln, Tabasco','')"><div class="card-body"><span class="item-num">209</span><div class="item-name">209. American Pizza New York</div><div class="item-desc">BBQ-Sauce, Käse, Mozzarella, Paprika, Mais, Zwiebeln, Tabasco</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('210. American Pizza California','7.00','Curry-Sauce, Käse, Mozzarella, Hähnchenbrust, Ananas','')"><div class="card-body"><span class="item-num">210</span><div class="item-name">210. American Pizza California</div><div class="item-desc">Curry-Sauce, Käse, Mozzarella, Hähnchenbrust, Ananas</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('211. American Pizza Key West','7.00','Barbeque-Sauce, Käse, Mozzarella, Hähnchenbrust, frische Paprika, Mais','')"><div class="card-body"><span class="item-num">211</span><div class="item-name">211. American Pizza Key West</div><div class="item-desc">BBQ-Sauce, Käse, Mozzarella, Hähnchenbrust, Paprika, Mais</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('212. American Pizza Barbecue','7.00','Barbeque-Sauce, Käse, Mozzarella, Pfannengyros, Peperoni, Oliven','')"><div class="card-body"><span class="item-num">212</span><div class="item-name">212. American Pizza Barbecue</div><div class="item-desc">BBQ-Sauce, Käse, Mozzarella, Pfannengyros, Peperoni, Oliven</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openPizza('213. American Pizza Grand Canyon','7.00','Barbeque-Sauce, Käse, Mozzarella, frische Tomaten, Bacon, Champignons, Zwiebeln','')"><div class="card-body"><span class="item-num">213</span><div class="item-name">213. American Pizza Grand Canyon</div><div class="item-desc">BBQ-Sauce, Käse, Mozzarella, Tomaten, Bacon, Champignons, Zwiebeln</div><div class="card-footer"><span class="item-price">ab 7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+
+  <!-- FAMILIENPIZZA -->
+  <div id="familienpizza">
+    <div class="section-title">👨‍👩‍👧 Familienpizza</div>
+    <p class="section-sub">Mit 4 Zutaten nach Wahl – Wunschzutaten bitte in den Anmerkungen angeben</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Familienpizza Ø 50 cm','26.50','Familienpizza (Ø 50 cm) mit 4 Zutaten nach Wahl – Wünsche bitte in den Anmerkungen angeben','A,G')"><div class="card-body"><span class="item-num">F1</span><div class="item-name">Familienpizza Ø 50 cm</div><div class="item-desc">mit 4 Zutaten nach Wahl</div><div class="card-footer"><span class="item-price">26,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Familienpizza Ø 40 cm','20.00','Familienpizza (Ø 40 cm) mit 4 Zutaten nach Wahl – Wünsche bitte in den Anmerkungen angeben','A,G')"><div class="card-body"><span class="item-num">F2</span><div class="item-name">Familienpizza Ø 40 cm</div><div class="item-desc">mit 4 Zutaten nach Wahl</div><div class="card-footer"><span class="item-price">20,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Partypizza 60x40 cm','31.00','Partypizza (60 x 40 cm) mit 4 Zutaten nach Wahl – Wünsche bitte in den Anmerkungen angeben','A,G')"><div class="card-body"><span class="item-num">F3</span><div class="item-name">Partypizza 60×40 cm</div><div class="item-desc">mit 4 Zutaten nach Wahl</div><div class="card-footer"><span class="item-price">31,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- PIZZABRÖTCHEN & SNACKS -->
+  <div id="pizzabroetchen">
+    <div class="section-title">🥖 Pizzabrötchen & Snacks</div>
+    <p class="section-sub">Knusprig aus dem Ofen</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Pizzabrötchen','3.00','Klassische Pizzabrötchen','A,G')"><div class="card-body"><span class="item-num">PB</span><div class="item-name">Pizzabrötchen</div><div class="item-desc">Klassische Pizzabrötchen</div><div class="card-footer"><span class="item-price">3,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('704. Pizzabrötchen mit Käse und Knoblauch','6.50','Pizzabrötchen mit Käse und Knoblauch','A,G')"><div class="card-body"><span class="item-num">704</span><div class="item-name">704. Pizzabrötchen mit Käse und Knoblauch</div><div class="item-desc">mit Käse und Knoblauch</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('704. Pizzabrötchen mit Tomatensauce und Knoblauch','6.50','Pizzabrötchen mit Tomatensauce und Knoblauch','A,G')"><div class="card-body"><span class="item-num">704</span><div class="item-name">704. Pizzabrötchen mit Tomatensauce</div><div class="item-desc">mit Tomatensauce und Knoblauch</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('704. Pizzabrötchen gefüllt mit Käse und Salami','6.50','Pizzabrötchen gefüllt mit Käse und Salami','A,G')"><div class="card-body"><span class="item-num">704</span><div class="item-name">704. Pizzabrötchen mit Käse &amp; Salami</div><div class="item-desc">gefüllt mit Käse und Salami</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('704. Pizzabrötchen gefüllt mit Käse und Schinken','6.50','Pizzabrötchen gefüllt mit Käse und Schinken','A,G')"><div class="card-body"><span class="item-num">704</span><div class="item-name">704. Pizzabrötchen mit Käse &amp; Schinken</div><div class="item-desc">gefüllt mit Käse und Schinken</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('704. Pizzabrötchen gefüllt mit Käse und Thunfisch','6.50','Pizzabrötchen gefüllt mit Käse und Thunfisch','A,G')"><div class="card-body"><span class="item-num">704</span><div class="item-name">704. Pizzabrötchen mit Käse &amp; Thunfisch</div><div class="item-desc">gefüllt mit Käse und Thunfisch</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('705. Käse-Tasche','6.50','Käse-Tasche','A,G')"><div class="card-body"><span class="item-num">705</span><div class="item-name">705. Käse-Tasche</div><div class="item-desc">Käse-Tasche</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('706. Käse-Tasche mit Feta','6.50','Käse-Tasche mit Feta','A,G')"><div class="card-body"><span class="item-num">706</span><div class="item-name">706. Käse-Tasche mit Feta</div><div class="item-desc">mit Feta</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('707. Spinat-Tasche mit Käse','7.00','Spinat-Tasche mit Käse','A,G')"><div class="card-body"><span class="item-num">707</span><div class="item-name">707. Spinat-Tasche mit Käse</div><div class="item-desc">mit Spinat und Käse</div><div class="card-footer"><span class="item-price">7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('708. Spezial-Tasche mit Ananas und Mozzarella','7.00','Spezial-Tasche mit Ananas und Mozzarella','A,G')"><div class="card-body"><span class="item-num">708</span><div class="item-name">708. Spezial-Tasche</div><div class="item-desc">mit Ananas und Mozzarella</div><div class="card-footer"><span class="item-price">7,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- PASTA -->
+  <div id="pasta">
+    <div class="section-title">🍝 Pasta</div>
+    <p class="section-sub">Bandnudeln, Lasagne & Maccheroni</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('71. Lasagne','9.00','mit Schinken, Fleischsauce und Käse','A,G')"><div class="card-body"><span class="item-num">71</span><div class="item-name">71. Lasagne</div><div class="item-desc">mit Schinken, Fleischsauce und Käse</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('72. Lasagne Vegetaria','9.50','mit Tomaten, Broccoli, Erbsen, Spinat und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">72</span><div class="item-name">72. Lasagne Vegetaria</div><div class="item-desc">mit Tomaten, Broccoli, Erbsen, Spinat und Sahnesauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('73. Tris di Pasta','9.00','mit Lasagne, Rigatoni, Tortellini, Fleischsauce und Käse','A,G')"><div class="card-body"><span class="item-num">73</span><div class="item-name">73. Tris di Pasta</div><div class="item-desc">mit Lasagne, Rigatoni, Tortellini, Fleischsauce und Käse</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('107. Bandnudeln Vegetaria','9.50','mit Spinat, Broccoli, Champignons und Mozzarella überbacken','A,G')"><div class="card-body"><span class="item-num">107</span><div class="item-name">107. Bandnudeln Vegetaria</div><div class="item-desc">mit Spinat, Broccoli, Champignons und Mozzarella überbacken</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('165. Bandnudeln a la Panna','9.50','mit Schinken und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">165</span><div class="item-name">165. Bandnudeln a la Panna</div><div class="item-desc">mit Schinken und Sahnesauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('166. Bandnudeln Quattro Formaggi','9.50','mit vier Käsesorten','A,G')"><div class="card-body"><span class="item-num">166</span><div class="item-name">166. Bandnudeln Quattro Formaggi</div><div class="item-desc">mit vier Käsesorten</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('167. Bandnudeln Gorgonzola','9.50','mit Spinat und Gorgonzolasauce','A,G')"><div class="card-body"><span class="item-num">167</span><div class="item-name">167. Bandnudeln Gorgonzola</div><div class="item-desc">mit Spinat und Gorgonzolasauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('168. Bandnudeln Siziliana','9.50','mit Schinken, Erbsen, frischen Champignons und Tomatensauce','A,G')"><div class="card-body"><span class="item-num">168</span><div class="item-name">168. Bandnudeln Siziliana</div><div class="item-desc">mit Schinken, Erbsen, Champignons und Tomatensauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('709. Salmone al Gorgonzola','12.00','Lachs mit Gorgonzola-Sahnesauce, Käse überbacken, Bandnudeln und Beilagensalat','A,D,G')"><div class="card-body"><span class="item-num">709</span><div class="item-name">709. Salmone al Gorgonzola</div><div class="item-desc">Lachs mit Gorgonzola-Sahnesauce, Bandnudeln und Beilagensalat</div><div class="card-footer"><span class="item-price">12,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('710. Maccheroni mit Lachs','12.00','mit Lachs, Sahnesauce und Beilagensalat','A,D,G')"><div class="card-body"><span class="item-num">710</span><div class="item-name">710. Maccheroni mit Lachs</div><div class="item-desc">mit Lachs, Sahnesauce und Beilagensalat</div><div class="card-footer"><span class="item-price">12,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('711. Maccheroni mit Lachs und Broccoli','12.00','mit Lachs, Broccoli, Knoblauch und Sahnesauce','A,D,G')"><div class="card-body"><span class="item-num">711</span><div class="item-name">711. Maccheroni mit Lachs &amp; Broccoli</div><div class="item-desc">mit Lachs, Broccoli, Knoblauch und Sahnesauce</div><div class="card-footer"><span class="item-price">12,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- RIGATONI -->
+  <div id="rigatoni">
+    <div class="section-title">🍝 Rigatoni</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('60. Rigatoni Bolognese','9.00','mit Fleischsauce','A,G')"><div class="card-body"><span class="item-num">60</span><div class="item-name">60. Rigatoni Bolognese</div><div class="item-desc">mit Fleischsauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('61. Rigatoni Italia','8.50','mit Schinken, frischen Champignons, Erbsen und Tomatensauce','A,G')"><div class="card-body"><span class="item-num">61</span><div class="item-name">61. Rigatoni Italia</div><div class="item-desc">mit Schinken, Champignons, Erbsen und Tomatensauce</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('62. Rigatoni Quattro Formaggi','9.00','mit vier Käsesorten','A,G')"><div class="card-body"><span class="item-num">62</span><div class="item-name">62. Rigatoni Quattro Formaggi</div><div class="item-desc">mit vier Käsesorten</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('63. Rigatoni Vegetaria','9.00','mit Erbsen und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">63</span><div class="item-name">63. Rigatoni Vegetaria</div><div class="item-desc">mit Erbsen und Sahnesauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('64. Rigatoni nach Art des Hauses','9.00','mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons','A,G')"><div class="card-body"><span class="item-num">64</span><div class="item-name">64. Rigatoni nach Art des Hauses</div><div class="item-desc">mit Spezial-Tomatensauce, Sahne, Zwiebeln und Champignons</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('77. Rigatoni Carbonara','9.00','mit Sahnesauce, Schinken, Käse und Ei','A,C,G')"><div class="card-body"><span class="item-num">77</span><div class="item-name">77. Rigatoni Carbonara</div><div class="item-desc">mit Sahnesauce, Schinken, Käse und Ei</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('78. Rigatoni al Forno','9.00','mit Fleischsauce und Käse','A,G')"><div class="card-body"><span class="item-num">78</span><div class="item-name">78. Rigatoni al Forno</div><div class="item-desc">mit Fleischsauce und Käse</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('79. Rigatoni Italia überbacken','9.50','mit Tomaten, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse','A,G')"><div class="card-body"><span class="item-num">79</span><div class="item-name">79. Rigatoni Italia überbacken</div><div class="item-desc">mit Tomaten, Champignons, Schinken, Erbsen, Sahnesauce und Käse</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('104. Rigatoni Pinocchio','9.50','vegetarisch – mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken','A,G')"><div class="card-body"><span class="item-num">104</span><div class="item-name">104. Rigatoni Pinocchio</div><div class="item-desc">vegetarisch – mit Spinat, Broccoli, frischen Pilzen und Mozzarella</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- SPAGHETTI -->
+  <div id="spaghetti">
+    <div class="section-title">🍝 Spaghetti</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('47. Spaghetti Bolognese','8.50','mit Fleischsauce','A,G')"><div class="card-body"><span class="item-num">47</span><div class="item-name">47. Spaghetti Bolognese</div><div class="item-desc">mit Fleischsauce</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('48. Spaghetti alla Panna','8.50','mit Schinken und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">48</span><div class="item-name">48. Spaghetti alla Panna</div><div class="item-desc">mit Schinken und Sahnesauce</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('49. Spaghetti alla Napolitana','8.00','mit Tomatensauce','A,G')"><div class="card-body"><span class="item-num">49</span><div class="item-name">49. Spaghetti alla Napolitana</div><div class="item-desc">mit Tomatensauce</div><div class="card-footer"><span class="item-price">8,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('50. Spaghetti Carbonara','9.00','mit Schinken, Sahnesauce und Ei','A,C,G')"><div class="card-body"><span class="item-num">50</span><div class="item-name">50. Spaghetti Carbonara</div><div class="item-desc">mit Schinken, Sahnesauce und Ei</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('51. Spaghetti della Casa','9.00','mit Schinken, frischen Champignons, Erbsen und Tomatensauce','A,G')"><div class="card-body"><span class="item-num">51</span><div class="item-name">51. Spaghetti della Casa</div><div class="item-desc">mit Schinken, Champignons, Erbsen und Tomatensauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('52. Spaghetti Frutti di Mare','9.00','mit Meeresfrüchten, Knoblauch und Tomatensauce','A,D,G')"><div class="card-body"><span class="item-num">52</span><div class="item-name">52. Spaghetti Frutti di Mare</div><div class="item-desc">mit Meeresfrüchten, Knoblauch und Tomatensauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('53. Spaghetti Vegetaria','9.00','mit Erbsen, Spinat und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">53</span><div class="item-name">53. Spaghetti Vegetaria</div><div class="item-desc">mit Erbsen, Spinat und Sahnesauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('54. Spaghetti Gamberetti','9.00','mit Scampi, Knoblauch und Tomatensauce','A,D,G')"><div class="card-body"><span class="item-num">54</span><div class="item-name">54. Spaghetti Gamberetti</div><div class="item-desc">mit Scampi, Knoblauch und Tomatensauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('55. Spaghetti Tonno','9.00','mit Thunfisch, Knoblauch und Tomatensauce','A,D,G')"><div class="card-body"><span class="item-num">55</span><div class="item-name">55. Spaghetti Tonno</div><div class="item-desc">mit Thunfisch, Knoblauch und Tomatensauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('56. Spaghetti a la Gorgonzola','9.00','mit Sahne, Gorgonzola und Schinken','A,G')"><div class="card-body"><span class="item-num">56</span><div class="item-name">56. Spaghetti a la Gorgonzola</div><div class="item-desc">mit Sahne, Gorgonzola und Schinken</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('57. Spaghetti Italia','9.00','mit Spinat, Sahnesauce und Gorgonzola','A,G')"><div class="card-body"><span class="item-num">57</span><div class="item-name">57. Spaghetti Italia</div><div class="item-desc">mit Spinat, Sahnesauce und Gorgonzola</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('58. Spaghetti a la Panna 2','9.00','mit Schinken, Sahnesauce und frischen Champignons','A,G')"><div class="card-body"><span class="item-num">58</span><div class="item-name">58. Spaghetti a la Panna 2</div><div class="item-desc">mit Schinken, Sahnesauce und frischen Champignons</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('59. Spaghetti Vegetaria 2','9.00','mit Erbsen, Spinat, frischen Champignons und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">59</span><div class="item-name">59. Spaghetti Vegetaria 2</div><div class="item-desc">mit Erbsen, Spinat, Champignons und Sahnesauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('80. Spaghetti al Forno','9.00','mit Fleischsauce und Käse','A,G')"><div class="card-body"><span class="item-num">80</span><div class="item-name">80. Spaghetti al Forno</div><div class="item-desc">mit Fleischsauce und Käse</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('81. Spaghetti Carbonara al Forno','9.00','mit Schinken, Sahnesauce, Käse und Ei','A,C,G')"><div class="card-body"><span class="item-num">81</span><div class="item-name">81. Spaghetti Carbonara al Forno</div><div class="item-desc">mit Schinken, Sahnesauce, Käse und Ei</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('82. Spaghetti Italia al Forno','9.00','mit Tomatensauce, Champignons, Schinken, Erbsen und Spezial-Sahnesauce','A,G')"><div class="card-body"><span class="item-num">82</span><div class="item-name">82. Spaghetti Italia al Forno</div><div class="item-desc">mit Tomatensauce, Champignons, Schinken und Erbsen</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('106. Spaghetti Vegetaria überbacken','9.00','mit Spinat, Broccoli, Champignons und Mozzarella überbacken','A,G')"><div class="card-body"><span class="item-num">106</span><div class="item-name">106. Spaghetti Vegetaria überbacken</div><div class="item-desc">mit Spinat, Broccoli, Champignons und Mozzarella</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('162. Spaghetti Caprese','10.00','gebratene Spaghetti mit Tomaten, Knoblauch, Basilikum, Mozzarella und Hähnchenbrustfilet','A,G')"><div class="card-body"><span class="item-num">162</span><div class="item-name">162. Spaghetti Caprese</div><div class="item-desc">gebratene Spaghetti mit Tomaten, Mozzarella und Hähnchen</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('163. Spaghetti Aglio Olio e Peperoncino','10.00','gebratene Spaghetti mit Peperoni, Broccoli, Erbsen, Hähnchenbrustfilet und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">163</span><div class="item-name">163. Spaghetti Aglio Olio</div><div class="item-desc">gebratene Spaghetti mit Peperoni, Broccoli, Erbsen und Hähnchen</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('164. Spaghetti de la Chef','10.00','gebratene Spaghetti mit Zwiebeln, frischen Champignons, Hähnchenbrustfilet und Currysauce','A,G')"><div class="card-body"><span class="item-num">164</span><div class="item-name">164. Spaghetti de la Chef</div><div class="item-desc">gebratene Spaghetti mit Zwiebeln, Champignons und Currysauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- TORTELLINI -->
+  <div id="tortellini">
+    <div class="section-title">🍝 Tortellini</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('65. Tortellini Bolognese','9.00','mit Fleischsauce','A,G')"><div class="card-body"><span class="item-num">65</span><div class="item-name">65. Tortellini Bolognese</div><div class="item-desc">mit Fleischsauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('66. Tortellini alla Panna','9.00','mit Schinken und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">66</span><div class="item-name">66. Tortellini alla Panna</div><div class="item-desc">mit Schinken und Sahnesauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('67. Tortellini Carbonara','9.00','mit Schinken, Käse, Sahnesauce und Ei','A,C,G')"><div class="card-body"><span class="item-num">67</span><div class="item-name">67. Tortellini Carbonara</div><div class="item-desc">mit Schinken, Käse, Sahnesauce und Ei</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('68. Tortellini alla Pinocchio','9.00','mit Schinken, frischen Champignons, Erbsen und Tomatensauce','A,G')"><div class="card-body"><span class="item-num">68</span><div class="item-name">68. Tortellini alla Pinocchio</div><div class="item-desc">mit Schinken, Champignons, Erbsen und Tomatensauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('69. Tortellini Gorgonzola','9.00','mit Erbsen, Broccoli, Sahnesauce und Gorgonzola','A,G')"><div class="card-body"><span class="item-num">69</span><div class="item-name">69. Tortellini Gorgonzola</div><div class="item-desc">mit Erbsen, Broccoli, Sahnesauce und Gorgonzola</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('70. Tortellini nach Art des Hauses','9.00','mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons','A,G')"><div class="card-body"><span class="item-num">70</span><div class="item-name">70. Tortellini nach Art des Hauses</div><div class="item-desc">mit Spezial-Tomatensauce, Sahne, Zwiebeln und Champignons</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('74. Tortellini alla Panna überbacken','9.50','mit Schinken, Broccoli, Sahnesauce und Käse','A,G')"><div class="card-body"><span class="item-num">74</span><div class="item-name">74. Tortellini alla Panna überbacken</div><div class="item-desc">mit Schinken, Broccoli, Sahnesauce und Käse</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('75. Tortellini al Forno','9.00','mit Fleischsauce, Schinken und Käse','A,G')"><div class="card-body"><span class="item-num">75</span><div class="item-name">75. Tortellini al Forno</div><div class="item-desc">mit Fleischsauce, Schinken und Käse</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('76. Tortellini Italia','9.50','mit Tomatensauce, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse','A,G')"><div class="card-body"><span class="item-num">76</span><div class="item-name">76. Tortellini Italia</div><div class="item-desc">mit Tomatensauce, Champignons, Schinken, Erbsen und Käse</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('105. Tortellini Rustikal','9.50','vegetarisch – mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken','A,G')"><div class="card-body"><span class="item-num">105</span><div class="item-name">105. Tortellini Rustikal</div><div class="item-desc">vegetarisch – mit Spinat, Broccoli, frischen Pilzen und Mozzarella</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- GNOCCHI -->
+  <div id="gnocchi">
+    <div class="section-title">🥟 Gnocchi</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('123. Gnocchi Vegetarier','9.50','mit Spinat, Broccoli, Champignons, Tomatensauce und Mozzarella','A,G')"><div class="card-body"><span class="item-num">123</span><div class="item-name">123. Gnocchi Vegetarier</div><div class="item-desc">mit Spinat, Broccoli, Champignons, Tomatensauce und Mozzarella</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('124. Gnocchi Formaggio','9.50','mit drei Käsesorten','A,G')"><div class="card-body"><span class="item-num">124</span><div class="item-name">124. Gnocchi Formaggio</div><div class="item-desc">mit drei Käsesorten</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('125. Gnocchi alla Panna','9.00','mit Schinken und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">125</span><div class="item-name">125. Gnocchi alla Panna</div><div class="item-desc">mit Schinken und Sahnesauce</div><div class="card-footer"><span class="item-price">9,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- AUFLÄUFE -->
+  <div id="auflaeufe">
+    <div class="section-title">🥘 Aufläufe</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('108. Broccoli-Auflauf','9.50','mit Broccoli, Schinken, Nudeln und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">108</span><div class="item-name">108. Broccoli-Auflauf</div><div class="item-desc">mit Broccoli, Schinken, Nudeln und Sahnesauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('109. Gemüse di Pomodoro','9.50','mit frischen Tomaten, frischer Paprika, Broccoli, Zwiebeln und Nudeln','A,G')"><div class="card-body"><span class="item-num">109</span><div class="item-name">109. Gemüse di Pomodoro</div><div class="item-desc">mit frischen Tomaten, Paprika, Broccoli, Zwiebeln und Nudeln</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('110. Gemüse Spezialität','9.50','mit frischen Champignons, Artischocken, Nudeln, frischer Paprika, Spinat, Erbsen und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">110</span><div class="item-name">110. Gemüse Spezialität</div><div class="item-desc">mit Champignons, Artischocken, Nudeln, Paprika, Spinat und Erbsen</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('111. Blumenkohl-Auflauf','9.50','mit Blumenkohl, Schinken, Nudeln und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">111</span><div class="item-name">111. Blumenkohl-Auflauf</div><div class="item-desc">mit Blumenkohl, Schinken, Nudeln und Sahnesauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('112. Champignons-Auflauf','9.50','mit frischen Champignons, Zwiebeln, Nudeln und Sahnesauce','A,G')"><div class="card-body"><span class="item-num">112</span><div class="item-name">112. Champignons-Auflauf</div><div class="item-desc">mit frischen Champignons, Zwiebeln, Nudeln und Sahnesauce</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- KARTOFFELAUFLAUF -->
+  <div id="kartoffelauflauf">
+    <div class="section-title">🥔 Kartoffelauflauf</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('712. Kartoffelauflauf Italia mit Hähnchen und Curry','11.50','Kartoffeln, Hähnchen, Paprika, Brokkoli, Zwiebeln, Currysauce und mit Käse überbacken','A,G')"><div class="card-body"><span class="item-num">712</span><div class="item-name">712. Kartoffelauflauf mit Hähnchen &amp; Curry</div><div class="item-desc">Kartoffeln, Hähnchen, Paprika, Brokkoli, Zwiebeln und Currysauce</div><div class="card-footer"><span class="item-price">11,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('713. Kartoffelauflauf Italia mit Hähnchen und Sahne','11.50','Kartoffeln, Hähnchen, Sahnesauce und mit Käse überbacken','A,G')"><div class="card-body"><span class="item-num">713</span><div class="item-name">713. Kartoffelauflauf mit Hähnchen &amp; Sahne</div><div class="item-desc">Kartoffeln, Hähnchen und Sahnesauce, mit Käse überbacken</div><div class="card-footer"><span class="item-price">11,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('714. Kartoffelauflauf Italia mit Lachs','12.00','Kartoffeln, gegrillter Lachs, Spinat, Knoblauch, Sahnesauce und mit Käse überbacken','A,D,G')"><div class="card-body"><span class="item-num">714</span><div class="item-name">714. Kartoffelauflauf mit Lachs</div><div class="item-desc">Kartoffeln, gegrillter Lachs, Spinat, Knoblauch und Sahnesauce</div><div class="card-footer"><span class="item-price">12,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- SALAT -->
+  <div id="salat">
+    <div class="section-title">🥗 Salat</div>
+    <p class="section-sub">Frisch zubereitet</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('83. Insalata Mista','6.50','mit Tomaten, Gurken und Salat','')"><div class="card-body"><span class="item-num">83</span><div class="item-name">83. Insalata Mista</div><div class="item-desc">mit Tomaten, Gurken und Salat</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('83a. Gemischter Salat','8.50','mit Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Feta','G')"><div class="card-body"><span class="item-num">83a</span><div class="item-name">83a. Gemischter Salat</div><div class="item-desc">mit Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Feta</div><div class="card-footer"><span class="item-price">8,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('84. Insalata Pomodoro Cipolla','6.50','mit Tomaten und Zwiebeln','')"><div class="card-body"><span class="item-num">84</span><div class="item-name">84. Insalata Pomodoro Cipolla</div><div class="item-desc">mit Tomaten und Zwiebeln</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('85. Insalata di Cipolla','6.50','mit Gurken, Salat und Zwiebeln','')"><div class="card-body"><span class="item-num">85</span><div class="item-name">85. Insalata di Cipolla</div><div class="item-desc">mit Gurken, Salat und Zwiebeln</div><div class="card-footer"><span class="item-price">6,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('86. Insalata Primavera','9.50','mit Tomaten, Gurken, Salat, Käse, Schinken, Salami und Thunfisch','G,D')"><div class="card-body"><span class="item-num">86</span><div class="item-name">86. Insalata Primavera</div><div class="item-desc">mit Tomaten, Gurken, Salat, Käse, Schinken, Salami und Thunfisch</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('87. Insalata de la Casa','9.50','mit Tomaten, Gurken, Salat, Käse, Zwiebeln, Thunfisch und Ei','C,D,G')"><div class="card-body"><span class="item-num">87</span><div class="item-name">87. Insalata de la Casa</div><div class="item-desc">mit Tomaten, Gurken, Salat, Käse, Zwiebeln, Thunfisch und Ei</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('88. Insalata Roma','9.50','mit Tomaten, Gurken, Salat, Käse, Artischocken, Schinken und Thunfisch','D,G')"><div class="card-body"><span class="item-num">88</span><div class="item-name">88. Insalata Roma</div><div class="item-desc">mit Tomaten, Gurken, Salat, Käse, Artischocken, Schinken und Thunfisch</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('89. Insalata Italia','9.50','mit Tomaten, Gurken, Salat, Käse, Artischocken, Oliven, Thunfisch, Zwiebeln und Paprika','D,G')"><div class="card-body"><span class="item-num">89</span><div class="item-name">89. Insalata Italia</div><div class="item-desc">mit Tomaten, Gurken, Käse, Artischocken, Oliven, Thunfisch und Paprika</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('90. Insalata Frutti di Mare','9.50','mit Salat, Gurken, Tomaten, Käse, Thunfisch, Paprika, Zwiebeln, Krabben und Muscheln','D,G')"><div class="card-body"><span class="item-num">90</span><div class="item-name">90. Insalata Frutti di Mare</div><div class="item-desc">mit Salat, Tomaten, Käse, Thunfisch, Krabben und Muscheln</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('90a. Garnelen Salat','11.00','mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und gegrillten Garnelen','D')"><div class="card-body"><span class="item-num">90a</span><div class="item-name">90a. Garnelen Salat</div><div class="item-desc">mit Tomaten, Gurken, Mais, Zwiebeln, Peperoni, Oliven und Garnelen</div><div class="card-footer"><span class="item-price">11,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('91. Insalata Pinocchio','9.50','mit Tomaten, Gurken, Salat, Käse, Paprika, Zwiebeln, Artischocken, Erbsen, Mais und Möhren','G')"><div class="card-body"><span class="item-num">91</span><div class="item-name">91. Insalata Pinocchio</div><div class="item-desc">mit Tomaten, Gurken, Käse, Paprika, Zwiebeln, Artischocken und Möhren</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('92. Insalata Hawaii','9.50','mit Tomaten, Gurken, Salat, Ananas, Spargel, Mais, Käse und Schinken','G')"><div class="card-body"><span class="item-num">92</span><div class="item-name">92. Insalata Hawaii</div><div class="item-desc">mit Tomaten, Gurken, Ananas, Spargel, Mais, Käse und Schinken</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('93. Insalata al Formaggio','9.50','gemischter Salat mit Feta, Mozzarella und Gouda','G')"><div class="card-body"><span class="item-num">93</span><div class="item-name">93. Insalata al Formaggio</div><div class="item-desc">gemischter Salat mit Feta, Mozzarella und Gouda</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('94. Insalata Milano','9.50','gemischter Salat mit Feta, Ananas, Mais und Paprika','G')"><div class="card-body"><span class="item-num">94</span><div class="item-name">94. Insalata Milano</div><div class="item-desc">gemischter Salat mit Feta, Ananas, Mais und Paprika</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('95. Insalata de la Chef','10.00','mit Tomaten, Gurken, Salat, Pute, Feta und Joghurt-Currysauce','G')"><div class="card-body"><span class="item-num">95</span><div class="item-name">95. Insalata de la Chef</div><div class="item-desc">mit Tomaten, Gurken, Pute, Feta und Joghurt-Currysauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('150. Insalata Lachs','10.00','mit Salat, Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Lachsfilet','D')"><div class="card-body"><span class="item-num">150</span><div class="item-name">150. Insalata Lachs</div><div class="item-desc">mit Salat, Tomaten, Gurken, Zwiebeln, Oliven und Lachsfilet</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('151. Insalata Kentucky','10.00','mit knusprigem Hähnchenbrustfilet, Tomaten, Gurken, Ananas und Salat','A')"><div class="card-body"><span class="item-num">151</span><div class="item-name">151. Insalata Kentucky</div><div class="item-desc">mit knusprigem Hähnchen, Tomaten, Gurken und Ananas</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('152. Tomaten-Mozzarella Salat','9.50','mit Eisbergsalat, Tomaten, Mozzarella, Olivenöl, Zitrone und Basilikum','G')"><div class="card-body"><span class="item-num">152</span><div class="item-name">152. Tomaten-Mozzarella Salat</div><div class="item-desc">mit Eisbergsalat, Tomaten, Mozzarella, Olivenöl und Basilikum</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('153. Shrimp Salat','10.50','mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und Scampi','D')"><div class="card-body"><span class="item-num">153</span><div class="item-name">153. Shrimp Salat</div><div class="item-desc">mit Tomaten, Gurken, Mais, Zwiebeln, Peperoni, Oliven und Scampi</div><div class="card-footer"><span class="item-price">10,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('170. Insalata Amore','10.00','mit Paprika, Zwiebeln, Artischocken, Oliven, roten Bohnen und Hähnchenbrustfilet','')"><div class="card-body"><span class="item-num">170</span><div class="item-name">170. Insalata Amore</div><div class="item-desc">mit Paprika, Zwiebeln, Artischocken, Oliven, roten Bohnen und Hähnchen</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('171. Insalata Caprese','10.00','mit Artischocken, Zwiebeln, Paprika, roten Bohnen und Hähnchenbrustfilet','')"><div class="card-body"><span class="item-num">171</span><div class="item-name">171. Insalata Caprese</div><div class="item-desc">mit Artischocken, Zwiebeln, Paprika, roten Bohnen und Hähnchen</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('172. Insalata Siziliana','10.00','mit Thunfisch, Zwiebeln, Peperoni, Oliven, roten Bohnen, Hähnchenbrustfilet und Käse','D,G')"><div class="card-body"><span class="item-num">172</span><div class="item-name">172. Insalata Siziliana</div><div class="item-desc">mit Thunfisch, Zwiebeln, Peperoni, Oliven, roten Bohnen und Hähnchen</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('173. Insalata Mamma Mia','9.50','mit Feta, Mais, Möhren, Zwiebeln, roten Bohnen und Hähnchenbrustfilet','G')"><div class="card-body"><span class="item-num">173</span><div class="item-name">173. Insalata Mamma Mia</div><div class="item-desc">mit Feta, Mais, Möhren, Zwiebeln, roten Bohnen und Hähnchen</div><div class="card-footer"><span class="item-price">9,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- GEFLÜGELGERICHTE -->
+  <div id="gefluegelgerichte">
+    <div class="section-title">🍗 Geflügelgerichte</div>
+    <p class="section-sub">Hähnchen- und Putengerichte</p>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('138. Hähnchengeschnetzeltes mit Currysauce','10.00','mit Currysauce und Ananas','')"><div class="card-body"><span class="item-num">138</span><div class="item-name">138. Hähnchengeschnetzeltes Curry</div><div class="item-desc">mit Currysauce und Ananas</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('139. Hähnchengeschnetzeltes mit Pilzen','10.00','mit frischen Pilzen und Sahnesauce','G')"><div class="card-body"><span class="item-num">139</span><div class="item-name">139. Hähnchengeschnetzeltes Pilze</div><div class="item-desc">mit frischen Pilzen und Sahnesauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('140. Hähnchengeschnetzeltes mit Zwiebeln','10.00','mit Zwiebeln und Tomatensauce','')"><div class="card-body"><span class="item-num">140</span><div class="item-name">140. Hähnchengeschnetzeltes Zwiebeln</div><div class="item-desc">mit Zwiebeln und Tomatensauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('141. Hähnchengeschnetzeltes mit Tomaten und Pilzen','10.00','mit frischen Tomaten, frischen Pilzen und Sahnesauce','G')"><div class="card-body"><span class="item-num">141</span><div class="item-name">141. Hähnchengeschnetzeltes Tomaten &amp; Pilze</div><div class="item-desc">mit frischen Tomaten, frischen Pilzen und Sahnesauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('142. Hähnchengeschnetzeltes mit Broccoli','10.00','mit Erbsen, Broccoli, Knoblauch und Tomatensauce','')"><div class="card-body"><span class="item-num">142</span><div class="item-name">142. Hähnchengeschnetzeltes Broccoli</div><div class="item-desc">mit Erbsen, Broccoli, Knoblauch und Tomatensauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('96. Putengeschnetzeltes mit Pilzen','10.00','mit frischen Pilzen und Sahnesauce','G')"><div class="card-body"><span class="item-num">96</span><div class="item-name">96. Putengeschnetzeltes mit Pilzen</div><div class="item-desc">mit frischen Pilzen und Sahnesauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('97. Putengeschnetzeltes mit Currysauce','10.00','mit Currysauce','')"><div class="card-body"><span class="item-num">97</span><div class="item-name">97. Putengeschnetzeltes Curry</div><div class="item-desc">mit Currysauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('98. Putengeschnetzeltes mit Tomaten','10.00','mit frischen Tomaten, frischen Pilzen und Sahnesauce','G')"><div class="card-body"><span class="item-num">98</span><div class="item-name">98. Putengeschnetzeltes Tomaten &amp; Pilze</div><div class="item-desc">mit frischen Tomaten, frischen Pilzen und Sahnesauce</div><div class="card-footer"><span class="item-price">10,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('159. Putengeschnetzeltes gegrilltes Brustfilet','11.00','gegrilltes Brustfilet mit Zwiebeln, frischer Paprika, frischen Tomaten, gemischtem Salat und Brötchen','')"><div class="card-body"><span class="item-num">159</span><div class="item-name">159. Putenbrustfilet gegrillt</div><div class="item-desc">mit Zwiebeln, Paprika, Tomaten, gemischtem Salat und Brötchen</div><div class="card-footer"><span class="item-price">11,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('160. Pute al Forno','11.00','mit Broccoli, frischen Pilzen, Currysauce, Käse überbacken und Brötchen','G')"><div class="card-body"><span class="item-num">160</span><div class="item-name">160. Pute al Forno</div><div class="item-desc">mit Broccoli, frischen Pilzen, Currysauce, Käse überbacken und Brötchen</div><div class="card-footer"><span class="item-price">11,00 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('161. Putenauflauf','11.00','mit frischen Pilzen, Zwiebeln, Sahnesauce, Käse überbacken und Brötchen','G')"><div class="card-body"><span class="item-num">161</span><div class="item-name">161. Putenauflauf</div><div class="item-desc">mit frischen Pilzen, Zwiebeln, Sahnesauce, Käse überbacken und Brötchen</div><div class="card-footer"><span class="item-price">11,00 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- GETRÄNKE -->
+  <div id="getraenke">
+    <div class="section-title">🥤 Getränke</div>
+    <div class="product-grid">
+      <div class="product-item" onclick="openSimple('Coca Cola 1,0l','3.50','Coca Cola 1,0l','')"><div class="card-body"><span class="item-num">G1</span><div class="item-name">Coca Cola 1,0l</div><div class="item-desc">Coca Cola 1,0l</div><div class="card-footer"><span class="item-price">3,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Coca Cola 0,33l','2.50','Coca Cola 0,33l','')"><div class="card-body"><span class="item-num">G2</span><div class="item-name">Coca Cola 0,33l</div><div class="item-desc">Coca Cola 0,33l</div><div class="card-footer"><span class="item-price">2,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Fanta 1,0l','3.50','Fanta 1,0l','')"><div class="card-body"><span class="item-num">G3</span><div class="item-name">Fanta 1,0l</div><div class="item-desc">Fanta 1,0l</div><div class="card-footer"><span class="item-price">3,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Fanta 0,33l','2.50','Fanta 0,33l','')"><div class="card-body"><span class="item-num">G4</span><div class="item-name">Fanta 0,33l</div><div class="item-desc">Fanta 0,33l</div><div class="card-footer"><span class="item-price">2,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Sprite 1,0l','3.50','Sprite 1,0l','')"><div class="card-body"><span class="item-num">G5</span><div class="item-name">Sprite 1,0l</div><div class="item-desc">Sprite 1,0l</div><div class="card-footer"><span class="item-price">3,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Sprite 0,33l','2.50','Sprite 0,33l','')"><div class="card-body"><span class="item-num">G6</span><div class="item-name">Sprite 0,33l</div><div class="item-desc">Sprite 0,33l</div><div class="card-footer"><span class="item-price">2,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Coca Cola Zero 1,0l','3.50','Coca Cola Zero 1,0l','')"><div class="card-body"><span class="item-num">G7</span><div class="item-name">Coca Cola Zero 1,0l</div><div class="item-desc">Coca Cola Zero 1,0l</div><div class="card-footer"><span class="item-price">3,50 €</span><button class="card-add-btn">+</button></div></div></div>
+      <div class="product-item" onclick="openSimple('Coca Cola Zero 0,33l','2.50','Coca Cola Zero 0,33l','')"><div class="card-body"><span class="item-num">G8</span><div class="item-name">Coca Cola Zero 0,33l</div><div class="item-desc">Coca Cola Zero 0,33l</div><div class="card-footer"><span class="item-price">2,50 €</span><button class="card-add-btn">+</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- ALLERGEN HINWEIS -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-top:36px;font-size:.8rem;color:var(--muted);line-height:1.8;">
+    <strong style="color:var(--dark);">Allergene & Zusatzstoffe:</strong> A=Gluten, C=Eier, D=Fisch, G=Milch, L=Sellerie, M=Senf, S=Schwefeldioxid.
+    Alle Angaben ohne Gewähr. Bei Allergien wenden Sie sich bitte an unser Personal.
+    Preise inkl. gesetzl. MwSt. Änderungen vorbehalten.
+  </div>
+</div>
+
+<!-- FLOATING CART BUTTON -->
+<button class="cart-fab" id="cartFab" onclick="openPanel()" style="display:none">
+  🛒 Warenkorb
+  <span class="cart-fab-badge" id="cartCount">0</span>
+</button>
+
+<!-- CART PANEL OVERLAY -->
+<div class="panel-ov" id="panelOv" onclick="closePanel()"></div>
+<div class="panel" id="cartPanel">
+  <div class="panel-header">
+    <h3>🛒 Warenkorb</h3>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-mode">
+    <button class="mode-tab active" id="tabLief" onclick="setMode('lieferung')">🛵 Lieferung</button>
+    <button class="mode-tab" id="tabAbh" onclick="setMode('abholung')">🏃 Abholung</button>
+  </div>
+  <div class="panel-scroll">
+  <div class="panel-body" id="cartItems">
+    <div class="cart-empty"><div class="icon">🍕</div><p>Ihr Warenkorb ist noch leer.<br>Wählen Sie ein Gericht aus!</p></div>
+  </div>
+
+  <!-- CUSTOMER FIELDS -->
+  <div class="delivery-fields" id="customerFields">
+    <label>Vorname *</label><input type="text" id="c-vorname" placeholder="Vorname">
+    <label>Nachname *</label><input type="text" id="c-nachname" placeholder="Nachname">
+    <label>Telefon *</label><input type="tel" id="c-telefon" placeholder="+49 2524 ...">
+    <label>E-Mail</label><input type="email" id="c-email" placeholder="fuer-bestaetigung@email.de">
+    <div id="addr-fields">
+      <label>Stadtteil / Liefergebiet *</label>
+      <select id="c-stadt" onchange="updateSummary()">
+        <option value="">-- Bitte wählen --</option>
+        <option value="Ennigerloh">Ennigerloh (0,00 €)</option>
+        <option value="Westkirchen">Westkirchen (1,50 €)</option>
+        <option value="Enniger">Enniger (1,50 €)</option>
+        <option value="Beelen">Beelen (2,00 €)</option>
+        <option value="Beckum">Beckum (2,50 €)</option>
+        <option value="Oelde">Oelde (3,00 €)</option>
+      </select>
+      <div class="row2">
+        <div><label>Straße *</label><input type="text" id="c-strasse" placeholder="Musterstraße"></div>
+        <div><label>Hausnr. *</label><input type="text" id="c-hnr" placeholder="12a"></div>
+      </div>
+    </div>
+    <label>Anmerkungen</label>
+    <textarea id="c-notiz" placeholder="Sonderwünsche, Allergien…" rows="3"
+      style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:.88rem;resize:vertical;"></textarea>
+  </div>
+
+  <!-- ORDER SUMMARY -->
+  <div class="order-summary">
+    <div class="sum-row"><span>Zwischensumme</span><span id="sumSub">0,00 €</span></div>
+    <div class="sum-row" id="feeRow" style="display:none"><span>Liefergebühr</span><span id="sumFee">0,00 €</span></div>
+    <div class="sum-row"><span>Servicegebühr</span><span>0,99 €</span></div>
+    <div class="sum-row total"><span>Gesamt</span><span id="sumTotal">0,99 €</span></div>
+
+    <select class="pay-select" id="c-zahlung" onchange="togglePayLogos();updateBestellBtn()">
+      <option value="bar">💵 Barzahlung bei Übergabe</option>
+      <option value="stripe">💳 Online bezahlen (Karte / Apple Pay)</option>
+    </select>
+    <div id="payment-logos">
+      <span style="background:#1a1f71;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px">VISA</span>
+      <span style="display:inline-flex"><span style="background:#eb001b;width:18px;height:18px;border-radius:50%;display:inline-block"></span><span style="background:#f79e1b;width:18px;height:18px;border-radius:50%;display:inline-block;margin-left:-8px"></span></span>
+      <span style="background:#007bc1;color:#fff;font-size:9px;font-weight:700;padding:3px 6px;border-radius:4px">AMEX</span>
+      <span style="background:#000;color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px">Apple Pay</span>
+      <span style="background:#fff;border:1px solid #ddd;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;color:#5f6368">G Pay</span>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="cb-agb" onchange="updateBestellBtn()">
+      <span>Ich akzeptiere die <a onclick="openLegal('agb')">AGB</a></span>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="cb-dsgvo" onchange="updateBestellBtn()">
+      <span>Ich habe die <a onclick="openLegal('datenschutz')">Datenschutzerklärung</a> gelesen</span>
+    </div>
+    <button class="btn-order" id="btn-bestellen" onclick="processOrder()" disabled>🔒 AGB & Datenschutz bestätigen</button>
+  </div>
+  </div><!-- end panel-scroll -->
+</div>
+
+<!-- PIZZA POPUP -->
+<div class="popup-ov" id="pizzaPopup">
+  <div class="popup-box">
+    <div class="popup-img">🍕</div>
+    <div class="popup-body">
+      <div class="popup-name" id="ppName"></div>
+      <div class="popup-desc" id="ppDesc"></div>
+      <div class="popup-section">Größe wählen</div>
+      <div class="size-btns" id="ppSizes"></div>
+      <div class="popup-section" style="margin-top:16px">Extras (optional)</div>
+      <div class="extras-grid" id="ppExtras"></div>
+      <div class="allergen-note" id="ppAllergen"></div>
+    </div>
+    <div class="popup-footer">
+      <button class="btn-popup-close" onclick="closePopup('pizzaPopup')">✕</button>
+      <div class="popup-price-tag" id="ppPrice"></div>
+      <button class="btn-add-popup" onclick="addPizzaToCart()">🛒 In den Warenkorb</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIMPLE POPUP -->
+<div class="popup-ov" id="simplePopup">
+  <div class="popup-box">
+    <div class="popup-img" id="spEmoji">🍽️</div>
+    <div class="popup-body">
+      <div class="popup-name" id="spName"></div>
+      <div class="popup-desc" id="spDesc"></div>
+      <div class="allergen-note" id="spAllergen"></div>
+    </div>
+    <div class="popup-footer">
+      <button class="btn-popup-close" onclick="closePopup('simplePopup')">✕</button>
+      <div class="popup-price-tag" id="spPrice"></div>
+      <button class="btn-add-popup" onclick="addSimpleToCart()">🛒 In den Warenkorb</button>
+    </div>
+  </div>
+</div>
+
+<!-- DANKE MODAL -->
+<div id="dankeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;">
+  <div class="danke-box">
+    <div class="danke-icon">🎉</div>
+    <h2>Vielen Dank!</h2>
+    <p>Ihre Bestellung ist bei uns eingegangen. Sie erhalten in Kürze eine Bestätigung per E-Mail.</p>
+    <div class="danke-num" id="dankeNum"></div>
+    <button onclick="document.getElementById('dankeModal').style.display='none'">Schließen</button>
+  </div>
+</div>
+
+<!-- LEGAL MODALS -->
+<div class="legal-ov" id="legal-impressum">
+  <div class="legal-box">
+    <button class="legal-close" onclick="closeLegal('impressum')">✕</button>
+    <h2>Impressum</h2>
+    <p><strong>Angaben gemäß § 5 TMG</strong></p>
+    <p>[Inhabername]<br>Pizzeria Pinocchio<br>Bahnhofstraße 6<br>59320 Ennigerloh</p>
+    <h3>Kontakt</h3>
+    <p>Telefon: 02524 / 000000<br>E-Mail: info@pinocchio-ennigerloh.de</p>
+    <h3>Steuernummer</h3>
+    <p>[Steuernummer vom Inhaber eintragen]</p>
+    <h3>Verantwortlich für den Inhalt</h3>
+    <p>[Inhabername]</p>
+  </div>
+</div>
+<div class="legal-ov" id="legal-agb">
+  <div class="legal-box">
+    <button class="legal-close" onclick="closeLegal('agb')">✕</button>
+    <h2>Allgemeine Geschäftsbedingungen</h2>
+    <h3>§1 Geltungsbereich</h3>
+    <p>Diese AGB gelten für alle Bestellungen über die Online-Bestellplattform der Pizzeria Pinocchio, Bahnhofstraße 6, 59320 Ennigerloh.</p>
+    <h3>§2 Vertragsschluss</h3>
+    <p>Die Darstellung der Speisen ist kein bindendes Angebot. Der Vertrag kommt mit der Auftragsbestätigung per E-Mail zustande.</p>
+    <h3>§3 Preise und Zahlung</h3>
+    <p>Alle Preise sind Endpreise inkl. MwSt. Zahlungsmöglichkeiten: Barzahlung, Kreditkarte (Stripe). Servicegebühr 0,99 € pro Bestellung.</p>
+    <h3>§4 Lieferung</h3>
+    <p>Lieferzeiten sind Schätzungen. Mindestbestellwert & Liefergebühren gelten je Liefergebiet. Das Restaurant kann Bestellungen bei Nichtverfügbarkeit stornieren.</p>
+    <h3>§5 Widerrufsrecht</h3>
+    <p>Bei frisch zubereiteten Speisen besteht gem. § 312g Abs. 2 Nr. 9 BGB kein Widerrufsrecht.</p>
+    <h3>§6 Haftung</h3>
+    <p>Pizzeria Pinocchio haftet nicht für Allergien oder Unverträglichkeiten. Allergene auf Anfrage.</p>
+  </div>
+</div>
+<div class="legal-ov" id="legal-datenschutz">
+  <div class="legal-box">
+    <button class="legal-close" onclick="closeLegal('datenschutz')">✕</button>
+    <h2>Datenschutzerklärung</h2>
+    <h3>1. Verantwortlicher</h3>
+    <p>[Inhabername], Bahnhofstraße 6, 59320 Ennigerloh</p>
+    <h3>2. Erhobene Daten</h3>
+    <p>Name, Adresse, Telefon, E-Mail – Zweck: Auftragsabwicklung. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.</p>
+    <h3>3. Stripe (Zahlung)</h3>
+    <p>Zahlungen via Stripe Payments Europe, Ltd. Datenschutz: stripe.com/de/privacy</p>
+    <h3>4. Datenspeicherung</h3>
+    <p>Bestelldaten 10 Jahre (steuerrechtlich). Danach gelöscht.</p>
+    <h3>5. Ihre Rechte</h3>
+    <p>Auskunft, Berichtigung, Löschung, Einschränkung gem. DSGVO. Anfragen an: info@pinocchio-ennigerloh.de</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>🍕 Pizzeria Pinocchio</h4>
+        <p>Authentische italienische Küche seit 1998. Frisch zubereitet mit Liebe und Leidenschaft.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Öffnungszeiten</h4>
+        <p>Montag – Sonntag<br>11:00 – 22:30 Uhr</p>
+      </div>
+      <div class="footer-col">
+        <h4>Kontakt</h4>
+        <p>Bahnhofstraße 6<br>59320 Ennigerloh<br><br>
+        <a href="tel:+492524000000">📞 02524 / 000000</a><br>
+        <a href="mailto:info@pinocchio-ennigerloh.de">✉️ info@pinocchio-ennigerloh.de</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Pizzeria Pinocchio Ennigerloh</span>
+      <div class="footer-links">
+        <a onclick="openLegal('impressum')">Impressum</a>
+        <a onclick="openLegal('agb')">AGB</a>
+        <a onclick="openLegal('datenschutz')">Datenschutz</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const BACKEND_URL = 'https://pinocchio-backend.onrender.com';
+const SERVICE_FEE = 0.99;
+const MIN_ORDER = 12.00;
+const AREA_CONFIG = {
+  'Ennigerloh':  { min: 12.00, fee: 0.00 },
+  'Westkirchen': { min: 15.00, fee: 1.50 },
+  'Enniger':     { min: 15.00, fee: 1.50 },
+  'Beelen':      { min: 15.00, fee: 2.00 },
+  'Beckum':      { min: 18.00, fee: 2.50 },
+  'Oelde':       { min: 20.00, fee: 3.00 },
+};
+
+const PIZZA_EXTRAS = [
+  { name:'Ananas',            price:1.50 },
+  { name:'Artischocken',      price:1.50 },
+  { name:'Blattspinat',       price:1.50 },
+  { name:'Broccoli',          price:1.50 },
+  { name:'Champignons',       price:1.50 },
+  { name:'Ei',                price:1.50 },
+  { name:'Fetakäse',          price:1.50 },
+  { name:'Fleischsauce',      price:1.50 },
+  { name:'Garnelen',          price:1.50 },
+  { name:'Gemüse',            price:1.50 },
+  { name:'Gorgonzola',        price:1.50 },
+  { name:'Gurken',            price:1.50 },
+  { name:'Gyros',             price:1.50 },
+  { name:'Hähnchen',          price:1.50 },
+  { name:'Joghurt',           price:1.50 },
+  { name:'Kapern',            price:1.50 },
+  { name:'Knoblauch',         price:1.50 },
+  { name:'Krabben',           price:1.50 },
+  { name:'Käse, extra',       price:1.50 },
+  { name:'Lachs',             price:1.50 },
+  { name:'Mais',              price:1.50 },
+  { name:'Meeresfrüchte',     price:1.50 },
+  { name:'Mozzarella',        price:1.50 },
+  { name:'Muscheln',          price:1.50 },
+  { name:'Oliven',            price:1.50 },
+  { name:'Paprika',           price:1.50 },
+  { name:'Paprika, frisch',   price:1.50 },
+  { name:'Peperoni',          price:1.50 },
+  { name:'Pilze',             price:1.50 },
+  { name:'Pilze, frisch',     price:1.50 },
+  { name:'Rucola',            price:1.50 },
+  { name:'Salami',            price:1.50 },
+  { name:'Salat',             price:1.50 },
+  { name:'Sardellen',         price:1.50 },
+  { name:'Sauce Hollandaise', price:1.50 },
+  { name:'Scampi',            price:1.50 },
+  { name:'Schinken',          price:1.50 },
+  { name:'Spargel',           price:1.50 },
+  { name:'Spiegelei',         price:1.50 },
+  { name:'Spinat',            price:1.50 },
+  { name:'Tomaten',           price:1.50 },
+  { name:'Zwiebeln',          price:1.50 },
+];
+const PIZZA_SIZES = [
+  { label:'Mini 20cm',   surcharge:0 },
+  { label:'Normal 28cm', surcharge:2.00 },
+  { label:'Maxi 32cm',   surcharge:3.50 },
+];
+
+// STATE
+let warenkorb = [];
+let orderMode = 'lieferung';
+let currentSimple = null;
+let currentPizza = null;
+let activePizzaSize = 0;
+
+// ─── UTILS ───────────────────────────────────────────────────
+function fmt(n){ return n.toFixed(2).replace('.',',') + ' €'; }
+function showToast(msg, dur=2600){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+let toastT; function toast(m,d=2600){clearTimeout(toastT);showToast(m,d);toastT=setTimeout(()=>{},d);}
+
+// ─── CATEGORY SCROLL ─────────────────────────────────────────
+function scrollTo(id, el){
+  const sec=document.getElementById(id);
+  if(!sec)return;
+  const top=sec.getBoundingClientRect().top+window.scrollY-80;
+  window.scrollTo({top,behavior:'smooth'});
+  document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─── PANEL ───────────────────────────────────────────────────
+function openPanel(){
+  document.getElementById('panelOv').classList.add('show');
+  document.getElementById('cartPanel').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePanel(){
+  document.getElementById('panelOv').classList.remove('show');
+  document.getElementById('cartPanel').classList.remove('open');
+  document.body.style.overflow='';
+}
+function setMode(m){
+  orderMode=m;
+  document.getElementById('tabLief').classList.toggle('active',m==='lieferung');
+  document.getElementById('tabAbh').classList.toggle('active',m==='abholung');
+  document.getElementById('addr-fields').style.display=m==='lieferung'?'block':'none';
+  document.getElementById('feeRow').style.display=m==='lieferung'?'flex':'none';
+  updateSummary();
+}
+
+// ─── WARENKORB ───────────────────────────────────────────────
+function addToWarenkorb(item){
+  warenkorb.push(item);
+  renderCart(); updateFab(); openPanel();
+  toast('✅ '+item.name+' hinzugefügt');
+}
+
+function renderCart(){
+  const el=document.getElementById('cartItems');
+  if(!warenkorb.length){
+    el.innerHTML='<div class="cart-empty"><div class="icon">🍕</div><p>Ihr Warenkorb ist leer.</p></div>';
+    return;
+  }
+  el.innerHTML=warenkorb.map((item,i)=>{
+    const extras=(item.extraDetails||[]).filter(e=>e.name).map(e=>
+      `<span>+ ${e.name}${e.price>0?' ('+fmt(e.price)+')':''}</span>`).join('<br>');
+    return `<div class="cart-item">
+      <div class="ci-qty-ctrl">
+        <button class="ci-btn" onclick="changeQty(${i},-1)">−</button>
+        <span class="ci-qty">${item.qty||1}</span>
+        <button class="ci-btn" onclick="changeQty(${i},1)">+</button>
+      </div>
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        ${extras?`<div class="ci-extras">${extras}</div>`:''}
+        ${item.note?`<div class="ci-extras">📝 ${item.note}</div>`:''}
+      </div>
+      <div class="ci-price">${fmt((item.preis||0)*(item.qty||1))}</div>
+      <button class="ci-del" onclick="removeItem(${i})">🗑️</button>
+    </div>`;
+  }).join('');
+  updateSummary();
+}
+
+function changeQty(i,d){
+  warenkorb[i].qty=(warenkorb[i].qty||1)+d;
+  if(warenkorb[i].qty<1)warenkorb.splice(i,1);
+  renderCart(); updateFab();
+}
+function removeItem(i){ warenkorb.splice(i,1); renderCart(); updateFab(); }
+
+function updateFab(){
+  const fab=document.getElementById('cartFab');
+  const total=warenkorb.reduce((s,i)=>s+(i.preis||0)*(i.qty||1),0);
+  const count=warenkorb.reduce((s,i)=>s+(i.qty||1),0);
+  if(count>0){
+    fab.style.display='flex';
+    document.getElementById('cartCount').textContent=count;
+  } else {
+    fab.style.display='none';
+  }
+}
+
+function updateSummary(){
+  const sub=warenkorb.reduce((s,i)=>s+(i.preis||0)*(i.qty||1),0);
+  const city=document.getElementById('c-stadt').value;
+  const fee=orderMode==='lieferung'?(AREA_CONFIG[city]?.fee||0):0;
+  const total=sub+fee+SERVICE_FEE;
+  document.getElementById('sumSub').textContent=fmt(sub);
+  document.getElementById('sumFee').textContent=fmt(fee);
+  document.getElementById('sumTotal').textContent=fmt(total);
+  if(orderMode==='lieferung') document.getElementById('feeRow').style.display='flex';
+}
+
+// ─── POPUP SIMPLE ─────────────────────────────────────────────
+const EMOJI_MAP={vorspeisen:'🥗',pizza:'🍕',pasta:'🍝',salate:'🥗',hauptgerichte:'🥩',desserts:'🍮',getraenke:'🥤'};
+function openSimple(name,preis,desc,allergen){
+  currentSimple={name,preis:parseFloat(preis),desc,allergen};
+  document.getElementById('spName').textContent=name;
+  document.getElementById('spDesc').textContent=desc||'';
+  document.getElementById('spPrice').textContent=fmt(parseFloat(preis));
+  document.getElementById('spAllergen').textContent=allergen?'Allergene: '+allergen:'';
+  document.getElementById('spAllergen').style.display=allergen?'block':'none';
+  document.getElementById('simplePopup').classList.add('show');
+}
+function addSimpleToCart(){
+  if(!currentSimple)return;
+  addToWarenkorb({name:currentSimple.name,preis:currentSimple.preis,qty:1,extraDetails:[]});
+  closePopup('simplePopup');
+}
+
+// ─── POPUP PIZZA ──────────────────────────────────────────────
+function openPizza(name,basePreis,desc,allergen){
+  currentPizza={name,basePreis:parseFloat(basePreis),desc,allergen};
+  activePizzaSize=0;
+  document.getElementById('ppName').textContent=name;
+  document.getElementById('ppDesc').textContent=desc||'';
+  document.getElementById('ppAllergen').textContent=allergen?'Allergene: A,G'+(allergen?','+allergen:''):'Allergene: A, G (Gluten, Milch)';
+  // Sizes
+  document.getElementById('ppSizes').innerHTML=PIZZA_SIZES.map((s,i)=>`
+    <button class="size-btn${i===0?' active':''}" onclick="selectSize(${i},this)">
+      ${s.label}${s.surcharge>0?' (+'+fmt(s.surcharge)+')':' (Standard)'}
+    </button>`).join('');
+  // Extras
+  document.getElementById('ppExtras').innerHTML=PIZZA_EXTRAS.map((e,i)=>`
+    <div class="extra-cb">
+      <input type="checkbox" id="pex${i}">
+      <label for="pex${i}">${e.name}</label>
+      <span class="eprice">+${fmt(e.price)}</span>
+    </div>`).join('');
+  updatePizzaPrice();
+  document.getElementById('pizzaPopup').classList.add('show');
+}
+function selectSize(i,el){
+  activePizzaSize=i;
+  document.querySelectorAll('#ppSizes .size-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  updatePizzaPrice();
+}
+function updatePizzaPrice(){
+  if(!currentPizza)return;
+  let p=currentPizza.basePreis+PIZZA_SIZES[activePizzaSize].surcharge;
+  PIZZA_EXTRAS.forEach((e,i)=>{ if(document.getElementById('pex'+i)?.checked) p+=e.price; });
+  document.getElementById('ppPrice').textContent=fmt(p);
+}
+document.getElementById('ppExtras')?.addEventListener('change',updatePizzaPrice);
+function addPizzaToCart(){
+  if(!currentPizza)return;
+  const size=PIZZA_SIZES[activePizzaSize];
+  let preis=currentPizza.basePreis+size.surcharge;
+  const extraDetails=[];
+  if(size.surcharge>0)extraDetails.push({name:size.label,price:size.surcharge});
+  PIZZA_EXTRAS.forEach((e,i)=>{
+    if(document.getElementById('pex'+i)?.checked){
+      preis+=e.price; extraDetails.push({name:e.name,price:e.price});
+    }
+  });
+  addToWarenkorb({name:currentPizza.name,preis,qty:1,extraDetails});
+  closePopup('pizzaPopup');
+}
+
+function closePopup(id){
+  document.getElementById(id).classList.remove('show');
+  currentSimple=null; currentPizza=null;
+}
+// Close popup on overlay click
+['pizzaPopup','simplePopup'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{
+    if(e.target===document.getElementById(id))closePopup(id);
+  });
+});
+
+// ─── PAYMENT LOGOS ───────────────────────────────────────────
+function togglePayLogos(){
+  const v=document.getElementById('c-zahlung').value;
+  document.getElementById('payment-logos').style.display=v==='stripe'?'flex':'none';
+}
+
+// ─── BESTELL-BTN ─────────────────────────────────────────────
+function updateBestellBtn(){
+  const ok=document.getElementById('cb-agb').checked&&document.getElementById('cb-dsgvo').checked;
+  const btn=document.getElementById('btn-bestellen');
+  btn.disabled=!ok;
+  btn.textContent=ok?'✅ Kostenpflichtig bestellen':'🔒 AGB & Datenschutz bestätigen';
+}
+
+// ─── PROCESS ORDER ───────────────────────────────────────────
+async function processOrder(){
+  if(!warenkorb.length){toast('⚠️ Warenkorb ist leer');return;}
+  const vorname=document.getElementById('c-vorname').value.trim();
+  const nachname=document.getElementById('c-nachname').value.trim();
+  const telefon=document.getElementById('c-telefon').value.trim();
+  const email=document.getElementById('c-email').value.trim();
+  const zahlung=document.getElementById('c-zahlung').value;
+  if(!vorname||!nachname){toast('⚠️ Bitte Vor- und Nachnamen eingeben');return;}
+  if(!telefon){toast('⚠️ Bitte Telefonnummer eingeben');return;}
+
+  let city='',strasse='',hnr='',deliveryFee=0;
+  if(orderMode==='lieferung'){
+    city=document.getElementById('c-stadt').value;
+    strasse=document.getElementById('c-strasse').value.trim();
+    hnr=document.getElementById('c-hnr').value.trim();
+    if(!city){toast('⚠️ Bitte Liefergebiet wählen');return;}
+    if(!strasse||!hnr){toast('⚠️ Bitte Straße und Hausnummer eingeben');return;}
+    const area=AREA_CONFIG[city];
+    if(area){
+      const sub=warenkorb.reduce((s,i)=>s+(i.preis||0)*(i.qty||1),0);
+      if(sub<area.min){toast(`⚠️ Mindestbestellwert für ${city}: ${fmt(area.min)}`);return;}
+      deliveryFee=area.fee;
+    }
+  }
+
+  const subtotal=warenkorb.reduce((s,i)=>s+(i.preis||0)*(i.qty||1),0);
+  const total=subtotal+deliveryFee+SERVICE_FEE;
+  const customer={first:vorname,last:nachname,email,phone:telefon,city,street:strasse,house:hnr};
+  const note=document.getElementById('c-notiz').value.trim();
+  const items=warenkorb.map(i=>({name:i.name,price:i.preis,qty:i.qty||1,note:i.note||'',extraDetails:i.extraDetails||[]}));
+  const payload={mode:orderMode,payment:zahlung,customer,items,subtotal,deliveryFee,serviceFee:SERVICE_FEE,total,note};
+
+  const btn=document.getElementById('btn-bestellen');
+  btn.disabled=true; btn.textContent='⏳ Wird verarbeitet…';
+
+  try{
+    if(zahlung==='stripe'){
+      const r=await fetch(`${BACKEND_URL}/api/create-stripe-checkout`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+      });
+      const d=await r.json();
+      if(d.url){window.location.href=d.url;return;}
+      toast('❌ Stripe-Fehler: '+d.message);
+    } else {
+      const r=await fetch(`${BACKEND_URL}/api/orders`,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)
+      });
+      const d=await r.json();
+      if(r.ok){
+        warenkorb=[]; renderCart(); updateFab(); closePanel();
+        document.getElementById('dankeNum').textContent='Bestellnummer: #'+d.orderNum;
+        document.getElementById('dankeModal').style.display='flex';
+      } else { toast('❌ '+d.message); }
+    }
+  }catch(e){ toast('❌ Server nicht erreichbar – bitte telefonisch bestellen'); }
+  btn.disabled=false; updateBestellBtn();
+}
+
+// ─── LEGAL ───────────────────────────────────────────────────
+function openLegal(id){ document.getElementById('legal-'+id).classList.add('show'); document.body.style.overflow='hidden'; }
+function closeLegal(id){ document.getElementById('legal-'+id).classList.remove('show'); document.body.style.overflow=''; }
+document.querySelectorAll('.legal-ov').forEach(m=>m.addEventListener('click',e=>{
+  if(e.target===m)closeLegal(m.id.replace('legal-',''));
+}));
+
+// ─── STATUS SYNC ──────────────────────────────────────────────
+(function(){
+  const POPUP_FNS=['openSimple','openPizza'];
+  function showBanner(mode){
+    const b=document.getElementById('closedBanner');
+    b.style.background=mode==='neutral'?'#4a4a00':'#8b1d1d';
+    b.textContent=mode==='neutral'?'🚧 Online-Bestellung vorübergehend nicht verfügbar.':'🔴 Restaurant aktuell geschlossen – Bestellungen nicht möglich.';
+    b.style.display='block';
+  }
+  function hideBanner(){document.getElementById('closedBanner').style.display='none';}
+  function blockFns(mode){
+    POPUP_FNS.forEach(fn=>{ window[fn]=()=>toast(mode==='neutral'?'🚧 Bestellung nicht möglich':'🔴 Restaurant geschlossen'); });
+    const cb=document.getElementById('btn-bestellen');
+    if(cb){cb.disabled=true;cb.style.opacity='.5';}
+  }
+  async function sync(){
+    try{
+      const r=await fetch(BACKEND_URL+'/api/status');
+      const d=await r.json();
+      const mode=d.mode||(d.isOpen?'online':'geschlossen');
+      if(mode==='geschlossen'){showBanner('geschlossen');blockFns('geschlossen');}
+      else if(mode==='neutral'){showBanner('neutral');blockFns('neutral');}
+      else hideBanner();
+    }catch(e){showBanner('geschlossen');}
+    try{
+      const r=await fetch(BACKEND_URL+'/api/availability');
+      const d=await r.json();
+      applyAvailability(d.disabled||[]);
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',()=>{ sync(); setInterval(sync,60000); });
+})();
+
+function applyAvailability(names){
+  if(!names||!names.length)return;
+  document.querySelectorAll('.product-item').forEach(el=>{
+    const n=el.querySelector('.item-name')?.textContent?.trim();
+    if(!n||!names.some(d=>n.startsWith(d)))return;
+    if(el.getAttribute('data-sold-out')==='1')return;
+    el.setAttribute('data-sold-out','1');
+    el.style.position='relative'; el.style.opacity='.55'; el.style.cursor='not-allowed';
+    const badge=document.createElement('span');
+    badge.style.cssText='position:absolute;top:8px;right:8px;background:#c0392b;color:#fff;font-size:11px;font-weight:700;letter-spacing:.4px;padding:3px 9px;border-radius:20px;z-index:10;pointer-events:none';
+    badge.textContent='Ausverkauft';
+    el.appendChild(badge);
+    el.onclick=function(e){
+      e.stopImmediatePropagation();
+      let t=document.getElementById('so-toast');
+      if(t){clearTimeout(t._timer);t.remove();}
+      t=document.createElement('div');
+      t.id='so-toast';
+      t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:11px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999999;box-shadow:0 4px 18px rgba(0,0,0,.35);text-align:center';
+      t.textContent='❌ „'+n+'" ist leider ausverkauft.';
+      document.body.appendChild(t);
+      t._timer=setTimeout(()=>t.remove(),2800);
+    };
+  });
+}
+
+// ─── STRIPE RETURN ────────────────────────────────────────────
+window.addEventListener('load',async()=>{
+  const p=new URLSearchParams(window.location.search);
+  const orderNum=p.get('order');
+  const sessionId=p.get('session_id');
+  if(orderNum){
+    warenkorb=[]; renderCart(); updateFab();
+    document.getElementById('dankeNum').textContent='Bestellnummer: #'+orderNum;
+    document.getElementById('dankeModal').style.display='flex';
+    window.history.replaceState({},'',window.location.pathname);
+    if(sessionId){
+      try{ await fetch(BACKEND_URL+'/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId})}); }
+      catch(e){}
+    }
+  }
+  if(p.get('payment')==='cancelled'){
+    toast('❌ Zahlung abgebrochen – Bestellung wurde nicht aufgegeben.');
+    window.history.replaceState({},'',window.location.pathname);
+  }
+  setMode('lieferung');
+});
+
+// ─── OPEN INFO LIVE ───────────────────────────────────────────
+function updateOpenInfo(){
+  const now=new Date();
+  const h=now.getHours(),m=now.getMinutes();
+  const mins=h*60+m;
+  const open=11*60, close=22*60+30;
+  const el=document.getElementById('openInfo');
+  if(mins>=open&&mins<close){
+    el.innerHTML='<span style="color:var(--green);font-weight:700;">✅ Jetzt geöffnet</span> bis 22:30 Uhr';
+  } else if(mins<open){
+    el.innerHTML='<span style="color:var(--red);">🔴 Aktuell geschlossen</span> – öffnet um 11:00 Uhr';
+  } else {
+    el.innerHTML='<span style="color:var(--red);">🔴 Aktuell geschlossen</span> – morgen ab 11:00 Uhr';
+  }
+}
+updateOpenInfo();
+
+// ─── CARD DESIGN ENHANCER ────────────────────────────────────────
+(function enhanceCards(){
+  const sections=[
+    {id:'angebote',       emoji:'🎯', cls:'ci-angebote'},
+    {id:'menues',         emoji:'🍽️', cls:'ci-menues'},
+    {id:'mittagsangebot', emoji:'☀️', cls:'ci-mittag'},
+    {id:'pizza',          emoji:'🍕', cls:'ci-pizza'},
+    {id:'familienpizza',  emoji:'🍕', cls:'ci-famiglia'},
+    {id:'pizzabroetchen', emoji:'🥖', cls:'ci-snacks'},
+    {id:'pasta',          emoji:'🍝', cls:'ci-pasta'},
+    {id:'rigatoni',       emoji:'🍝', cls:'ci-pasta'},
+    {id:'spaghetti',      emoji:'🍝', cls:'ci-pasta'},
+    {id:'tortellini',     emoji:'🍝', cls:'ci-pasta'},
+    {id:'gnocchi',        emoji:'🥟', cls:'ci-pasta'},
+    {id:'auflaeufe',      emoji:'🥘', cls:'ci-pasta'},
+    {id:'kartoffelauflauf',emoji:'🥔',cls:'ci-snacks'},
+    {id:'salat',          emoji:'🥗', cls:'ci-salat'},
+    {id:'gefluegelgerichte',emoji:'🍗',cls:'ci-geflügel'},
+    {id:'getraenke',      emoji:'🥤', cls:'ci-getraenke'},
+  ];
+  const popular=['1. Pizza Margherita','12. Pizza Hawaii','35. Pizza Pinocchio',
+    '19. Pizza nach Art des Hauses','Spaghetti Bolognese','Spaghetti Carbonara',
+    'Spaghetti Arrabiata','Tortellini Gorgonzola','Pinocchio Angebot 1'];
+  const spicy=['33. Pizza Inferno','23. Pizza Picante'];
+
+  sections.forEach(({id,emoji,cls})=>{
+    const sec=document.getElementById(id);
+    if(!sec) return;
+    sec.querySelectorAll('.product-item').forEach(item=>{
+      const strip=document.createElement('div');
+      strip.className=`card-img-strip ${cls}`;
+      strip.textContent=emoji;
+      // badge
+      const name=item.querySelector('.item-name')?.textContent||'';
+      if(popular.some(p=>name.includes(p.split(' ').slice(0,3).join(' ')))){
+        const b=document.createElement('span');
+        b.className='strip-badge';b.textContent='⭐ Beliebt';
+        strip.appendChild(b);
+      } else if(spicy.some(s=>name.includes(s.split(' ').slice(0,2).join(' ')))){
+        const b=document.createElement('span');
+        b.className='strip-badge';b.textContent='🌶 Scharf';
+        strip.appendChild(b);
+      }
+      item.insertBefore(strip,item.firstChild);
+    });
+  });
+})();
+
+// Scroll spy
+window.addEventListener('scroll',()=>{
+  const secs=['angebote','menues','mittagsangebot','pizza','familienpizza','pizzabroetchen','pasta','rigatoni','spaghetti','tortellini','gnocchi','auflaeufe','kartoffelauflauf','salat','gefluegelgerichte','getraenke'];
+  for(const id of [...secs].reverse()){
+    const el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<120){
+      document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
+      const idx=secs.indexOf(id);
+      document.querySelectorAll('.cat-pill')[idx]?.classList.add('active');
+      break;
+    }
+  }
+},{passive:true});
+</script>
+</body>
+</html>

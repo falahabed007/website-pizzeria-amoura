@@ -1,0 +1,2043 @@
+- generic [ref=e1]:
+  - generic [ref=e2203]:
+    - img [ref=e2205] [cursor=pointer]
+    - generic [ref=e2208]:
+      - generic [ref=e2210]:
+        - generic [ref=e2211]:
+          - generic [ref=e2213]: Pizza Margherita
+          - generic:
+            - paragraph
+        - generic [ref=e2214]:
+          - generic [ref=e2215]:
+            - generic [ref=e2216]: Wähle deine Größe
+            - generic [ref=e2218]:
+              - radio "Mini 20cm (+5,00 €)" [checked] [ref=e2219] [cursor=pointer]
+              - generic [ref=e2221] [cursor=pointer]:
+                - generic [ref=e2222]: Mini 20cm
+                - generic [ref=e2223]: (+5,00 €)
+            - generic [ref=e2225]:
+              - radio "Normal 28cm (+7,00 €)" [ref=e2226] [cursor=pointer]
+              - generic [ref=e2228] [cursor=pointer]:
+                - generic [ref=e2229]: Normal 28cm
+                - generic [ref=e2230]: (+7,00 €)
+            - generic [ref=e2232]:
+              - radio "Maxi 32cm (+8,50 €)" [ref=e2233] [cursor=pointer]
+              - generic [ref=e2235] [cursor=pointer]:
+                - generic [ref=e2236]: Maxi 32cm
+                - generic [ref=e2237]: (+8,50 €)
+          - generic [ref=e2238]:
+            - generic [ref=e2239]: Kommentar hinzufügen
+            - textbox "Anmerkung hinzufügen" [ref=e2240]
+          - generic [ref=e2241]:
+            - generic [ref=e2242]: Deine Extras
+            - generic [ref=e2244]:
+              - generic [ref=e2245] [cursor=pointer]:
+                - generic [ref=e2246]: Ananas
+                - generic [ref=e2247]: (+1,50 €)
+                - generic [ref=e2248]:
+                  - spinbutton [ref=e2250]: "0"
+                  - button [ref=e2251]:
+                    - img [ref=e2252]
+              - generic [ref=e2255] [cursor=pointer]:
+                - generic [ref=e2256]: Artischocken
+                - generic [ref=e2257]: (+1,50 €)
+                - generic [ref=e2258]:
+                  - spinbutton [ref=e2260]: "0"
+                  - button [ref=e2261]:
+                    - img [ref=e2262]
+              - generic [ref=e2265] [cursor=pointer]:
+                - generic [ref=e2266]: Blattspinat
+                - generic [ref=e2267]: (+1,50 €)
+                - generic [ref=e2268]:
+                  - spinbutton [ref=e2270]: "0"
+                  - button [ref=e2271]:
+                    - img [ref=e2272]
+              - generic [ref=e2275] [cursor=pointer]:
+                - generic [ref=e2276]: Broccoli
+                - generic [ref=e2277]: (+1,50 €)
+                - generic [ref=e2278]:
+                  - spinbutton [ref=e2280]: "0"
+                  - button [ref=e2281]:
+                    - img [ref=e2282]
+              - generic [ref=e2285] [cursor=pointer]:
+                - generic [ref=e2286]: Champignons
+                - generic [ref=e2287]: (+1,50 €)
+                - generic [ref=e2288]:
+                  - spinbutton [ref=e2290]: "0"
+                  - button [ref=e2291]:
+                    - img [ref=e2292]
+              - generic [ref=e2295] [cursor=pointer]:
+                - generic [ref=e2296]: Ei
+                - generic [ref=e2297]: (+1,50 €)
+                - generic [ref=e2298]:
+                  - spinbutton [ref=e2300]: "0"
+                  - button [ref=e2301]:
+                    - img [ref=e2302]
+              - generic [ref=e2305] [cursor=pointer]:
+                - generic [ref=e2306]: Fetakäse
+                - generic [ref=e2307]: (+1,50 €)
+                - generic [ref=e2308]:
+                  - spinbutton [ref=e2310]: "0"
+                  - button [ref=e2311]:
+                    - img [ref=e2312]
+              - generic [ref=e2315] [cursor=pointer]:
+                - generic [ref=e2316]: Fleischsauce
+                - generic [ref=e2317]: (+1,50 €)
+                - generic [ref=e2318]:
+                  - spinbutton [ref=e2320]: "0"
+                  - button [ref=e2321]:
+                    - img [ref=e2322]
+              - generic [ref=e2325] [cursor=pointer]:
+                - generic [ref=e2326]: Garnelen
+                - generic [ref=e2327]: (+1,50 €)
+                - generic [ref=e2328]:
+                  - spinbutton [ref=e2330]: "0"
+                  - button [ref=e2331]:
+                    - img [ref=e2332]
+              - generic [ref=e2335] [cursor=pointer]:
+                - generic [ref=e2336]: Gemüse
+                - generic [ref=e2337]: (+1,50 €)
+                - generic [ref=e2338]:
+                  - spinbutton [ref=e2340]: "0"
+                  - button [ref=e2341]:
+                    - img [ref=e2342]
+              - generic [ref=e2345] [cursor=pointer]:
+                - generic [ref=e2346]: Gorgonzola
+                - generic [ref=e2347]: (+1,50 €)
+                - generic [ref=e2348]:
+                  - spinbutton [ref=e2350]: "0"
+                  - button [ref=e2351]:
+                    - img [ref=e2352]
+              - generic [ref=e2355] [cursor=pointer]:
+                - generic [ref=e2356]: Gurken
+                - generic [ref=e2357]: (+1,50 €)
+                - generic [ref=e2358]:
+                  - spinbutton [ref=e2360]: "0"
+                  - button [ref=e2361]:
+                    - img [ref=e2362]
+              - generic [ref=e2365] [cursor=pointer]:
+                - generic [ref=e2366]: Gyros
+                - generic [ref=e2367]: (+1,50 €)
+                - generic [ref=e2368]:
+                  - spinbutton [ref=e2370]: "0"
+                  - button [ref=e2371]:
+                    - img [ref=e2372]
+              - generic [ref=e2375] [cursor=pointer]:
+                - generic [ref=e2376]: Hähnchen
+                - generic [ref=e2377]: (+1,50 €)
+                - generic [ref=e2378]:
+                  - spinbutton [ref=e2380]: "0"
+                  - button [ref=e2381]:
+                    - img [ref=e2382]
+              - generic [ref=e2385] [cursor=pointer]:
+                - generic [ref=e2386]: Joghurt
+                - generic [ref=e2387]: (+1,50 €)
+                - generic [ref=e2388]:
+                  - spinbutton [ref=e2390]: "0"
+                  - button [ref=e2391]:
+                    - img [ref=e2392]
+              - generic [ref=e2395] [cursor=pointer]:
+                - generic [ref=e2396]: Kapern
+                - generic [ref=e2397]: (+1,50 €)
+                - generic [ref=e2398]:
+                  - spinbutton [ref=e2400]: "0"
+                  - button [ref=e2401]:
+                    - img [ref=e2402]
+              - generic [ref=e2405] [cursor=pointer]:
+                - generic [ref=e2406]: Knoblauch
+                - generic [ref=e2407]: (+1,50 €)
+                - generic [ref=e2408]:
+                  - spinbutton [ref=e2410]: "0"
+                  - button [ref=e2411]:
+                    - img [ref=e2412]
+              - generic [ref=e2415] [cursor=pointer]:
+                - generic [ref=e2416]: Krabben
+                - generic [ref=e2417]: (+1,50 €)
+                - generic [ref=e2418]:
+                  - spinbutton [ref=e2420]: "0"
+                  - button [ref=e2421]:
+                    - img [ref=e2422]
+              - generic [ref=e2425] [cursor=pointer]:
+                - generic [ref=e2426]: Käse, extra
+                - generic [ref=e2427]: (+1,50 €)
+                - generic [ref=e2428]:
+                  - spinbutton [ref=e2430]: "0"
+                  - button [ref=e2431]:
+                    - img [ref=e2432]
+              - generic [ref=e2435] [cursor=pointer]:
+                - generic [ref=e2436]: Lachs
+                - generic [ref=e2437]: (+1,50 €)
+                - generic [ref=e2438]:
+                  - spinbutton [ref=e2440]: "0"
+                  - button [ref=e2441]:
+                    - img [ref=e2442]
+              - generic [ref=e2445] [cursor=pointer]:
+                - generic [ref=e2446]: Mais
+                - generic [ref=e2447]: (+1,50 €)
+                - generic [ref=e2448]:
+                  - spinbutton [ref=e2450]: "0"
+                  - button [ref=e2451]:
+                    - img [ref=e2452]
+              - generic [ref=e2455] [cursor=pointer]:
+                - generic [ref=e2456]: Meeresfrüchte
+                - generic [ref=e2457]: (+1,50 €)
+                - generic [ref=e2458]:
+                  - spinbutton [ref=e2460]: "0"
+                  - button [ref=e2461]:
+                    - img [ref=e2462]
+              - generic [ref=e2465] [cursor=pointer]:
+                - generic [ref=e2466]: Mozzarella
+                - generic [ref=e2467]: (+1,50 €)
+                - generic [ref=e2468]:
+                  - spinbutton [ref=e2470]: "0"
+                  - button [ref=e2471]:
+                    - img [ref=e2472]
+              - generic [ref=e2475] [cursor=pointer]:
+                - generic [ref=e2476]: Muscheln
+                - generic [ref=e2477]: (+1,50 €)
+                - generic [ref=e2478]:
+                  - spinbutton [ref=e2480]: "0"
+                  - button [ref=e2481]:
+                    - img [ref=e2482]
+              - generic [ref=e2485] [cursor=pointer]:
+                - generic [ref=e2486]: Oliven
+                - generic [ref=e2487]: (+1,50 €)
+                - generic [ref=e2488]:
+                  - spinbutton [ref=e2490]: "0"
+                  - button [ref=e2491]:
+                    - img [ref=e2492]
+              - generic [ref=e2495] [cursor=pointer]:
+                - generic [ref=e2496]: Paprika
+                - generic [ref=e2497]: (+1,50 €)
+                - generic [ref=e2498]:
+                  - spinbutton [ref=e2500]: "0"
+                  - button [ref=e2501]:
+                    - img [ref=e2502]
+              - generic [ref=e2505] [cursor=pointer]:
+                - generic [ref=e2506]: Paprika, frisch
+                - generic [ref=e2507]: (+1,50 €)
+                - generic [ref=e2508]:
+                  - spinbutton [ref=e2510]: "0"
+                  - button [ref=e2511]:
+                    - img [ref=e2512]
+              - generic [ref=e2515] [cursor=pointer]:
+                - generic [ref=e2516]: Peperoni
+                - generic [ref=e2517]: (+1,50 €)
+                - generic [ref=e2518]:
+                  - spinbutton [ref=e2520]: "0"
+                  - button [ref=e2521]:
+                    - img [ref=e2522]
+              - generic [ref=e2525] [cursor=pointer]:
+                - generic [ref=e2526]: Pilze
+                - generic [ref=e2527]: (+1,50 €)
+                - generic [ref=e2528]:
+                  - spinbutton [ref=e2530]: "0"
+                  - button [ref=e2531]:
+                    - img [ref=e2532]
+              - generic [ref=e2535] [cursor=pointer]:
+                - generic [ref=e2536]: Pilze, frisch
+                - generic [ref=e2537]: (+1,50 €)
+                - generic [ref=e2538]:
+                  - spinbutton [ref=e2540]: "0"
+                  - button [ref=e2541]:
+                    - img [ref=e2542]
+              - generic [ref=e2545] [cursor=pointer]:
+                - generic [ref=e2546]: Rucola
+                - generic [ref=e2547]: (+1,50 €)
+                - generic [ref=e2548]:
+                  - spinbutton [ref=e2550]: "0"
+                  - button [ref=e2551]:
+                    - img [ref=e2552]
+              - generic [ref=e2555] [cursor=pointer]:
+                - generic [ref=e2556]: Salami
+                - generic [ref=e2557]: (+1,50 €)
+                - generic [ref=e2558]:
+                  - spinbutton [ref=e2560]: "0"
+                  - button [ref=e2561]:
+                    - img [ref=e2562]
+              - generic [ref=e2565] [cursor=pointer]:
+                - generic [ref=e2566]: Salat
+                - generic [ref=e2567]: (+1,50 €)
+                - generic [ref=e2568]:
+                  - spinbutton [ref=e2570]: "0"
+                  - button [ref=e2571]:
+                    - img [ref=e2572]
+              - generic [ref=e2575] [cursor=pointer]:
+                - generic [ref=e2576]: Sardellen
+                - generic [ref=e2577]: (+1,50 €)
+                - generic [ref=e2578]:
+                  - spinbutton [ref=e2580]: "0"
+                  - button [ref=e2581]:
+                    - img [ref=e2582]
+              - generic [ref=e2585] [cursor=pointer]:
+                - generic [ref=e2586]: Sauce Hollandaise
+                - generic [ref=e2587]: (+1,50 €)
+                - generic [ref=e2588]:
+                  - spinbutton [ref=e2590]: "0"
+                  - button [ref=e2591]:
+                    - img [ref=e2592]
+              - generic [ref=e2595] [cursor=pointer]:
+                - generic [ref=e2596]: Scampi
+                - generic [ref=e2597]: (+1,50 €)
+                - generic [ref=e2598]:
+                  - spinbutton [ref=e2600]: "0"
+                  - button [ref=e2601]:
+                    - img [ref=e2602]
+              - generic [ref=e2605] [cursor=pointer]:
+                - generic [ref=e2606]: Schinken
+                - generic [ref=e2607]: (+1,50 €)
+                - generic [ref=e2608]:
+                  - spinbutton [ref=e2610]: "0"
+                  - button [ref=e2611]:
+                    - img [ref=e2612]
+              - generic [ref=e2615] [cursor=pointer]:
+                - generic [ref=e2616]: Spargel
+                - generic [ref=e2617]: (+1,50 €)
+                - generic [ref=e2618]:
+                  - spinbutton [ref=e2620]: "0"
+                  - button [ref=e2621]:
+                    - img [ref=e2622]
+              - generic [ref=e2625] [cursor=pointer]:
+                - generic [ref=e2626]: Spiegelei
+                - generic [ref=e2627]: (+1,50 €)
+                - generic [ref=e2628]:
+                  - spinbutton [ref=e2630]: "0"
+                  - button [ref=e2631]:
+                    - img [ref=e2632]
+              - generic [ref=e2635] [cursor=pointer]:
+                - generic [ref=e2636]: Spinat
+                - generic [ref=e2637]: (+1,50 €)
+                - generic [ref=e2638]:
+                  - spinbutton [ref=e2640]: "0"
+                  - button [ref=e2641]:
+                    - img [ref=e2642]
+              - generic [ref=e2645] [cursor=pointer]:
+                - generic [ref=e2646]: Tomaten
+                - generic [ref=e2647]: (+1,50 €)
+                - generic [ref=e2648]:
+                  - spinbutton [ref=e2650]: "0"
+                  - button [ref=e2651]:
+                    - img [ref=e2652]
+              - generic [ref=e2655] [cursor=pointer]:
+                - generic [ref=e2656]: Zwiebeln
+                - generic [ref=e2657]: (+1,50 €)
+                - generic [ref=e2658]:
+                  - spinbutton [ref=e2660]: "0"
+                  - button [ref=e2661]:
+                    - img [ref=e2662]
+            - generic [ref=e2666] [cursor=pointer]: Mehr anzeigen
+          - generic [ref=e2669]:
+            - generic [ref=e2670]: Produktinformationen
+            - button "Pizza Margherita" [ref=e2673] [cursor=pointer]
+            - table [ref=e2676]:
+              - rowgroup [ref=e2677]:
+                - row "Zusatzstoffe 2" [ref=e2678]:
+                  - rowheader "Zusatzstoffe" [ref=e2679]
+                  - cell "2" [ref=e2680]
+                - row "Wiederverwendbar Nein" [ref=e2681]:
+                  - rowheader "Wiederverwendbar" [ref=e2682]
+                  - cell "Nein" [ref=e2683]
+                - row "Vorverpackt Nein" [ref=e2684]:
+                  - rowheader "Vorverpackt" [ref=e2685]
+                  - cell "Nein" [ref=e2686]
+          - generic [ref=e2688]:
+            - text: Eine Übersicht aller Allergene & Zusatzstoffe findest du
+            - link "hier" [ref=e2689] [cursor=pointer]:
+              - /url: https://typo00-public.s3.eu-central-1.amazonaws.com/paoe2ocf9lo3uf045fohiv8wzlaz
+      - generic [ref=e2690]:
+        - generic [ref=e2691]:
+          - button [ref=e2692] [cursor=pointer]:
+            - img [ref=e2693]
+          - spinbutton [ref=e2696]: "1"
+          - button [ref=e2697] [cursor=pointer]:
+            - img [ref=e2698]
+        - button "Hinzufügen 5,00 €" [ref=e2701] [cursor=pointer]:
+          - generic [ref=e2702]: Hinzufügen
+          - generic [ref=e2703]: 5,00 €
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Logo" [ref=e6] [cursor=pointer]:
+          - /url: /?cart_type=pickup
+          - img "Logo" [ref=e7]
+        - generic [ref=e9]:
+          - textbox "Gericht suchen" [ref=e10]
+          - img [ref=e13]
+        - generic [ref=e15]:
+          - img [ref=e18] [cursor=pointer]
+          - img [ref=e24] [cursor=pointer]
+    - generic [ref=e41]:
+      - generic [ref=e151]:
+        - generic [ref=e152]:
+          - generic [ref=e154]: Pizzeria Pinocchio Ennigerloh
+          - link "Alle Infos" [ref=e155] [cursor=pointer]:
+            - /url: /imprint?cart_type=pickup
+            - generic [ref=e156]: Alle Infos
+        - generic [ref=e157]:
+          - link "Geöffnet bis 22:30" [ref=e160] [cursor=pointer]:
+            - /url: /imprint?cart_type=pickup
+            - img [ref=e161]
+            - generic [ref=e164]: Geöffnet bis 22:30
+          - link "Gruppenbestellung" [ref=e166] [cursor=pointer]:
+            - /url: /group_orders/start?cart_type=pickup
+            - generic [ref=e167]:
+              - img [ref=e169]
+              - text: Gruppenbestellung
+      - generic [ref=e56]:
+        - list [ref=e58]:
+          - listitem [ref=e59] [cursor=pointer]: Pinocchio Angebote
+          - listitem [ref=e60] [cursor=pointer]: Menüs
+          - listitem [ref=e61] [cursor=pointer]: Mittagsangebot
+          - listitem [ref=e62] [cursor=pointer]: Pizza
+          - listitem [ref=e63] [cursor=pointer]: Familienpizza
+          - listitem [ref=e64] [cursor=pointer]: Pizzabrötchen & Snacks
+          - listitem [ref=e65] [cursor=pointer]: Pasta
+          - listitem [ref=e66] [cursor=pointer]: Rigatoni
+          - listitem [ref=e67] [cursor=pointer]: Spaghetti
+          - listitem [ref=e68] [cursor=pointer]: Tortellini
+          - listitem [ref=e69] [cursor=pointer]: Gnocchi
+          - listitem [ref=e70] [cursor=pointer]: Aufläufe
+          - listitem [ref=e71] [cursor=pointer]: Kartoffelauflauf
+          - listitem [ref=e72] [cursor=pointer]: Salat
+          - listitem [ref=e73] [cursor=pointer]: Geflügelgerichte
+          - listitem [ref=e74] [cursor=pointer]: Alkoholfreie Getränke
+        - generic [ref=e75]:
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - generic [ref=e174]: Pinocchio Angebote
+              - generic [ref=e175]:
+                - link "Pinocchio Angebot 1 2x Pizza nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l 28,00 €" [ref=e176] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371458
+                  - generic [ref=e178]:
+                    - generic [ref=e179]:
+                      - generic [ref=e181]: Pinocchio Angebot 1
+                      - heading "2x Pizza nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l" [level=4] [ref=e182]:
+                        - paragraph [ref=e183]: 2x Pizza nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l
+                    - generic [ref=e185]: 28,00 €
+                - link "Pinocchio Angebot 2 2x Nudelgericht nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l 28,00 €" [ref=e186] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371459
+                  - generic [ref=e188]:
+                    - generic [ref=e189]:
+                      - generic [ref=e191]: Pinocchio Angebot 2
+                      - heading "2x Nudelgericht nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l" [level=4] [ref=e192]:
+                        - paragraph [ref=e193]: 2x Nudelgericht nach Wahl, 1x Großer Salat, 1 Flasche Coca Cola 1,0l
+                    - generic [ref=e195]: 28,00 €
+                - link "Pinocchio Angebot 3 40 cm Pizza, 1x Großer Salat, 1 Flasche Coca Cola 1,0l 28,00 €" [ref=e196] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371460
+                  - generic [ref=e198]:
+                    - generic [ref=e199]:
+                      - generic [ref=e201]: Pinocchio Angebot 3
+                      - heading "40 cm Pizza, 1x Großer Salat, 1 Flasche Coca Cola 1,0l" [level=4] [ref=e202]:
+                        - paragraph [ref=e203]: 40 cm Pizza, 1x Großer Salat, 1 Flasche Coca Cola 1,0l
+                    - generic [ref=e205]: 28,00 €
+                - link "Pinocchio Angebot 4 2x Hähnchen- oder Putengeschnetzeltes, 1x Großer Salat, 1 Flasche Coca Cola 1,0l 28,00 €" [ref=e206] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371461
+                  - generic [ref=e208]:
+                    - generic [ref=e209]:
+                      - generic [ref=e211]: Pinocchio Angebot 4
+                      - heading "2x Hähnchen- oder Putengeschnetzeltes, 1x Großer Salat, 1 Flasche Coca Cola 1,0l" [level=4] [ref=e212]:
+                        - paragraph [ref=e213]: 2x Hähnchen- oder Putengeschnetzeltes, 1x Großer Salat, 1 Flasche Coca Cola 1,0l
+                    - generic [ref=e215]: 28,00 €
+            - generic [ref=e216]:
+              - generic [ref=e218]: Menüs
+              - generic [ref=e219]: Montag - Freitag von 11.30 - 14.30 Uhr
+              - generic [ref=e220]:
+                - link "Menü 1 1x Pizza (28 cm) nach Wahl, 1x kleiner Salat 8,50 €" [ref=e221] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371452
+                  - generic [ref=e223]:
+                    - generic [ref=e224]:
+                      - generic [ref=e226]: Menü 1
+                      - heading "1x Pizza (28 cm) nach Wahl, 1x kleiner Salat" [level=4] [ref=e227]:
+                        - paragraph [ref=e228]: 1x Pizza (28 cm) nach Wahl, 1x kleiner Salat
+                    - generic [ref=e230]: 8,50 €
+                - link "Menü 2 1x Nudelgericht, Pizzabrötchen 8,50 €" [ref=e231] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371453
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - generic [ref=e236]: Menü 2
+                      - heading "1x Nudelgericht, Pizzabrötchen" [level=4] [ref=e237]:
+                        - paragraph [ref=e238]: 1x Nudelgericht, Pizzabrötchen
+                    - generic [ref=e240]: 8,50 €
+                - link "Menü 3 1x Großer Salat, Pizzabrötchen 8,50 €" [ref=e241] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371454
+                  - generic [ref=e243]:
+                    - generic [ref=e244]:
+                      - generic [ref=e246]: Menü 3
+                      - heading "1x Großer Salat, Pizzabrötchen" [level=4] [ref=e247]:
+                        - paragraph [ref=e248]: 1x Großer Salat, Pizzabrötchen
+                    - generic [ref=e250]: 8,50 €
+                - link "Menü 4 1x Putengeschnetzeltes, Pizzabrötchen 8,50 €" [ref=e251] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371455
+                  - generic [ref=e253]:
+                    - generic [ref=e254]:
+                      - generic [ref=e256]: Menü 4
+                      - heading "1x Putengeschnetzeltes, Pizzabrötchen" [level=4] [ref=e257]:
+                        - paragraph [ref=e258]: 1x Putengeschnetzeltes, Pizzabrötchen
+                    - generic [ref=e260]: 8,50 €
+                - link "Menü 5 1x Hähnchengeschnetzeltes, Pizzabrötchen 8,50 €" [ref=e261] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371456
+                  - generic [ref=e263]:
+                    - generic [ref=e264]:
+                      - generic [ref=e266]: Menü 5
+                      - heading "1x Hähnchengeschnetzeltes, Pizzabrötchen" [level=4] [ref=e267]:
+                        - paragraph [ref=e268]: 1x Hähnchengeschnetzeltes, Pizzabrötchen
+                    - generic [ref=e270]: 8,50 €
+                - link "Menü 6 1x kleine Pizza nach Wahl, 1 kleiner gem. Salat 8,50 €" [ref=e271] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371457
+                  - generic [ref=e273]:
+                    - generic [ref=e274]:
+                      - generic [ref=e276]: Menü 6
+                      - heading "1x kleine Pizza nach Wahl, 1 kleiner gem. Salat" [level=4] [ref=e277]:
+                        - paragraph [ref=e278]: 1x kleine Pizza nach Wahl, 1 kleiner gem. Salat
+                    - generic [ref=e280]: 8,50 €
+            - generic [ref=e281]:
+              - generic [ref=e283]: Mittagsangebot
+              - generic [ref=e284]: Montag - Freitag von 11.30 - 14.30 Uhr
+              - link "Mittagsangebot Pizza Pizza nach Wahl 5,50 €" [ref=e286] [cursor=pointer]:
+                - /url: /line_items/new?cart_type=pickup&product_id=27371451
+                - generic [ref=e288]:
+                  - generic [ref=e289]:
+                    - generic [ref=e291]: Mittagsangebot Pizza
+                    - heading "Pizza nach Wahl" [level=4] [ref=e292]:
+                      - paragraph [ref=e293]: Pizza nach Wahl
+                  - generic [ref=e295]: 5,50 €
+            - generic [ref=e296]:
+              - generic [ref=e298]: Pizza
+              - generic [ref=e299]: Alle Gerichte werden mit Tomaten und Käse zubereitet.
+              - generic [ref=e300]:
+                - link "1. Pizza Margherita 5,00 €" [active] [ref=e301] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371287
+                  - generic [ref=e303]:
+                    - generic [ref=e306]: 1. Pizza Margherita
+                    - generic [ref=e308]: 5,00 €
+                - link "2. Pizza Cipolla mit Zwiebeln 5,50 €" [ref=e309] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371288
+                  - generic [ref=e311]:
+                    - generic [ref=e312]:
+                      - generic [ref=e314]: 2. Pizza Cipolla
+                      - heading "mit Zwiebeln" [level=4] [ref=e315]:
+                        - paragraph [ref=e316]: mit Zwiebeln
+                    - generic [ref=e318]: 5,50 €
+                - link "3. Pizza Funghi mit Pilzen 5,50 €" [ref=e319] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371289
+                  - generic [ref=e321]:
+                    - generic [ref=e322]:
+                      - generic [ref=e324]: 3. Pizza Funghi
+                      - heading "mit Pilzen" [level=4] [ref=e325]:
+                        - paragraph [ref=e326]: mit Pilzen
+                    - generic [ref=e328]: 5,50 €
+                - link "4. Pizza Paprika mit Paprika 5,50 €" [ref=e329] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371290
+                  - generic [ref=e331]:
+                    - generic [ref=e332]:
+                      - generic [ref=e334]: 4. Pizza Paprika
+                      - heading "mit Paprika" [level=4] [ref=e335]:
+                        - paragraph [ref=e336]: mit Paprika
+                    - generic [ref=e338]: 5,50 €
+                - link "5. Pizza Prosciutto mit Schinken 5,50 €" [ref=e339] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371291
+                  - generic [ref=e341]:
+                    - generic [ref=e342]:
+                      - generic [ref=e344]: 5. Pizza Prosciutto
+                      - heading "mit Schinken" [level=4] [ref=e345]:
+                        - paragraph [ref=e346]: mit Schinken
+                    - generic [ref=e348]: 5,50 €
+                - link "6. Pizza Salami mit Salami 5,50 €" [ref=e349] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371292
+                  - generic [ref=e351]:
+                    - generic [ref=e352]:
+                      - generic [ref=e354]: 6. Pizza Salami
+                      - heading "mit Salami" [level=4] [ref=e355]:
+                        - paragraph [ref=e356]: mit Salami
+                    - generic [ref=e358]: 5,50 €
+                - link "7. Pizza Tonno mit Thunfisch 5,50 €" [ref=e359] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371293
+                  - generic [ref=e361]:
+                    - generic [ref=e362]:
+                      - generic [ref=e364]: 7. Pizza Tonno
+                      - heading "mit Thunfisch" [level=4] [ref=e365]:
+                        - paragraph [ref=e366]: mit Thunfisch
+                    - generic [ref=e368]: 5,50 €
+                - link "8. Pizza Tonno Cipolla mit Thunfisch und Zwiebeln 6,00 €" [ref=e369] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371294
+                  - generic [ref=e371]:
+                    - generic [ref=e372]:
+                      - generic [ref=e374]: 8. Pizza Tonno Cipolla
+                      - heading "mit Thunfisch und Zwiebeln" [level=4] [ref=e375]:
+                        - paragraph [ref=e376]: mit Thunfisch und Zwiebeln
+                    - generic [ref=e378]: 6,00 €
+                - link "9. Pizza Primavera mit Salami und Pilzen 6,00 €" [ref=e379] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371295
+                  - generic [ref=e381]:
+                    - generic [ref=e382]:
+                      - generic [ref=e384]: 9. Pizza Primavera
+                      - heading "mit Salami und Pilzen" [level=4] [ref=e385]:
+                        - paragraph [ref=e386]: mit Salami und Pilzen
+                    - generic [ref=e388]: 6,00 €
+                - link "10. Pizza Romana mit Schinken und Pilzen 6,00 €" [ref=e389] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371296
+                  - generic [ref=e391]:
+                    - generic [ref=e392]:
+                      - generic [ref=e394]: 10. Pizza Romana
+                      - heading "mit Schinken und Pilzen" [level=4] [ref=e395]:
+                        - paragraph [ref=e396]: mit Schinken und Pilzen
+                    - generic [ref=e398]: 6,00 €
+                - link "11. Pizza Dallas mit Spinat, Krabben und Knoblauch 6,00 €" [ref=e399] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371297
+                  - generic [ref=e401]:
+                    - generic [ref=e402]:
+                      - generic [ref=e404]: 11. Pizza Dallas
+                      - heading "mit Spinat, Krabben und Knoblauch" [level=4] [ref=e405]:
+                        - paragraph [ref=e406]: mit Spinat, Krabben und Knoblauch
+                    - generic [ref=e408]: 6,00 €
+                - link "12. Pizza Hawaii mit Schinken und Ananas 6,00 €" [ref=e409] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371298
+                  - generic [ref=e411]:
+                    - generic [ref=e412]:
+                      - generic [ref=e414]: 12. Pizza Hawaii
+                      - heading "mit Schinken und Ananas" [level=4] [ref=e415]:
+                        - paragraph [ref=e416]: mit Schinken und Ananas
+                    - generic [ref=e418]: 6,00 €
+                - link "13. Pizza Atlanta mit Spinat, Gorgonzola und Knoblauch 6,00 €" [ref=e419] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371299
+                  - generic [ref=e421]:
+                    - generic [ref=e422]:
+                      - generic [ref=e424]: 13. Pizza Atlanta
+                      - heading "mit Spinat, Gorgonzola und Knoblauch" [level=4] [ref=e425]:
+                        - paragraph [ref=e426]: mit Spinat, Gorgonzola und Knoblauch
+                    - generic [ref=e428]: 6,00 €
+                - link "14. Pizza Quattro Stagioni mit Schinken, Artischocken, Paprika und Pilzen 6,00 €" [ref=e429] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371300
+                  - generic [ref=e431]:
+                    - generic [ref=e432]:
+                      - generic [ref=e434]: 14. Pizza Quattro Stagioni
+                      - heading "mit Schinken, Artischocken, Paprika und Pilzen" [level=4] [ref=e435]:
+                        - paragraph [ref=e436]: mit Schinken, Artischocken, Paprika und Pilzen
+                    - generic [ref=e438]: 6,00 €
+                - link "15. Pizza Vegetaria mit frischen Tomaten, Spinat, Broccoli, Zwiebeln und Paprika 6,00 €" [ref=e439] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371301
+                  - generic [ref=e441]:
+                    - generic [ref=e442]:
+                      - generic [ref=e444]: 15. Pizza Vegetaria
+                      - heading "mit frischen Tomaten, Spinat, Broccoli, Zwiebeln und Paprika" [level=4] [ref=e445]:
+                        - paragraph [ref=e446]: mit frischen Tomaten, Spinat, Broccoli, Zwiebeln und Paprika
+                    - generic [ref=e448]: 6,00 €
+                - link "16. Calzone gefüllt mit Pilzen, Schinken und Salami 6,00 €" [ref=e449] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371302
+                  - generic [ref=e451]:
+                    - generic [ref=e452]:
+                      - generic [ref=e454]: 16. Calzone
+                      - heading "gefüllt mit Pilzen, Schinken und Salami" [level=4] [ref=e455]:
+                        - paragraph [ref=e456]: gefüllt mit Pilzen, Schinken und Salami
+                    - generic [ref=e458]: 6,00 €
+                - link "17. Pizza Texas mit Broccoli, Zwiebeln , Pilzen und Mais 6,00 €" [ref=e459] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371303
+                  - generic [ref=e461]:
+                    - generic [ref=e462]:
+                      - generic [ref=e464]: 17. Pizza Texas
+                      - heading "mit Broccoli, Zwiebeln , Pilzen und Mais" [level=4] [ref=e465]:
+                        - paragraph [ref=e466]: mit Broccoli, Zwiebeln , Pilzen und Mais
+                    - generic [ref=e468]: 6,00 €
+                - link "18. Pizza Gamberetti mit Scampi, Knoblauch und Muscheln 6,00 €" [ref=e469] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371304
+                  - generic [ref=e471]:
+                    - generic [ref=e472]:
+                      - generic [ref=e474]: 18. Pizza Gamberetti
+                      - heading "mit Scampi, Knoblauch und Muscheln" [level=4] [ref=e475]:
+                        - paragraph [ref=e476]: mit Scampi, Knoblauch und Muscheln
+                    - generic [ref=e478]: 6,00 €
+                - link "19. Pizza nach Art des Hauses mit Schinken, Salami, Pilzen und Thunfisch 6,00 €" [ref=e479] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371305
+                  - generic [ref=e481]:
+                    - generic [ref=e482]:
+                      - generic [ref=e484]: 19. Pizza nach Art des Hauses
+                      - heading "mit Schinken, Salami, Pilzen und Thunfisch" [level=4] [ref=e485]:
+                        - paragraph [ref=e486]: mit Schinken, Salami, Pilzen und Thunfisch
+                    - generic [ref=e488]: 6,00 €
+                - link "20. Pizza Frutti di Mare mit Thunfisch, Meeresfrüchten und Knoblauch 6,00 €" [ref=e489] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371306
+                  - generic [ref=e491]:
+                    - generic [ref=e492]:
+                      - generic [ref=e494]: 20. Pizza Frutti di Mare
+                      - heading "mit Thunfisch, Meeresfrüchten und Knoblauch" [level=4] [ref=e495]:
+                        - paragraph [ref=e496]: mit Thunfisch, Meeresfrüchten und Knoblauch
+                    - generic [ref=e498]: 6,00 €
+                - link "21. Pizza Mista mit Schinken, Salami und Pilzen 6,00 €" [ref=e499] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371307
+                  - generic [ref=e501]:
+                    - generic [ref=e502]:
+                      - generic [ref=e504]: 21. Pizza Mista
+                      - heading "mit Schinken, Salami und Pilzen" [level=4] [ref=e505]:
+                        - paragraph [ref=e506]: mit Schinken, Salami und Pilzen
+                    - generic [ref=e508]: 6,00 €
+                - link "22. Pizza Italia mit Schinken, Thunfisch und Salami 6,00 €" [ref=e509] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371308
+                  - generic [ref=e511]:
+                    - generic [ref=e512]:
+                      - generic [ref=e514]: 22. Pizza Italia
+                      - heading "mit Schinken, Thunfisch und Salami" [level=4] [ref=e515]:
+                        - paragraph [ref=e516]: mit Schinken, Thunfisch und Salami
+                    - generic [ref=e518]: 6,00 €
+                - link "23. Pizza Picante mit Schinken, Artischocken, Peperoni, Kapern, Spargel und Sardellen 6,00 €" [ref=e519] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371309
+                  - generic [ref=e521]:
+                    - generic [ref=e522]:
+                      - generic [ref=e524]: 23. Pizza Picante
+                      - heading "mit Schinken, Artischocken, Peperoni, Kapern, Spargel und Sardellen" [level=4] [ref=e525]:
+                        - paragraph [ref=e526]: mit Schinken, Artischocken, Peperoni, Kapern, Spargel und Sardellen
+                    - generic [ref=e528]: 6,00 €
+                - link "24. Pizza Gorgonzola mit Gorgonzola und Schinken 6,00 €" [ref=e529] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371310
+                  - generic [ref=e531]:
+                    - generic [ref=e532]:
+                      - generic [ref=e534]: 24. Pizza Gorgonzola
+                      - heading "mit Gorgonzola und Schinken" [level=4] [ref=e535]:
+                        - paragraph [ref=e536]: mit Gorgonzola und Schinken
+                    - generic [ref=e538]: 6,00 €
+                - link "25. Pizza Mozzarella mit Mozzarella 6,00 €" [ref=e539] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371311
+                  - generic [ref=e541]:
+                    - generic [ref=e542]:
+                      - generic [ref=e544]: 25. Pizza Mozzarella
+                      - heading "mit Mozzarella" [level=4] [ref=e545]:
+                        - paragraph [ref=e546]: mit Mozzarella
+                    - generic [ref=e548]: 6,00 €
+                - link "26. Pizza 3 Formaggio mit drei verschiedenen Käsesorten 6,00 €" [ref=e549] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371312
+                  - generic [ref=e551]:
+                    - generic [ref=e552]:
+                      - generic [ref=e554]: 26. Pizza 3 Formaggio
+                      - heading "mit drei verschiedenen Käsesorten" [level=4] [ref=e555]:
+                        - paragraph [ref=e556]: mit drei verschiedenen Käsesorten
+                    - generic [ref=e558]: 6,00 €
+                - link "27. Pizza Spaghetti mit Fleischsauce, Mozzarella und Spaghetti, ohne Tomaten 6,00 €" [ref=e559] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371313
+                  - generic [ref=e561]:
+                    - generic [ref=e562]:
+                      - generic [ref=e564]: 27. Pizza Spaghetti
+                      - heading "mit Fleischsauce, Mozzarella und Spaghetti, ohne Tomaten" [level=4] [ref=e565]:
+                        - paragraph [ref=e566]: mit Fleischsauce, Mozzarella und Spaghetti, ohne Tomaten
+                    - generic [ref=e568]: 6,00 €
+                - link "28. Calzone Mafiose gefüllt mit Thunfisch, Artischocken und Schinken 6,00 €" [ref=e569] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371314
+                  - generic [ref=e571]:
+                    - generic [ref=e572]:
+                      - generic [ref=e574]: 28. Calzone Mafiose
+                      - heading "gefüllt mit Thunfisch, Artischocken und Schinken" [level=4] [ref=e575]:
+                        - paragraph [ref=e576]: gefüllt mit Thunfisch, Artischocken und Schinken
+                    - generic [ref=e578]: 6,00 €
+                - link "29. Pizza Muscheln mit Thunfisch, Muscheln und Knoblauch 6,00 €" [ref=e579] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371315
+                  - generic [ref=e581]:
+                    - generic [ref=e582]:
+                      - generic [ref=e584]: 29. Pizza Muscheln
+                      - heading "mit Thunfisch, Muscheln und Knoblauch" [level=4] [ref=e585]:
+                        - paragraph [ref=e586]: mit Thunfisch, Muscheln und Knoblauch
+                    - generic [ref=e588]: 6,00 €
+                - link "30. Pizza Scampi mit Scampis und Knoblauch 6,00 €" [ref=e589] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371316
+                  - generic [ref=e591]:
+                    - generic [ref=e592]:
+                      - generic [ref=e594]: 30. Pizza Scampi
+                      - heading "mit Scampis und Knoblauch" [level=4] [ref=e595]:
+                        - paragraph [ref=e596]: mit Scampis und Knoblauch
+                    - generic [ref=e598]: 6,00 €
+                - link "30a. Pizza Garnelen mit gebratenene Garnelen und Knoblauch 7,00 €" [ref=e599] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371317
+                  - generic [ref=e601]:
+                    - generic [ref=e602]:
+                      - generic [ref=e604]: 30a. Pizza Garnelen
+                      - heading "mit gebratenene Garnelen und Knoblauch" [level=4] [ref=e605]:
+                        - paragraph [ref=e606]: mit gebratenene Garnelen und Knoblauch
+                    - generic [ref=e608]: 7,00 €
+                - link "31. Pizza Capricciosa mit Salami, Kapern, Sardellen und Oliven 6,00 €" [ref=e609] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371318
+                  - generic [ref=e611]:
+                    - generic [ref=e612]:
+                      - generic [ref=e614]: 31. Pizza Capricciosa
+                      - heading "mit Salami, Kapern, Sardellen und Oliven" [level=4] [ref=e615]:
+                        - paragraph [ref=e616]: mit Salami, Kapern, Sardellen und Oliven
+                    - generic [ref=e618]: 6,00 €
+                - link "32. Pizza Popey mit frischen Tomaten, Blattspinat und Mozzarella 6,00 €" [ref=e619] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371319
+                  - generic [ref=e621]:
+                    - generic [ref=e622]:
+                      - generic [ref=e624]: 32. Pizza Popey
+                      - heading "mit frischen Tomaten, Blattspinat und Mozzarella" [level=4] [ref=e625]:
+                        - paragraph [ref=e626]: mit frischen Tomaten, Blattspinat und Mozzarella
+                    - generic [ref=e628]: 6,00 €
+                - link "33. Pizza Inferno (extra scharf) mit Schinken, Pilzen und Artischocken 6,00 €" [ref=e629] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371320
+                  - generic [ref=e631]:
+                    - generic [ref=e632]:
+                      - generic [ref=e634]: 33. Pizza Inferno (extra scharf)
+                      - heading "mit Schinken, Pilzen und Artischocken" [level=4] [ref=e635]:
+                        - paragraph [ref=e636]: mit Schinken, Pilzen und Artischocken
+                    - generic [ref=e638]: 6,00 €
+                - link "34. Pizza Sizilliana mit Zwiebeln, Paprika, Peperoni und Knoblauch 6,00 €" [ref=e639] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371321
+                  - generic [ref=e641]:
+                    - generic [ref=e642]:
+                      - generic [ref=e644]: 34. Pizza Sizilliana
+                      - heading "mit Zwiebeln, Paprika, Peperoni und Knoblauch" [level=4] [ref=e645]:
+                        - paragraph [ref=e646]: mit Zwiebeln, Paprika, Peperoni und Knoblauch
+                    - generic [ref=e648]: 6,00 €
+                - link "35. Pizza Pinocchio von Allem etwas 6,00 €" [ref=e649] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371322
+                  - generic [ref=e651]:
+                    - generic [ref=e652]:
+                      - generic [ref=e654]: 35. Pizza Pinocchio
+                      - heading "von Allem etwas" [level=4] [ref=e655]:
+                        - paragraph [ref=e656]: von Allem etwas
+                    - generic [ref=e658]: 6,00 €
+                - link "36. Pizza Broccoli mit frischen Tomaten und Broccoli 6,00 €" [ref=e659] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371323
+                  - generic [ref=e661]:
+                    - generic [ref=e662]:
+                      - generic [ref=e664]: 36. Pizza Broccoli
+                      - heading "mit frischen Tomaten und Broccoli" [level=4] [ref=e665]:
+                        - paragraph [ref=e666]: mit frischen Tomaten und Broccoli
+                    - generic [ref=e668]: 6,00 €
+                - link "37. Pizza Vesuvia mit Paprika, Artischocken, Pilzen, Oliven und Ei 6,00 €" [ref=e669] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371324
+                  - generic [ref=e671]:
+                    - generic [ref=e672]:
+                      - generic [ref=e674]: 37. Pizza Vesuvia
+                      - heading "mit Paprika, Artischocken, Pilzen, Oliven und Ei" [level=4] [ref=e675]:
+                        - paragraph [ref=e676]: mit Paprika, Artischocken, Pilzen, Oliven und Ei
+                    - generic [ref=e678]: 6,00 €
+                - link "38. Pizza Tonorella mit gekochtem Ei, Thunfisch, Zwiebelen und Peperoni 6,00 €" [ref=e679] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371325
+                  - generic [ref=e681]:
+                    - generic [ref=e682]:
+                      - generic [ref=e684]: 38. Pizza Tonorella
+                      - heading "mit gekochtem Ei, Thunfisch, Zwiebelen und Peperoni" [level=4] [ref=e685]:
+                        - paragraph [ref=e686]: mit gekochtem Ei, Thunfisch, Zwiebelen und Peperoni
+                    - generic [ref=e688]: 6,00 €
+                - link "39. Pizza Phoenix mit Broccoli, Spinat, Pilzen und Paprika 6,00 €" [ref=e689] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371326
+                  - generic [ref=e691]:
+                    - generic [ref=e692]:
+                      - generic [ref=e694]: 39. Pizza Phoenix
+                      - heading "mit Broccoli, Spinat, Pilzen und Paprika" [level=4] [ref=e695]:
+                        - paragraph [ref=e696]: mit Broccoli, Spinat, Pilzen und Paprika
+                    - generic [ref=e698]: 6,00 €
+                - link "40. Pizza Marinara mit Salami, Artischocken, Spargel, Paprika und Oliven 6,00 €" [ref=e699] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371327
+                  - generic [ref=e701]:
+                    - generic [ref=e702]:
+                      - generic [ref=e704]: 40. Pizza Marinara
+                      - heading "mit Salami, Artischocken, Spargel, Paprika und Oliven" [level=4] [ref=e705]:
+                        - paragraph [ref=e706]: mit Salami, Artischocken, Spargel, Paprika und Oliven
+                    - generic [ref=e708]: 6,00 €
+                - link "44. Pizza Lachs NEU! mit Lachs, Spinat und Knoblauch 6,00 €" [ref=e709] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371328
+                  - generic [ref=e711]:
+                    - generic [ref=e712]:
+                      - generic [ref=e713]:
+                        - generic [ref=e714]: 44. Pizza Lachs
+                        - generic [ref=e715]: NEU!
+                      - heading "mit Lachs, Spinat und Knoblauch" [level=4] [ref=e716]:
+                        - paragraph [ref=e717]: mit Lachs, Spinat und Knoblauch
+                    - generic [ref=e719]: 6,00 €
+                - link "45. Pizza Chicken NEU! mit Hähnchen und Ananas 6,00 €" [ref=e720] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371329
+                  - generic [ref=e722]:
+                    - generic [ref=e723]:
+                      - generic [ref=e724]:
+                        - generic [ref=e725]: 45. Pizza Chicken
+                        - generic [ref=e726]: NEU!
+                      - heading "mit Hähnchen und Ananas" [level=4] [ref=e727]:
+                        - paragraph [ref=e728]: mit Hähnchen und Ananas
+                    - generic [ref=e730]: 6,00 €
+                - link "46. Pizza Bolognese NEU! mit Fleischsauce, ohne Tomaten 6,00 €" [ref=e731] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371330
+                  - generic [ref=e733]:
+                    - generic [ref=e734]:
+                      - generic [ref=e735]:
+                        - generic [ref=e736]: 46. Pizza Bolognese
+                        - generic [ref=e737]: NEU!
+                      - heading "mit Fleischsauce, ohne Tomaten" [level=4] [ref=e738]:
+                        - paragraph [ref=e739]: mit Fleischsauce, ohne Tomaten
+                    - generic [ref=e741]: 6,00 €
+                - link "99. Pizza Amore mit Mozzarella, Spinat, Zwiebeln, Paprika und Knoblauch 6,00 €" [ref=e742] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371331
+                  - generic [ref=e744]:
+                    - generic [ref=e745]:
+                      - generic [ref=e747]: 99. Pizza Amore
+                      - heading "mit Mozzarella, Spinat, Zwiebeln, Paprika und Knoblauch" [level=4] [ref=e748]:
+                        - paragraph [ref=e749]: mit Mozzarella, Spinat, Zwiebeln, Paprika und Knoblauch
+                    - generic [ref=e751]: 6,00 €
+                - link "100. Pizza Ramacca mit Zwiebeln, frischen Pilzen, frischer Paprika und Knoblauch 6,00 €" [ref=e752] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371332
+                  - generic [ref=e754]:
+                    - generic [ref=e755]:
+                      - generic [ref=e757]: 100. Pizza Ramacca
+                      - heading "mit Zwiebeln, frischen Pilzen, frischer Paprika und Knoblauch" [level=4] [ref=e758]:
+                        - paragraph [ref=e759]: mit Zwiebeln, frischen Pilzen, frischer Paprika und Knoblauch
+                    - generic [ref=e761]: 6,00 €
+                - link "101. Pizza Jungfrau mit frischer Paprika, Spargel und Mais 6,00 €" [ref=e762] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371333
+                  - generic [ref=e764]:
+                    - generic [ref=e765]:
+                      - generic [ref=e767]: 101. Pizza Jungfrau
+                      - heading "mit frischer Paprika, Spargel und Mais" [level=4] [ref=e768]:
+                        - paragraph [ref=e769]: mit frischer Paprika, Spargel und Mais
+                    - generic [ref=e771]: 6,00 €
+                - link "102. Pizza Widder mit Spinat, Knoblauch und Spiegelei 6,00 €" [ref=e772] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371334
+                  - generic [ref=e774]:
+                    - generic [ref=e775]:
+                      - generic [ref=e777]: 102. Pizza Widder
+                      - heading "mit Spinat, Knoblauch und Spiegelei" [level=4] [ref=e778]:
+                        - paragraph [ref=e779]: mit Spinat, Knoblauch und Spiegelei
+                    - generic [ref=e781]: 6,00 €
+                - link "103. Calzone Spezial mit Spinat, Broccoli, Champignons und Knoblauch 6,00 €" [ref=e782] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371335
+                  - generic [ref=e784]:
+                    - generic [ref=e785]:
+                      - generic [ref=e787]: 103. Calzone Spezial
+                      - heading "mit Spinat, Broccoli, Champignons und Knoblauch" [level=4] [ref=e788]:
+                        - paragraph [ref=e789]: mit Spinat, Broccoli, Champignons und Knoblauch
+                    - generic [ref=e791]: 6,00 €
+                - link "113. Pizza Miami Pizza Gyros! mit Gyros und Zwiebeln 6,00 €" [ref=e792] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371336
+                  - generic [ref=e794]:
+                    - generic [ref=e795]:
+                      - generic [ref=e796]:
+                        - generic [ref=e797]: 113. Pizza Miami
+                        - generic [ref=e798]: Pizza Gyros!
+                      - heading "mit Gyros und Zwiebeln" [level=4] [ref=e799]:
+                        - paragraph [ref=e800]: mit Gyros und Zwiebeln
+                    - generic [ref=e802]: 6,00 €
+                - link "114. Pizza Santa Fe Pizza Gyros! mit Gyros, Feta und frischen Tomaten 6,00 €" [ref=e803] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371337
+                  - generic [ref=e805]:
+                    - generic [ref=e806]:
+                      - generic [ref=e807]:
+                        - generic [ref=e808]: 114. Pizza Santa Fe
+                        - generic [ref=e809]: Pizza Gyros!
+                      - heading "mit Gyros, Feta und frischen Tomaten" [level=4] [ref=e810]:
+                        - paragraph [ref=e811]: mit Gyros, Feta und frischen Tomaten
+                    - generic [ref=e813]: 6,00 €
+                - link "115. Pizza Alaska Pizza Gyros! mit Gyros, Peperoni und Salami 6,00 €" [ref=e814] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371338
+                  - generic [ref=e816]:
+                    - generic [ref=e817]:
+                      - generic [ref=e818]:
+                        - generic [ref=e819]: 115. Pizza Alaska
+                        - generic [ref=e820]: Pizza Gyros!
+                      - heading "mit Gyros, Peperoni und Salami" [level=4] [ref=e821]:
+                        - paragraph [ref=e822]: mit Gyros, Peperoni und Salami
+                    - generic [ref=e824]: 6,00 €
+                - link "116. Pizza Manhattan Pizza Gyros! mit Gyros, Zwiebeln, Salat, frischen Tomaten, Gurken und Joghurt 6,00 €" [ref=e825] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371339
+                  - generic [ref=e827]:
+                    - generic [ref=e828]:
+                      - generic [ref=e829]:
+                        - generic [ref=e830]: 116. Pizza Manhattan
+                        - generic [ref=e831]: Pizza Gyros!
+                      - heading "mit Gyros, Zwiebeln, Salat, frischen Tomaten, Gurken und Joghurt" [level=4] [ref=e832]:
+                        - paragraph [ref=e833]: mit Gyros, Zwiebeln, Salat, frischen Tomaten, Gurken und Joghurt
+                    - generic [ref=e835]: 6,00 €
+                - link "117. Pizza Hongkong mit Hähnchen, Zwiebeln und Gemüse 6,00 €" [ref=e836] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371340
+                  - generic [ref=e838]:
+                    - generic [ref=e839]:
+                      - generic [ref=e841]: 117. Pizza Hongkong
+                      - heading "mit Hähnchen, Zwiebeln und Gemüse" [level=4] [ref=e842]:
+                        - paragraph [ref=e843]: mit Hähnchen, Zwiebeln und Gemüse
+                    - generic [ref=e845]: 6,00 €
+                - link "118. Pizza Tokio mit Hähnchen, Schinken, Ananas und Gemüse 6,00 €" [ref=e846] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371341
+                  - generic [ref=e848]:
+                    - generic [ref=e849]:
+                      - generic [ref=e851]: 118. Pizza Tokio
+                      - heading "mit Hähnchen, Schinken, Ananas und Gemüse" [level=4] [ref=e852]:
+                        - paragraph [ref=e853]: mit Hähnchen, Schinken, Ananas und Gemüse
+                    - generic [ref=e855]: 6,00 €
+                - link "119. Pizza Bangkok mit Hähnchen, Thunfisch, Zwiebeln und Gemüse 6,00 €" [ref=e856] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371342
+                  - generic [ref=e858]:
+                    - generic [ref=e859]:
+                      - generic [ref=e861]: 119. Pizza Bangkok
+                      - heading "mit Hähnchen, Thunfisch, Zwiebeln und Gemüse" [level=4] [ref=e862]:
+                        - paragraph [ref=e863]: mit Hähnchen, Thunfisch, Zwiebeln und Gemüse
+                    - generic [ref=e865]: 6,00 €
+                - link "120. Pizza Shanghai mit Hähnchen, Zwiebeln, Gemüse, Salat, frischen Tomaten, Gurken und Joghurt 6,00 €" [ref=e866] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371343
+                  - generic [ref=e868]:
+                    - generic [ref=e869]:
+                      - generic [ref=e871]: 120. Pizza Shanghai
+                      - heading "mit Hähnchen, Zwiebeln, Gemüse, Salat, frischen Tomaten, Gurken und Joghurt" [level=4] [ref=e872]:
+                        - paragraph [ref=e873]: mit Hähnchen, Zwiebeln, Gemüse, Salat, frischen Tomaten, Gurken und Joghurt
+                    - generic [ref=e875]: 6,00 €
+                - link "121. Pizza Palermo mit Sauce Hollondaise! mit Sahnesauce, Krabben, Knoblauch und Sauce Hollandaise, ohne Tomaten 6,00 €" [ref=e876] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371344
+                  - generic [ref=e878]:
+                    - generic [ref=e879]:
+                      - generic [ref=e880]:
+                        - generic [ref=e881]: 121. Pizza Palermo
+                        - generic [ref=e882]: mit Sauce Hollondaise!
+                      - heading "mit Sahnesauce, Krabben, Knoblauch und Sauce Hollandaise, ohne Tomaten" [level=4] [ref=e883]:
+                        - paragraph [ref=e884]: mit Sahnesauce, Krabben, Knoblauch und Sauce Hollandaise, ohne Tomaten
+                    - generic [ref=e886]: 6,00 €
+                - link "122. Pizza Diavolo mit Sauce Hollondaise! mit Sauce Hollandaise, Broccoli, Spargel und Schinken 6,00 €" [ref=e887] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371345
+                  - generic [ref=e889]:
+                    - generic [ref=e890]:
+                      - generic [ref=e891]:
+                        - generic [ref=e892]: 122. Pizza Diavolo
+                        - generic [ref=e893]: mit Sauce Hollondaise!
+                      - heading "mit Sauce Hollandaise, Broccoli, Spargel und Schinken" [level=4] [ref=e894]:
+                        - paragraph [ref=e895]: mit Sauce Hollandaise, Broccoli, Spargel und Schinken
+                    - generic [ref=e897]: 6,00 €
+                - link "201. Pizza Rucola-Schinken mit Schinken, Rucola und frischen Tomaten 6,00 €" [ref=e898] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371346
+                  - generic [ref=e900]:
+                    - generic [ref=e901]:
+                      - generic [ref=e903]: 201. Pizza Rucola-Schinken
+                      - heading "mit Schinken, Rucola und frischen Tomaten" [level=4] [ref=e904]:
+                        - paragraph [ref=e905]: mit Schinken, Rucola und frischen Tomaten
+                    - generic [ref=e907]: 6,00 €
+                - link "202. Pizza Rucola-Champignons mit Champignons, Rucola und frischen Tomaten 6,00 €" [ref=e908] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371347
+                  - generic [ref=e910]:
+                    - generic [ref=e911]:
+                      - generic [ref=e913]: 202. Pizza Rucola-Champignons
+                      - heading "mit Champignons, Rucola und frischen Tomaten" [level=4] [ref=e914]:
+                        - paragraph [ref=e915]: mit Champignons, Rucola und frischen Tomaten
+                    - generic [ref=e917]: 6,00 €
+                - link "203. Pizza Rucola-Mozzarella mit Mozzarella, Rucola und frischen Tomaten 6,00 €" [ref=e918] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371348
+                  - generic [ref=e920]:
+                    - generic [ref=e921]:
+                      - generic [ref=e923]: 203. Pizza Rucola-Mozzarella
+                      - heading "mit Mozzarella, Rucola und frischen Tomaten" [level=4] [ref=e924]:
+                        - paragraph [ref=e925]: mit Mozzarella, Rucola und frischen Tomaten
+                    - generic [ref=e927]: 6,00 €
+                - link "204. Pizza Dönerfleisch NEU! mit Dönerfleisch, Mais, Broccoli, Sauce Hollandaise 6,50 €" [ref=e928] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371437
+                  - generic [ref=e930]:
+                    - generic [ref=e931]:
+                      - generic [ref=e932]:
+                        - generic [ref=e933]: 204. Pizza Dönerfleisch
+                        - generic [ref=e934]: NEU!
+                      - heading "mit Dönerfleisch, Mais, Broccoli, Sauce Hollandaise" [level=4] [ref=e935]:
+                        - paragraph [ref=e936]: mit Dönerfleisch, Mais, Broccoli, Sauce Hollandaise
+                    - generic [ref=e938]: 6,50 €
+                - link "205. Pizza Dönerfleisch NEU! mit Dönerfleisch, Zwiebeln, Jalapenos, frische Tomaten 6,50 €" [ref=e939] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371438
+                  - generic [ref=e941]:
+                    - generic [ref=e942]:
+                      - generic [ref=e943]:
+                        - generic [ref=e944]: 205. Pizza Dönerfleisch
+                        - generic [ref=e945]: NEU!
+                      - heading "mit Dönerfleisch, Zwiebeln, Jalapenos, frische Tomaten" [level=4] [ref=e946]:
+                        - paragraph [ref=e947]: mit Dönerfleisch, Zwiebeln, Jalapenos, frische Tomaten
+                    - generic [ref=e949]: 6,50 €
+                - link "206. Pizza Dönerfleisch NEU! mit Dönerfleisch, Schafskäse, Peperoni, Paprika, Zwiebeln 6,50 €" [ref=e950] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371439
+                  - generic [ref=e952]:
+                    - generic [ref=e953]:
+                      - generic [ref=e954]:
+                        - generic [ref=e955]: 206. Pizza Dönerfleisch
+                        - generic [ref=e956]: NEU!
+                      - heading "mit Dönerfleisch, Schafskäse, Peperoni, Paprika, Zwiebeln" [level=4] [ref=e957]:
+                        - paragraph [ref=e958]: mit Dönerfleisch, Schafskäse, Peperoni, Paprika, Zwiebeln
+                    - generic [ref=e960]: 6,50 €
+                - link "207. Döner Calzone NEU! mit Dönerfleisch, Sauce Hollandaise, BBQ-Sauce, Zwiebeln, Peperoni 6,50 €" [ref=e961] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371440
+                  - generic [ref=e963]:
+                    - generic [ref=e964]:
+                      - generic [ref=e965]:
+                        - generic [ref=e966]: 207. Döner Calzone
+                        - generic [ref=e967]: NEU!
+                      - heading "mit Dönerfleisch, Sauce Hollandaise, BBQ-Sauce, Zwiebeln, Peperoni" [level=4] [ref=e968]:
+                        - paragraph [ref=e969]: mit Dönerfleisch, Sauce Hollandaise, BBQ-Sauce, Zwiebeln, Peperoni
+                    - generic [ref=e971]: 6,50 €
+                - link "208. Pizza Sucuk NEU! mit Knoblauchwurst, Peperoni und Spiegelei 6,50 €" [ref=e972] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371441
+                  - generic [ref=e974]:
+                    - generic [ref=e975]:
+                      - generic [ref=e976]:
+                        - generic [ref=e977]: 208. Pizza Sucuk
+                        - generic [ref=e978]: NEU!
+                      - heading "mit Knoblauchwurst, Peperoni und Spiegelei" [level=4] [ref=e979]:
+                        - paragraph [ref=e980]: mit Knoblauchwurst, Peperoni und Spiegelei
+                    - generic [ref=e982]: 6,50 €
+                - link "209. American Pizza New York Barbeque-Sauce, Käse, Mozzarella, Paprika, Mais, Zwiebeln, Tabasco 7,00 €" [ref=e983] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27372259
+                  - generic [ref=e985]:
+                    - generic [ref=e986]:
+                      - generic [ref=e988]: 209. American Pizza New York
+                      - heading "Barbeque-Sauce, Käse, Mozzarella, Paprika, Mais, Zwiebeln, Tabasco" [level=4] [ref=e989]:
+                        - paragraph [ref=e990]: Barbeque-Sauce, Käse, Mozzarella, Paprika, Mais, Zwiebeln, Tabasco
+                    - generic [ref=e992]: 7,00 €
+                - link "210. American Pizza California Curry-Sauce, Käse, Mozzarella, Hähnchenbrust, Ananas 7,00 €" [ref=e993] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27372260
+                  - generic [ref=e995]:
+                    - generic [ref=e996]:
+                      - generic [ref=e998]: 210. American Pizza California
+                      - heading "Curry-Sauce, Käse, Mozzarella, Hähnchenbrust, Ananas" [level=4] [ref=e999]:
+                        - paragraph [ref=e1000]: Curry-Sauce, Käse, Mozzarella, Hähnchenbrust, Ananas
+                    - generic [ref=e1002]: 7,00 €
+                - link "211. American Pizza Key West Barbeque-Sauce, Käse, Mozzarella, Hähnchenbrust, frische Paprika, Mais 7,00 €" [ref=e1003] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27372261
+                  - generic [ref=e1005]:
+                    - generic [ref=e1006]:
+                      - generic [ref=e1008]: 211. American Pizza Key West
+                      - heading "Barbeque-Sauce, Käse, Mozzarella, Hähnchenbrust, frische Paprika, Mais" [level=4] [ref=e1009]:
+                        - paragraph [ref=e1010]: Barbeque-Sauce, Käse, Mozzarella, Hähnchenbrust, frische Paprika, Mais
+                    - generic [ref=e1012]: 7,00 €
+                - link "212. American Pizza Barbecue Barbeque-Sauce, Käse, Mozzarella, Pfannengyros, Peperoni, Oliven 7,00 €" [ref=e1013] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27372262
+                  - generic [ref=e1015]:
+                    - generic [ref=e1016]:
+                      - generic [ref=e1018]: 212. American Pizza Barbecue
+                      - heading "Barbeque-Sauce, Käse, Mozzarella, Pfannengyros, Peperoni, Oliven" [level=4] [ref=e1019]:
+                        - paragraph [ref=e1020]: Barbeque-Sauce, Käse, Mozzarella, Pfannengyros, Peperoni, Oliven
+                    - generic [ref=e1022]: 7,00 €
+                - link "213. American Pizza Grand Canyon Barbeque-Sauce, Käse, Mozzarella, fr. Tomaten, Bacon, Champignons, Zwiebeln 7,00 €" [ref=e1023] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27372263
+                  - generic [ref=e1025]:
+                    - generic [ref=e1026]:
+                      - generic [ref=e1028]: 213. American Pizza Grand Canyon
+                      - heading "Barbeque-Sauce, Käse, Mozzarella, fr. Tomaten, Bacon, Champignons, Zwiebeln" [level=4] [ref=e1029]:
+                        - paragraph [ref=e1030]: Barbeque-Sauce, Käse, Mozzarella, fr. Tomaten, Bacon, Champignons, Zwiebeln
+                    - generic [ref=e1032]: 7,00 €
+            - generic [ref=e1033]:
+              - generic [ref=e1035]: Familienpizza
+              - generic [ref=e1036]: Alle Gerichte werden mit Tomaten und Käse zubereitet.
+              - generic [ref=e1037]:
+                - link "Familienpizza (Ø 50 cm) mit 4 Zutaten nach Wahl 26,50 €" [ref=e1038] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371349
+                  - generic [ref=e1040]:
+                    - generic [ref=e1041]:
+                      - generic [ref=e1043]: Familienpizza (Ø 50 cm)
+                      - heading "mit 4 Zutaten nach Wahl" [level=4] [ref=e1044]:
+                        - paragraph [ref=e1045]: mit 4 Zutaten nach Wahl
+                    - generic [ref=e1047]: 26,50 €
+                - link "Familienpizza (Ø 40 cm) mit 4 Zutaten nach Wahl 20,00 €" [ref=e1048] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371350
+                  - generic [ref=e1050]:
+                    - generic [ref=e1051]:
+                      - generic [ref=e1053]: Familienpizza (Ø 40 cm)
+                      - heading "mit 4 Zutaten nach Wahl" [level=4] [ref=e1054]:
+                        - paragraph [ref=e1055]: mit 4 Zutaten nach Wahl
+                    - generic [ref=e1057]: 20,00 €
+                - link "Partypizza 60 x 40 cm mit 4 Zutaten nach Wahl 31,00 €" [ref=e1058] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371442
+                  - generic [ref=e1060]:
+                    - generic [ref=e1061]:
+                      - generic [ref=e1063]: Partypizza 60 x 40 cm
+                      - heading "mit 4 Zutaten nach Wahl" [level=4] [ref=e1064]:
+                        - paragraph [ref=e1065]: mit 4 Zutaten nach Wahl
+                    - generic [ref=e1067]: 31,00 €
+            - generic [ref=e1068]:
+              - generic [ref=e1070]: Pizzabrötchen & Snacks
+              - generic [ref=e1071]: mit Dip nach Wahl
+              - generic [ref=e1072]:
+                - link "Pizzabrötchen 3,00 €" [ref=e1073] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371420
+                  - generic [ref=e1075]:
+                    - generic [ref=e1078]: Pizzabrötchen
+                    - generic [ref=e1080]: 3,00 €
+                - link "704. Pizzabrötchen mit Käse und Knoblauch 6,50 €" [ref=e1081] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371421
+                  - generic [ref=e1083]:
+                    - generic [ref=e1086]: 704. Pizzabrötchen mit Käse und Knoblauch
+                    - generic [ref=e1088]: 6,50 €
+                - link "704. Pizzabrötchen mit Tomatensauce und Knoblauch 6,50 €" [ref=e1089] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371422
+                  - generic [ref=e1091]:
+                    - generic [ref=e1094]: 704. Pizzabrötchen mit Tomatensauce und Knoblauch
+                    - generic [ref=e1096]: 6,50 €
+                - link "704. Pizzabrötchen gefüllt mit Käse und Salami 6,50 €" [ref=e1097] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371423
+                  - generic [ref=e1099]:
+                    - generic [ref=e1102]: 704. Pizzabrötchen gefüllt mit Käse und Salami
+                    - generic [ref=e1104]: 6,50 €
+                - link "704. Pizzabrötchen gefüllt mit Käse und Schinken 6,50 €" [ref=e1105] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371424
+                  - generic [ref=e1107]:
+                    - generic [ref=e1110]: 704. Pizzabrötchen gefüllt mit Käse und Schinken
+                    - generic [ref=e1112]: 6,50 €
+                - link "704. Pizzabrötchen gefüllt mit Käse und Thunfisch 6,50 €" [ref=e1113] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371425
+                  - generic [ref=e1115]:
+                    - generic [ref=e1118]: 704. Pizzabrötchen gefüllt mit Käse und Thunfisch
+                    - generic [ref=e1120]: 6,50 €
+                - link "705. Käse-Tasche 6,50 €" [ref=e1121] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371426
+                  - generic [ref=e1123]:
+                    - generic [ref=e1126]: 705. Käse-Tasche
+                    - generic [ref=e1128]: 6,50 €
+                - link "706. Käse-Tasche mit Feta 6,50 €" [ref=e1129] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371427
+                  - generic [ref=e1131]:
+                    - generic [ref=e1134]: 706. Käse-Tasche mit Feta
+                    - generic [ref=e1136]: 6,50 €
+                - link "707. Spinat-Tasche mit Käse 7,00 €" [ref=e1137] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371428
+                  - generic [ref=e1139]:
+                    - generic [ref=e1142]: 707. Spinat-Tasche mit Käse
+                    - generic [ref=e1144]: 7,00 €
+                - link "708. Spezial-Tasche mit Ananas und Mozzarella 7,00 €" [ref=e1145] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371429
+                  - generic [ref=e1147]:
+                    - generic [ref=e1150]: 708. Spezial-Tasche mit Ananas und Mozzarella
+                    - generic [ref=e1152]: 7,00 €
+            - generic [ref=e1153]:
+              - generic [ref=e1155]: Pasta
+              - generic [ref=e1156]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1157]:
+                - link "71. Lasagne mit Schinken, Fleischsauce und Käse 9,00 €" [ref=e1158] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371351
+                  - generic [ref=e1160]:
+                    - generic [ref=e1161]:
+                      - generic [ref=e1163]: 71. Lasagne
+                      - heading "mit Schinken, Fleischsauce und Käse" [level=4] [ref=e1164]:
+                        - paragraph [ref=e1165]: mit Schinken, Fleischsauce und Käse
+                    - generic [ref=e1167]: 9,00 €
+                - link "72. Lasagne Vegetaria mit Tomaten, Broccoli, Erbsen, Spinat und Sahnesauce 9,50 €" [ref=e1168] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371352
+                  - generic [ref=e1170]:
+                    - generic [ref=e1171]:
+                      - generic [ref=e1173]: 72. Lasagne Vegetaria
+                      - heading "mit Tomaten, Broccoli, Erbsen, Spinat und Sahnesauce" [level=4] [ref=e1174]:
+                        - paragraph [ref=e1175]: mit Tomaten, Broccoli, Erbsen, Spinat und Sahnesauce
+                    - generic [ref=e1177]: 9,50 €
+                - link "73. Tris di Pasta mit Lasagne, Rigatoni, Tortellini, Fleischsauce und Käse 9,00 €" [ref=e1178] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371353
+                  - generic [ref=e1180]:
+                    - generic [ref=e1181]:
+                      - generic [ref=e1183]: 73. Tris di Pasta
+                      - heading "mit Lasagne, Rigatoni, Tortellini, Fleischsauce und Käse" [level=4] [ref=e1184]:
+                        - paragraph [ref=e1185]: mit Lasagne, Rigatoni, Tortellini, Fleischsauce und Käse
+                    - generic [ref=e1187]: 9,00 €
+                - link "107. Bandnudeln Vegetaria mit Spinat, Broccoli, Champignons und Mozzarella überbacken 9,50 €" [ref=e1188] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371354
+                  - generic [ref=e1190]:
+                    - generic [ref=e1191]:
+                      - generic [ref=e1193]: 107. Bandnudeln Vegetaria
+                      - heading "mit Spinat, Broccoli, Champignons und Mozzarella überbacken" [level=4] [ref=e1194]:
+                        - paragraph [ref=e1195]: mit Spinat, Broccoli, Champignons und Mozzarella überbacken
+                    - generic [ref=e1197]: 9,50 €
+                - link "165. Bandnudeln a la Panna mit Schinken und Sahnesauce 9,50 €" [ref=e1198] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371355
+                  - generic [ref=e1200]:
+                    - generic [ref=e1201]:
+                      - generic [ref=e1203]: 165. Bandnudeln a la Panna
+                      - heading "mit Schinken und Sahnesauce" [level=4] [ref=e1204]:
+                        - paragraph [ref=e1205]: mit Schinken und Sahnesauce
+                    - generic [ref=e1207]: 9,50 €
+                - link "166. Bandnudeln Quattro Formaggi mit vier Käsesorten 9,50 €" [ref=e1208] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371356
+                  - generic [ref=e1210]:
+                    - generic [ref=e1211]:
+                      - generic [ref=e1213]: 166. Bandnudeln Quattro Formaggi
+                      - heading "mit vier Käsesorten" [level=4] [ref=e1214]:
+                        - paragraph [ref=e1215]: mit vier Käsesorten
+                    - generic [ref=e1217]: 9,50 €
+                - link "167. Bandnudeln Gorgonzola mit Spinat und Gorgonzolasauce 9,50 €" [ref=e1218] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371357
+                  - generic [ref=e1220]:
+                    - generic [ref=e1221]:
+                      - generic [ref=e1223]: 167. Bandnudeln Gorgonzola
+                      - heading "mit Spinat und Gorgonzolasauce" [level=4] [ref=e1224]:
+                        - paragraph [ref=e1225]: mit Spinat und Gorgonzolasauce
+                    - generic [ref=e1227]: 9,50 €
+                - link "168. Bandnudeln Siziliana mit Schinken, Erbsen, frischen Champignons und Tomatensauce 9,50 €" [ref=e1228] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371358
+                  - generic [ref=e1230]:
+                    - generic [ref=e1231]:
+                      - generic [ref=e1233]: 168. Bandnudeln Siziliana
+                      - heading "mit Schinken, Erbsen, frischen Champignons und Tomatensauce" [level=4] [ref=e1234]:
+                        - paragraph [ref=e1235]: mit Schinken, Erbsen, frischen Champignons und Tomatensauce
+                    - generic [ref=e1237]: 9,50 €
+                - link "709. Salmone al Gorgonzola Lachs mit Gorgonzola-Sahnesauce, Käse überbacken, Bandnudeln und Beilagensalat 12,00 €" [ref=e1238] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371359
+                  - generic [ref=e1240]:
+                    - generic [ref=e1241]:
+                      - generic [ref=e1243]: 709. Salmone al Gorgonzola
+                      - heading "Lachs mit Gorgonzola-Sahnesauce, Käse überbacken, Bandnudeln und Beilagensalat" [level=4] [ref=e1244]:
+                        - paragraph [ref=e1245]: Lachs mit Gorgonzola-Sahnesauce, Käse überbacken, Bandnudeln und Beilagensalat
+                    - generic [ref=e1247]: 12,00 €
+                - link "710. Maccheroni mit Lachs, Sahnesauce und Beilagensalat 12,00 €" [ref=e1248] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371360
+                  - generic [ref=e1250]:
+                    - generic [ref=e1253]: 710. Maccheroni mit Lachs, Sahnesauce und Beilagensalat
+                    - generic [ref=e1255]: 12,00 €
+                - link "711. Maccheroni mit Lachs, Broccoli, Knoblauch und Sahnesauce 12,00 €" [ref=e1256] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371361
+                  - generic [ref=e1258]:
+                    - generic [ref=e1261]: 711. Maccheroni mit Lachs, Broccoli, Knoblauch und Sahnesauce
+                    - generic [ref=e1263]: 12,00 €
+            - generic [ref=e1264]:
+              - generic [ref=e1266]: Rigatoni
+              - generic [ref=e1267]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1268]:
+                - link "60. Rigatoni Bolognese mit Fleischsauce 9,00 €" [ref=e1269] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371362
+                  - generic [ref=e1271]:
+                    - generic [ref=e1272]:
+                      - generic [ref=e1274]: 60. Rigatoni Bolognese
+                      - heading "mit Fleischsauce" [level=4] [ref=e1275]:
+                        - paragraph [ref=e1276]: mit Fleischsauce
+                    - generic [ref=e1278]: 9,00 €
+                - link "61. Rigatoni Italia mit Schinken, frischen Champignons, Erbsen und Tomatensauce 8,50 €" [ref=e1279] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371363
+                  - generic [ref=e1281]:
+                    - generic [ref=e1282]:
+                      - generic [ref=e1284]: 61. Rigatoni Italia
+                      - heading "mit Schinken, frischen Champignons, Erbsen und Tomatensauce" [level=4] [ref=e1285]:
+                        - paragraph [ref=e1286]: mit Schinken, frischen Champignons, Erbsen und Tomatensauce
+                    - generic [ref=e1288]: 8,50 €
+                - link "62. Rigatoni Quattro Formaggi mit vier Käsesorten 9,00 €" [ref=e1289] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371364
+                  - generic [ref=e1291]:
+                    - generic [ref=e1292]:
+                      - generic [ref=e1294]: 62. Rigatoni Quattro Formaggi
+                      - heading "mit vier Käsesorten" [level=4] [ref=e1295]:
+                        - paragraph [ref=e1296]: mit vier Käsesorten
+                    - generic [ref=e1298]: 9,00 €
+                - link "63. Rigatoni Vegetaria mit Erbsen und Sahnesauce 9,00 €" [ref=e1299] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371365
+                  - generic [ref=e1301]:
+                    - generic [ref=e1302]:
+                      - generic [ref=e1304]: 63. Rigatoni Vegetaria
+                      - heading "mit Erbsen und Sahnesauce" [level=4] [ref=e1305]:
+                        - paragraph [ref=e1306]: mit Erbsen und Sahnesauce
+                    - generic [ref=e1308]: 9,00 €
+                - link "64. Rigatoni nach Art des Hauses mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons 9,00 €" [ref=e1309] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371366
+                  - generic [ref=e1311]:
+                    - generic [ref=e1312]:
+                      - generic [ref=e1314]: 64. Rigatoni nach Art des Hauses
+                      - heading "mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons" [level=4] [ref=e1315]:
+                        - paragraph [ref=e1316]: mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons
+                    - generic [ref=e1318]: 9,00 €
+                - link "77. Rigatoni Carbonara mit Sahnesauce, Schinken, Käse und Ei 9,00 €" [ref=e1319] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371367
+                  - generic [ref=e1321]:
+                    - generic [ref=e1322]:
+                      - generic [ref=e1324]: 77. Rigatoni Carbonara
+                      - heading "mit Sahnesauce, Schinken, Käse und Ei" [level=4] [ref=e1325]:
+                        - paragraph [ref=e1326]: mit Sahnesauce, Schinken, Käse und Ei
+                    - generic [ref=e1328]: 9,00 €
+                - link "78. Rigatoni al Forno mit Fleischsauce und Käse 9,00 €" [ref=e1329] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371368
+                  - generic [ref=e1331]:
+                    - generic [ref=e1332]:
+                      - generic [ref=e1334]: 78. Rigatoni al Forno
+                      - heading "mit Fleischsauce und Käse" [level=4] [ref=e1335]:
+                        - paragraph [ref=e1336]: mit Fleischsauce und Käse
+                    - generic [ref=e1338]: 9,00 €
+                - link "79. Rigatoni Italia mit Tomaten, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse 9,50 €" [ref=e1339] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371369
+                  - generic [ref=e1341]:
+                    - generic [ref=e1342]:
+                      - generic [ref=e1344]: 79. Rigatoni Italia
+                      - heading "mit Tomaten, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse" [level=4] [ref=e1345]:
+                        - paragraph [ref=e1346]: mit Tomaten, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse
+                    - generic [ref=e1348]: 9,50 €
+                - link "104. Rigatoni Pinocchio (vegetarisch) mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken 9,50 €" [ref=e1349] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371370
+                  - generic [ref=e1351]:
+                    - generic [ref=e1352]:
+                      - generic [ref=e1354]: 104. Rigatoni Pinocchio (vegetarisch)
+                      - heading "mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken" [level=4] [ref=e1355]:
+                        - paragraph [ref=e1356]: mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken
+                    - generic [ref=e1358]: 9,50 €
+            - generic [ref=e1359]:
+              - generic [ref=e1361]: Spaghetti
+              - generic [ref=e1362]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1363]:
+                - link "47. Spaghetti Bolognese mit Fleischsauce 8,50 €" [ref=e1364] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371371
+                  - generic [ref=e1366]:
+                    - generic [ref=e1367]:
+                      - generic [ref=e1369]: 47. Spaghetti Bolognese
+                      - heading "mit Fleischsauce" [level=4] [ref=e1370]:
+                        - paragraph [ref=e1371]: mit Fleischsauce
+                    - generic [ref=e1373]: 8,50 €
+                - link "48. Spaghetti alla Panna mit Schinken und Sahnesauce 8,50 €" [ref=e1374] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371372
+                  - generic [ref=e1376]:
+                    - generic [ref=e1377]:
+                      - generic [ref=e1379]: 48. Spaghetti alla Panna
+                      - heading "mit Schinken und Sahnesauce" [level=4] [ref=e1380]:
+                        - paragraph [ref=e1381]: mit Schinken und Sahnesauce
+                    - generic [ref=e1383]: 8,50 €
+                - link "49. Spaghetti alla Napolitana mit Tomatensauce 8,00 €" [ref=e1384] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371373
+                  - generic [ref=e1386]:
+                    - generic [ref=e1387]:
+                      - generic [ref=e1389]: 49. Spaghetti alla Napolitana
+                      - heading "mit Tomatensauce" [level=4] [ref=e1390]:
+                        - paragraph [ref=e1391]: mit Tomatensauce
+                    - generic [ref=e1393]: 8,00 €
+                - link "50. Spaghetti Carbonara mit Schinken, Sahnesauce und Ei 9,00 €" [ref=e1394] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371374
+                  - generic [ref=e1396]:
+                    - generic [ref=e1397]:
+                      - generic [ref=e1399]: 50. Spaghetti Carbonara
+                      - heading "mit Schinken, Sahnesauce und Ei" [level=4] [ref=e1400]:
+                        - paragraph [ref=e1401]: mit Schinken, Sahnesauce und Ei
+                    - generic [ref=e1403]: 9,00 €
+                - link "51. Spaghetti della Casa mit Schinken, frischen Champignons, Erbsen und Tomatensauce 9,00 €" [ref=e1404] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371375
+                  - generic [ref=e1406]:
+                    - generic [ref=e1407]:
+                      - generic [ref=e1409]: 51. Spaghetti della Casa
+                      - heading "mit Schinken, frischen Champignons, Erbsen und Tomatensauce" [level=4] [ref=e1410]:
+                        - paragraph [ref=e1411]: mit Schinken, frischen Champignons, Erbsen und Tomatensauce
+                    - generic [ref=e1413]: 9,00 €
+                - link "52. Spaghetti Frutti di Mare mit Meeresfrüchten, Knoblauch und Tomatensauce 9,00 €" [ref=e1414] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371376
+                  - generic [ref=e1416]:
+                    - generic [ref=e1417]:
+                      - generic [ref=e1419]: 52. Spaghetti Frutti di Mare
+                      - heading "mit Meeresfrüchten, Knoblauch und Tomatensauce" [level=4] [ref=e1420]:
+                        - paragraph [ref=e1421]: mit Meeresfrüchten, Knoblauch und Tomatensauce
+                    - generic [ref=e1423]: 9,00 €
+                - link "53. Spahgetti dia Vegetaria mit Erbsen, Spinat und Sahnesauce 9,00 €" [ref=e1424] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371377
+                  - generic [ref=e1426]:
+                    - generic [ref=e1427]:
+                      - generic [ref=e1429]: 53. Spahgetti dia Vegetaria
+                      - heading "mit Erbsen, Spinat und Sahnesauce" [level=4] [ref=e1430]:
+                        - paragraph [ref=e1431]: mit Erbsen, Spinat und Sahnesauce
+                    - generic [ref=e1433]: 9,00 €
+                - link "54. Spaghetti Gamberetti mit Scampi, Knoblauch und Tomatensauce 9,00 €" [ref=e1434] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371378
+                  - generic [ref=e1436]:
+                    - generic [ref=e1437]:
+                      - generic [ref=e1439]: 54. Spaghetti Gamberetti
+                      - heading "mit Scampi, Knoblauch und Tomatensauce" [level=4] [ref=e1440]:
+                        - paragraph [ref=e1441]: mit Scampi, Knoblauch und Tomatensauce
+                    - generic [ref=e1443]: 9,00 €
+                - link "55. Spaghetti Tonno mit Thunfisch, Knoblauch und Tomatensauce 9,00 €" [ref=e1444] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371379
+                  - generic [ref=e1446]:
+                    - generic [ref=e1447]:
+                      - generic [ref=e1449]: 55. Spaghetti Tonno
+                      - heading "mit Thunfisch, Knoblauch und Tomatensauce" [level=4] [ref=e1450]:
+                        - paragraph [ref=e1451]: mit Thunfisch, Knoblauch und Tomatensauce
+                    - generic [ref=e1453]: 9,00 €
+                - link "56. Spaghetti a la Gorgonzola mit Sahne, Gorgonzola und Schinken 9,00 €" [ref=e1454] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371380
+                  - generic [ref=e1456]:
+                    - generic [ref=e1457]:
+                      - generic [ref=e1459]: 56. Spaghetti a la Gorgonzola
+                      - heading "mit Sahne, Gorgonzola und Schinken" [level=4] [ref=e1460]:
+                        - paragraph [ref=e1461]: mit Sahne, Gorgonzola und Schinken
+                    - generic [ref=e1463]: 9,00 €
+                - link "57. Spaghetti Italia mit Spinat, Sahnesauce und Gorgonzola 9,00 €" [ref=e1464] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371381
+                  - generic [ref=e1466]:
+                    - generic [ref=e1467]:
+                      - generic [ref=e1469]: 57. Spaghetti Italia
+                      - heading "mit Spinat, Sahnesauce und Gorgonzola" [level=4] [ref=e1470]:
+                        - paragraph [ref=e1471]: mit Spinat, Sahnesauce und Gorgonzola
+                    - generic [ref=e1473]: 9,00 €
+                - link "58. Spaghetti a la Panna 2 mit Schinken, Sahnesauce und frischen Champignons 9,00 €" [ref=e1474] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371382
+                  - generic [ref=e1476]:
+                    - generic [ref=e1477]:
+                      - generic [ref=e1479]: 58. Spaghetti a la Panna 2
+                      - heading "mit Schinken, Sahnesauce und frischen Champignons" [level=4] [ref=e1480]:
+                        - paragraph [ref=e1481]: mit Schinken, Sahnesauce und frischen Champignons
+                    - generic [ref=e1483]: 9,00 €
+                - link "59. Spaghetti Vegetaria mit Erbsen, Spinat, frischen Champignons und Sahnesauce 9,00 €" [ref=e1484] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371383
+                  - generic [ref=e1486]:
+                    - generic [ref=e1487]:
+                      - generic [ref=e1489]: 59. Spaghetti Vegetaria
+                      - heading "mit Erbsen, Spinat, frischen Champignons und Sahnesauce" [level=4] [ref=e1490]:
+                        - paragraph [ref=e1491]: mit Erbsen, Spinat, frischen Champignons und Sahnesauce
+                    - generic [ref=e1493]: 9,00 €
+                - link "80. Spaghetti al Forno mit Fleischsauce und Käse 9,00 €" [ref=e1494] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371384
+                  - generic [ref=e1496]:
+                    - generic [ref=e1497]:
+                      - generic [ref=e1499]: 80. Spaghetti al Forno
+                      - heading "mit Fleischsauce und Käse" [level=4] [ref=e1500]:
+                        - paragraph [ref=e1501]: mit Fleischsauce und Käse
+                    - generic [ref=e1503]: 9,00 €
+                - link "81. Spaghetti Carbonara al Forno mit Schinken, Sahnesauce, Käse und Ei 9,00 €" [ref=e1504] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371385
+                  - generic [ref=e1506]:
+                    - generic [ref=e1507]:
+                      - generic [ref=e1509]: 81. Spaghetti Carbonara al Forno
+                      - heading "mit Schinken, Sahnesauce, Käse und Ei" [level=4] [ref=e1510]:
+                        - paragraph [ref=e1511]: mit Schinken, Sahnesauce, Käse und Ei
+                    - generic [ref=e1513]: 9,00 €
+                - link "82. Spaghetti Italia mit Tomatensauce, frischen Champignons, Schinken, Erbsen und Spezial-Sahnesauce 9,00 €" [ref=e1514] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371386
+                  - generic [ref=e1516]:
+                    - generic [ref=e1517]:
+                      - generic [ref=e1519]: 82. Spaghetti Italia
+                      - heading "mit Tomatensauce, frischen Champignons, Schinken, Erbsen und Spezial-Sahnesauce" [level=4] [ref=e1520]:
+                        - paragraph [ref=e1521]: mit Tomatensauce, frischen Champignons, Schinken, Erbsen und Spezial-Sahnesauce
+                    - generic [ref=e1523]: 9,00 €
+                - link "106. Spaghetti Vegetaria mit Spinat, Broccoli, Champignons und Mozzarella überbacken 9,00 €" [ref=e1524] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371387
+                  - generic [ref=e1526]:
+                    - generic [ref=e1527]:
+                      - generic [ref=e1529]: 106. Spaghetti Vegetaria
+                      - heading "mit Spinat, Broccoli, Champignons und Mozzarella überbacken" [level=4] [ref=e1530]:
+                        - paragraph [ref=e1531]: mit Spinat, Broccoli, Champignons und Mozzarella überbacken
+                    - generic [ref=e1533]: 9,00 €
+                - link "162. Spaghetti Caprese gebratene Spaghetti mit Tomaten, Knoblauch, Basilikum, Mozzarella und Hähnchenbrustfilet 10,00 €" [ref=e1534] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371388
+                  - generic [ref=e1536]:
+                    - generic [ref=e1537]:
+                      - generic [ref=e1539]: 162. Spaghetti Caprese
+                      - heading "gebratene Spaghetti mit Tomaten, Knoblauch, Basilikum, Mozzarella und Hähnchenbrustfilet" [level=4] [ref=e1540]:
+                        - paragraph [ref=e1541]: gebratene Spaghetti mit Tomaten, Knoblauch, Basilikum, Mozzarella und Hähnchenbrustfilet
+                    - generic [ref=e1543]: 10,00 €
+                - link "163. Spaghetti Aglio Olio e Peperoncino gebratenen Spaghetti mit Peperoni, Broccoli, Erbsen, Hähnchenbrustfilet und Sahnesauce 10,00 €" [ref=e1544] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371389
+                  - generic [ref=e1546]:
+                    - generic [ref=e1547]:
+                      - generic [ref=e1549]: 163. Spaghetti Aglio Olio e Peperoncino
+                      - heading "gebratenen Spaghetti mit Peperoni, Broccoli, Erbsen, Hähnchenbrustfilet und Sahnesauce" [level=4] [ref=e1550]:
+                        - paragraph [ref=e1551]: gebratenen Spaghetti mit Peperoni, Broccoli, Erbsen, Hähnchenbrustfilet und Sahnesauce
+                    - generic [ref=e1553]: 10,00 €
+                - link "164. Spaghetti de la Chef gebratene Spaghetti mit Zwiebeln, frischen Champignons, Hähnchenbrustfilet und Currysauce 10,00 €" [ref=e1554] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371390
+                  - generic [ref=e1556]:
+                    - generic [ref=e1557]:
+                      - generic [ref=e1559]: 164. Spaghetti de la Chef
+                      - heading "gebratene Spaghetti mit Zwiebeln, frischen Champignons, Hähnchenbrustfilet und Currysauce" [level=4] [ref=e1560]:
+                        - paragraph [ref=e1561]: gebratene Spaghetti mit Zwiebeln, frischen Champignons, Hähnchenbrustfilet und Currysauce
+                    - generic [ref=e1563]: 10,00 €
+            - generic [ref=e1564]:
+              - generic [ref=e1566]: Tortellini
+              - generic [ref=e1567]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1568]:
+                - link "65. Tortellini Bolognese mit Fleischsauce 9,00 €" [ref=e1569] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371391
+                  - generic [ref=e1571]:
+                    - generic [ref=e1572]:
+                      - generic [ref=e1574]: 65. Tortellini Bolognese
+                      - heading "mit Fleischsauce" [level=4] [ref=e1575]:
+                        - paragraph [ref=e1576]: mit Fleischsauce
+                    - generic [ref=e1578]: 9,00 €
+                - link "66. Tortellini alla Panna mit Schinken und Sahnesauce 9,00 €" [ref=e1579] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371392
+                  - generic [ref=e1581]:
+                    - generic [ref=e1582]:
+                      - generic [ref=e1584]: 66. Tortellini alla Panna
+                      - heading "mit Schinken und Sahnesauce" [level=4] [ref=e1585]:
+                        - paragraph [ref=e1586]: mit Schinken und Sahnesauce
+                    - generic [ref=e1588]: 9,00 €
+                - link "67. Tortellini Carbonara mit Schinken, Käse, Sahnesauce und Ei 9,00 €" [ref=e1589] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371393
+                  - generic [ref=e1591]:
+                    - generic [ref=e1592]:
+                      - generic [ref=e1594]: 67. Tortellini Carbonara
+                      - heading "mit Schinken, Käse, Sahnesauce und Ei" [level=4] [ref=e1595]:
+                        - paragraph [ref=e1596]: mit Schinken, Käse, Sahnesauce und Ei
+                    - generic [ref=e1598]: 9,00 €
+                - link "68. Tortellini alla Pinocchio mit Schinken, frischen Champignons, Erbsen und Tomatensauce 9,00 €" [ref=e1599] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371394
+                  - generic [ref=e1601]:
+                    - generic [ref=e1602]:
+                      - generic [ref=e1604]: 68. Tortellini alla Pinocchio
+                      - heading "mit Schinken, frischen Champignons, Erbsen und Tomatensauce" [level=4] [ref=e1605]:
+                        - paragraph [ref=e1606]: mit Schinken, frischen Champignons, Erbsen und Tomatensauce
+                    - generic [ref=e1608]: 9,00 €
+                - link "69. Tortellini Gorgonzola mit Erbsen, Broccoli, Sahnesauce und Gorgonzola 9,00 €" [ref=e1609] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371395
+                  - generic [ref=e1611]:
+                    - generic [ref=e1612]:
+                      - generic [ref=e1614]: 69. Tortellini Gorgonzola
+                      - heading "mit Erbsen, Broccoli, Sahnesauce und Gorgonzola" [level=4] [ref=e1615]:
+                        - paragraph [ref=e1616]: mit Erbsen, Broccoli, Sahnesauce und Gorgonzola
+                    - generic [ref=e1618]: 9,00 €
+                - link "70. Tortellini nach Art des Hauses mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons 9,00 €" [ref=e1619] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371396
+                  - generic [ref=e1621]:
+                    - generic [ref=e1622]:
+                      - generic [ref=e1624]: 70. Tortellini nach Art des Hauses
+                      - heading "mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons" [level=4] [ref=e1625]:
+                        - paragraph [ref=e1626]: mit Spezial-Tomatensauce, Sahne, Zwiebeln und frischen Champignons
+                    - generic [ref=e1628]: 9,00 €
+                - link "74. Tortellini alla Panna (überbacken) mit Schinken, Broccoli, Sahnesauce und Käse 9,50 €" [ref=e1629] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371397
+                  - generic [ref=e1631]:
+                    - generic [ref=e1632]:
+                      - generic [ref=e1634]: 74. Tortellini alla Panna (überbacken)
+                      - heading "mit Schinken, Broccoli, Sahnesauce und Käse" [level=4] [ref=e1635]:
+                        - paragraph [ref=e1636]: mit Schinken, Broccoli, Sahnesauce und Käse
+                    - generic [ref=e1638]: 9,50 €
+                - link "75. Tortellini al Forno mit Fleischsauce, Schinken und Käse 9,00 €" [ref=e1639] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371398
+                  - generic [ref=e1641]:
+                    - generic [ref=e1642]:
+                      - generic [ref=e1644]: 75. Tortellini al Forno
+                      - heading "mit Fleischsauce, Schinken und Käse" [level=4] [ref=e1645]:
+                        - paragraph [ref=e1646]: mit Fleischsauce, Schinken und Käse
+                    - generic [ref=e1648]: 9,00 €
+                - link "76. Tortellini Italia mit Tomatensauce, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse 9,50 €" [ref=e1649] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371399
+                  - generic [ref=e1651]:
+                    - generic [ref=e1652]:
+                      - generic [ref=e1654]: 76. Tortellini Italia
+                      - heading "mit Tomatensauce, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse" [level=4] [ref=e1655]:
+                        - paragraph [ref=e1656]: mit Tomatensauce, frischen Champignons, Schinken, Erbsen, Spezial-Sahnesauce und Käse
+                    - generic [ref=e1658]: 9,50 €
+                - link "105. Tortellini Rustikal (vegetarisch) mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken 9,50 €" [ref=e1659] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371400
+                  - generic [ref=e1661]:
+                    - generic [ref=e1662]:
+                      - generic [ref=e1664]: 105. Tortellini Rustikal (vegetarisch)
+                      - heading "mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken" [level=4] [ref=e1665]:
+                        - paragraph [ref=e1666]: mit Spinat, Broccoli, frischen Pilzen und Mozzarella überbacken
+                    - generic [ref=e1668]: 9,50 €
+            - generic [ref=e1669]:
+              - generic [ref=e1671]: Gnocchi
+              - generic [ref=e1672]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1673]:
+                - link "123. Gnocchi Vegetarier mit Spinat, Broccoli, Champignons, Tomatensauce und Mozzarella 9,50 €" [ref=e1674] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371401
+                  - generic [ref=e1676]:
+                    - generic [ref=e1677]:
+                      - generic [ref=e1679]: 123. Gnocchi Vegetarier
+                      - heading "mit Spinat, Broccoli, Champignons, Tomatensauce und Mozzarella" [level=4] [ref=e1680]:
+                        - paragraph [ref=e1681]: mit Spinat, Broccoli, Champignons, Tomatensauce und Mozzarella
+                    - generic [ref=e1683]: 9,50 €
+                - link "124. Gnocchi Formaggio mit drei Käsesorten 9,50 €" [ref=e1684] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371402
+                  - generic [ref=e1686]:
+                    - generic [ref=e1687]:
+                      - generic [ref=e1689]: 124. Gnocchi Formaggio
+                      - heading "mit drei Käsesorten" [level=4] [ref=e1690]:
+                        - paragraph [ref=e1691]: mit drei Käsesorten
+                    - generic [ref=e1693]: 9,50 €
+                - link "125. Gnocchi alla Panna mit Schinken und Sahnesauce 9,00 €" [ref=e1694] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371403
+                  - generic [ref=e1696]:
+                    - generic [ref=e1697]:
+                      - generic [ref=e1699]: 125. Gnocchi alla Panna
+                      - heading "mit Schinken und Sahnesauce" [level=4] [ref=e1700]:
+                        - paragraph [ref=e1701]: mit Schinken und Sahnesauce
+                    - generic [ref=e1703]: 9,00 €
+            - generic [ref=e1704]:
+              - generic [ref=e1706]: Aufläufe
+              - generic [ref=e1707]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1708]:
+                - link "108. Broccoli-Auflauf mit Broccoli, Schinken, Nudeln und Sahnesauce 9,50 €" [ref=e1709] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371404
+                  - generic [ref=e1711]:
+                    - generic [ref=e1712]:
+                      - generic [ref=e1714]: 108. Broccoli-Auflauf
+                      - heading "mit Broccoli, Schinken, Nudeln und Sahnesauce" [level=4] [ref=e1715]:
+                        - paragraph [ref=e1716]: mit Broccoli, Schinken, Nudeln und Sahnesauce
+                    - generic [ref=e1718]: 9,50 €
+                - link "109. Gemüse di Pomodoro mit frischen Tomaten, frischer Paprika, Broccoli, Zwiebeln und Nudeln 9,50 €" [ref=e1719] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371405
+                  - generic [ref=e1721]:
+                    - generic [ref=e1722]:
+                      - generic [ref=e1724]: 109. Gemüse di Pomodoro
+                      - heading "mit frischen Tomaten, frischer Paprika, Broccoli, Zwiebeln und Nudeln" [level=4] [ref=e1725]:
+                        - paragraph [ref=e1726]: mit frischen Tomaten, frischer Paprika, Broccoli, Zwiebeln und Nudeln
+                    - generic [ref=e1728]: 9,50 €
+                - link "110. Gemüse Spezialität mit frischen Champignons, Artischocken, Nudeln, frischer Paprika, Spinat, Erbsen und Sahnesauce 9,50 €" [ref=e1729] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371406
+                  - generic [ref=e1731]:
+                    - generic [ref=e1732]:
+                      - generic [ref=e1734]: 110. Gemüse Spezialität
+                      - heading "mit frischen Champignons, Artischocken, Nudeln, frischer Paprika, Spinat, Erbsen und Sahnesauce" [level=4] [ref=e1735]:
+                        - paragraph [ref=e1736]: mit frischen Champignons, Artischocken, Nudeln, frischer Paprika, Spinat, Erbsen und Sahnesauce
+                    - generic [ref=e1738]: 9,50 €
+                - link "111. Blumenkohl-Auflauf mit Blumenkohl, Schinken, Nudeln und Sahnesauce 9,50 €" [ref=e1739] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371407
+                  - generic [ref=e1741]:
+                    - generic [ref=e1742]:
+                      - generic [ref=e1744]: 111. Blumenkohl-Auflauf
+                      - heading "mit Blumenkohl, Schinken, Nudeln und Sahnesauce" [level=4] [ref=e1745]:
+                        - paragraph [ref=e1746]: mit Blumenkohl, Schinken, Nudeln und Sahnesauce
+                    - generic [ref=e1748]: 9,50 €
+                - link "112. Champignons-Auflauf mit frischen Champignons, Zwiebeln, Nudeln und Sahnesauce 9,50 €" [ref=e1749] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371408
+                  - generic [ref=e1751]:
+                    - generic [ref=e1752]:
+                      - generic [ref=e1754]: 112. Champignons-Auflauf
+                      - heading "mit frischen Champignons, Zwiebeln, Nudeln und Sahnesauce" [level=4] [ref=e1755]:
+                        - paragraph [ref=e1756]: mit frischen Champignons, Zwiebeln, Nudeln und Sahnesauce
+                    - generic [ref=e1758]: 9,50 €
+            - generic [ref=e1759]:
+              - generic [ref=e1761]: Kartoffelauflauf
+              - generic [ref=e1762]:
+                - link "712. Kartoffelauflauf Italia Kartoffeln, Hähnchen, Paprika, Brokkoli, Zwiebeln, Currysauce und mit Käse überbacken 11,50 €" [ref=e1763] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371448
+                  - generic [ref=e1765]:
+                    - generic [ref=e1766]:
+                      - generic [ref=e1768]: 712. Kartoffelauflauf Italia
+                      - heading "Kartoffeln, Hähnchen, Paprika, Brokkoli, Zwiebeln, Currysauce und mit Käse überbacken" [level=4] [ref=e1769]:
+                        - paragraph [ref=e1770]: Kartoffeln, Hähnchen, Paprika, Brokkoli, Zwiebeln, Currysauce und mit Käse überbacken
+                    - generic [ref=e1772]: 11,50 €
+                - link "713. Kartoffelauflauf Italia Kartoffeln, Hähnchen, Sahnesauce und mit Käse überbacken 11,50 €" [ref=e1773] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371449
+                  - generic [ref=e1775]:
+                    - generic [ref=e1776]:
+                      - generic [ref=e1778]: 713. Kartoffelauflauf Italia
+                      - heading "Kartoffeln, Hähnchen, Sahnesauce und mit Käse überbacken" [level=4] [ref=e1779]:
+                        - paragraph [ref=e1780]: Kartoffeln, Hähnchen, Sahnesauce und mit Käse überbacken
+                    - generic [ref=e1782]: 11,50 €
+                - link "714. Kartoffelauflauf Italia Kartoffeln, gegrillter Lachs, Spinat, Knoblauch, Sahnesauce und mit Käse überbacken 12,00 €" [ref=e1783] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371450
+                  - generic [ref=e1785]:
+                    - generic [ref=e1786]:
+                      - generic [ref=e1788]: 714. Kartoffelauflauf Italia
+                      - heading "Kartoffeln, gegrillter Lachs, Spinat, Knoblauch, Sahnesauce und mit Käse überbacken" [level=4] [ref=e1789]:
+                        - paragraph [ref=e1790]: Kartoffeln, gegrillter Lachs, Spinat, Knoblauch, Sahnesauce und mit Käse überbacken
+                    - generic [ref=e1792]: 12,00 €
+            - generic [ref=e1793]:
+              - generic [ref=e1795]: Salat
+              - generic [ref=e1796]: Alle Gerichte werden mit Pizzabrötchen, Knoblauchsauce und Kräuter-Dip serviert.
+              - generic [ref=e1797]:
+                - link "83. Insalata Mista mit Tomaten, Gurken und Salat 6,50 €" [ref=e1798] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371264
+                  - generic [ref=e1800]:
+                    - generic [ref=e1801]:
+                      - generic [ref=e1803]: 83. Insalata Mista
+                      - heading "mit Tomaten, Gurken und Salat" [level=4] [ref=e1804]:
+                        - paragraph [ref=e1805]: mit Tomaten, Gurken und Salat
+                    - generic [ref=e1807]: 6,50 €
+                - link "83a. Gemischter Salat mit Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Feta 8,50 €" [ref=e1808] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371265
+                  - generic [ref=e1810]:
+                    - generic [ref=e1811]:
+                      - generic [ref=e1813]: 83a. Gemischter Salat
+                      - heading "mit Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Feta" [level=4] [ref=e1814]:
+                        - paragraph [ref=e1815]: mit Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Feta
+                    - generic [ref=e1817]: 8,50 €
+                - link "84. Insalata Pomodoro Cipolla mit Tomaten und Zwiebeln 6,50 €" [ref=e1818] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371266
+                  - generic [ref=e1820]:
+                    - generic [ref=e1821]:
+                      - generic [ref=e1823]: 84. Insalata Pomodoro Cipolla
+                      - heading "mit Tomaten und Zwiebeln" [level=4] [ref=e1824]:
+                        - paragraph [ref=e1825]: mit Tomaten und Zwiebeln
+                    - generic [ref=e1827]: 6,50 €
+                - link "85. Insalata di Cipolla mit Gurken, Salat und Zwiebeln 6,50 €" [ref=e1828] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371267
+                  - generic [ref=e1830]:
+                    - generic [ref=e1831]:
+                      - generic [ref=e1833]: 85. Insalata di Cipolla
+                      - heading "mit Gurken, Salat und Zwiebeln" [level=4] [ref=e1834]:
+                        - paragraph [ref=e1835]: mit Gurken, Salat und Zwiebeln
+                    - generic [ref=e1837]: 6,50 €
+                - link "86. Insalata Primavera mit Tomaten, Gurken, Salat, Käse, Schinken, Salami und Thunfisch 9,50 €" [ref=e1838] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371268
+                  - generic [ref=e1840]:
+                    - generic [ref=e1841]:
+                      - generic [ref=e1843]: 86. Insalata Primavera
+                      - heading "mit Tomaten, Gurken, Salat, Käse, Schinken, Salami und Thunfisch" [level=4] [ref=e1844]:
+                        - paragraph [ref=e1845]: mit Tomaten, Gurken, Salat, Käse, Schinken, Salami und Thunfisch
+                    - generic [ref=e1847]: 9,50 €
+                - link "87. Insalata de la Casa mit Tomaten, Gurken, Salat, Käse, Zwiebeln, Thunfisch und Ei 9,50 €" [ref=e1848] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371269
+                  - generic [ref=e1850]:
+                    - generic [ref=e1851]:
+                      - generic [ref=e1853]: 87. Insalata de la Casa
+                      - heading "mit Tomaten, Gurken, Salat, Käse, Zwiebeln, Thunfisch und Ei" [level=4] [ref=e1854]:
+                        - paragraph [ref=e1855]: mit Tomaten, Gurken, Salat, Käse, Zwiebeln, Thunfisch und Ei
+                    - generic [ref=e1857]: 9,50 €
+                - link "88. Insalata Roma mit Tomaten, Gurken, Salat, Käse, Artischocken, Schinken und Thunfisch 9,50 €" [ref=e1858] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371270
+                  - generic [ref=e1860]:
+                    - generic [ref=e1861]:
+                      - generic [ref=e1863]: 88. Insalata Roma
+                      - heading "mit Tomaten, Gurken, Salat, Käse, Artischocken, Schinken und Thunfisch" [level=4] [ref=e1864]:
+                        - paragraph [ref=e1865]: mit Tomaten, Gurken, Salat, Käse, Artischocken, Schinken und Thunfisch
+                    - generic [ref=e1867]: 9,50 €
+                - link "89. Insalata Italia mit Tomaten, Gurken, Salat, Käse, Artischocken, Oliven, Thunfisch, Zwiebeln und Paprika 9,50 €" [ref=e1868] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371271
+                  - generic [ref=e1870]:
+                    - generic [ref=e1871]:
+                      - generic [ref=e1873]: 89. Insalata Italia
+                      - heading "mit Tomaten, Gurken, Salat, Käse, Artischocken, Oliven, Thunfisch, Zwiebeln und Paprika" [level=4] [ref=e1874]:
+                        - paragraph [ref=e1875]: mit Tomaten, Gurken, Salat, Käse, Artischocken, Oliven, Thunfisch, Zwiebeln und Paprika
+                    - generic [ref=e1877]: 9,50 €
+                - link "90. Insalata Frutti di Mare mit Salat, Gurken, Tomaten, Käse, Thunfisch, Paprika, Zwiebeln, Krabben und Muscheln 9,50 €" [ref=e1878] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371272
+                  - generic [ref=e1880]:
+                    - generic [ref=e1881]:
+                      - generic [ref=e1883]: 90. Insalata Frutti di Mare
+                      - heading "mit Salat, Gurken, Tomaten, Käse, Thunfisch, Paprika, Zwiebeln, Krabben und Muscheln" [level=4] [ref=e1884]:
+                        - paragraph [ref=e1885]: mit Salat, Gurken, Tomaten, Käse, Thunfisch, Paprika, Zwiebeln, Krabben und Muscheln
+                    - generic [ref=e1887]: 9,50 €
+                - link "90a. Garnelen Salat mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und gegrillten Garnelen 11,00 €" [ref=e1888] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371273
+                  - generic [ref=e1890]:
+                    - generic [ref=e1891]:
+                      - generic [ref=e1893]: 90a. Garnelen Salat
+                      - heading "mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und gegrillten Garnelen" [level=4] [ref=e1894]:
+                        - paragraph [ref=e1895]: mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und gegrillten Garnelen
+                    - generic [ref=e1897]: 11,00 €
+                - link "91. Insalata Pinocchio mit Tomaten, Gurken, Salat, Käse, Paprika, Zwiebeln, Artischocken, Erbsen, Mais und Möhren 9,50 €" [ref=e1898] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371274
+                  - generic [ref=e1900]:
+                    - generic [ref=e1901]:
+                      - generic [ref=e1903]: 91. Insalata Pinocchio
+                      - heading "mit Tomaten, Gurken, Salat, Käse, Paprika, Zwiebeln, Artischocken, Erbsen, Mais und Möhren" [level=4] [ref=e1904]:
+                        - paragraph [ref=e1905]: mit Tomaten, Gurken, Salat, Käse, Paprika, Zwiebeln, Artischocken, Erbsen, Mais und Möhren
+                    - generic [ref=e1907]: 9,50 €
+                - link "92. Insalata Hawaii mit Tomaten, Gurken, Salat, Ananas, Spargel, Mais, Käse und Schinken 9,50 €" [ref=e1908] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371275
+                  - generic [ref=e1910]:
+                    - generic [ref=e1911]:
+                      - generic [ref=e1913]: 92. Insalata Hawaii
+                      - heading "mit Tomaten, Gurken, Salat, Ananas, Spargel, Mais, Käse und Schinken" [level=4] [ref=e1914]:
+                        - paragraph [ref=e1915]: mit Tomaten, Gurken, Salat, Ananas, Spargel, Mais, Käse und Schinken
+                    - generic [ref=e1917]: 9,50 €
+                - link "93. Insalata al Formaggio gemischter Salat mit Feta, Mozzarella und Gouda 9,50 €" [ref=e1918] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371276
+                  - generic [ref=e1920]:
+                    - generic [ref=e1921]:
+                      - generic [ref=e1923]: 93. Insalata al Formaggio
+                      - heading "gemischter Salat mit Feta, Mozzarella und Gouda" [level=4] [ref=e1924]:
+                        - paragraph [ref=e1925]: gemischter Salat mit Feta, Mozzarella und Gouda
+                    - generic [ref=e1927]: 9,50 €
+                - link "94. Insalata Milano gemischter Salat mit Feta, Ananas, Mais und Paprika 9,50 €" [ref=e1928] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371277
+                  - generic [ref=e1930]:
+                    - generic [ref=e1931]:
+                      - generic [ref=e1933]: 94. Insalata Milano
+                      - heading "gemischter Salat mit Feta, Ananas, Mais und Paprika" [level=4] [ref=e1934]:
+                        - paragraph [ref=e1935]: gemischter Salat mit Feta, Ananas, Mais und Paprika
+                    - generic [ref=e1937]: 9,50 €
+                - link "95. Insalata de la Chef mit Tomaten, Gurken, Salat, Pute, Feta und Joghurt-Currysauce 10,00 €" [ref=e1938] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371278
+                  - generic [ref=e1940]:
+                    - generic [ref=e1941]:
+                      - generic [ref=e1943]: 95. Insalata de la Chef
+                      - heading "mit Tomaten, Gurken, Salat, Pute, Feta und Joghurt-Currysauce" [level=4] [ref=e1944]:
+                        - paragraph [ref=e1945]: mit Tomaten, Gurken, Salat, Pute, Feta und Joghurt-Currysauce
+                    - generic [ref=e1947]: 10,00 €
+                - link "150. Insalata Lachs mit Salat, Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Lachsfilet 10,00 €" [ref=e1948] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371279
+                  - generic [ref=e1950]:
+                    - generic [ref=e1951]:
+                      - generic [ref=e1953]: 150. Insalata Lachs
+                      - heading "mit Salat, Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Lachsfilet" [level=4] [ref=e1954]:
+                        - paragraph [ref=e1955]: mit Salat, Tomaten, Gurken, Zwiebeln, Oliven, Peperoni und Lachsfilet
+                    - generic [ref=e1957]: 10,00 €
+                - link "151. Insalata Kentucky mit knusprigem Hähnchenbrustfilet, Tomaten, Gurken, Ananas und Salat 10,00 €" [ref=e1958] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371280
+                  - generic [ref=e1960]:
+                    - generic [ref=e1961]:
+                      - generic [ref=e1963]: 151. Insalata Kentucky
+                      - heading "mit knusprigem Hähnchenbrustfilet, Tomaten, Gurken, Ananas und Salat" [level=4] [ref=e1964]:
+                        - paragraph [ref=e1965]: mit knusprigem Hähnchenbrustfilet, Tomaten, Gurken, Ananas und Salat
+                    - generic [ref=e1967]: 10,00 €
+                - link "152. Tomaten-Mozzarella Salat mit Eisbergsalat, Tomaten, Mozzarella, Olivenöl, Zitrone und Basilikum 9,50 €" [ref=e1968] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371281
+                  - generic [ref=e1970]:
+                    - generic [ref=e1971]:
+                      - generic [ref=e1973]: 152. Tomaten-Mozzarella Salat
+                      - heading "mit Eisbergsalat, Tomaten, Mozzarella, Olivenöl, Zitrone und Basilikum" [level=4] [ref=e1974]:
+                        - paragraph [ref=e1975]: mit Eisbergsalat, Tomaten, Mozzarella, Olivenöl, Zitrone und Basilikum
+                    - generic [ref=e1977]: 9,50 €
+                - link "153. Shrimp Salat mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und Scampi 10,50 €" [ref=e1978] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371282
+                  - generic [ref=e1980]:
+                    - generic [ref=e1981]:
+                      - generic [ref=e1983]: 153. Shrimp Salat
+                      - heading "mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und Scampi" [level=4] [ref=e1984]:
+                        - paragraph [ref=e1985]: mit Tomaten, Gurken, Salat, Mais, Zwiebeln, Peperoni, Oliven und Scampi
+                    - generic [ref=e1987]: 10,50 €
+                - link "170. Insalata Amore mit Paprika, Zwiebeln, Artischocken, Oliven, roten Bohnen und Hähnchenbrustfilet 10,00 €" [ref=e1988] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371283
+                  - generic [ref=e1990]:
+                    - generic [ref=e1991]:
+                      - generic [ref=e1993]: 170. Insalata Amore
+                      - heading "mit Paprika, Zwiebeln, Artischocken, Oliven, roten Bohnen und Hähnchenbrustfilet" [level=4] [ref=e1994]:
+                        - paragraph [ref=e1995]: mit Paprika, Zwiebeln, Artischocken, Oliven, roten Bohnen und Hähnchenbrustfilet
+                    - generic [ref=e1997]: 10,00 €
+                - link "171. Insalata Caprese mit Artischocken, Zwiebeln, Paprika, roten Bohnen und Hähnchenbrustfilet 10,00 €" [ref=e1998] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371284
+                  - generic [ref=e2000]:
+                    - generic [ref=e2001]:
+                      - generic [ref=e2003]: 171. Insalata Caprese
+                      - heading "mit Artischocken, Zwiebeln, Paprika, roten Bohnen und Hähnchenbrustfilet" [level=4] [ref=e2004]:
+                        - paragraph [ref=e2005]: mit Artischocken, Zwiebeln, Paprika, roten Bohnen und Hähnchenbrustfilet
+                    - generic [ref=e2007]: 10,00 €
+                - link "172. Insalata Siziliana mit Thunfisch, Zwiebeln, Peperoni, Oliven, roten Bohnen, Hähnchenbrustfilet und Käse 10,00 €" [ref=e2008] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371285
+                  - generic [ref=e2010]:
+                    - generic [ref=e2011]:
+                      - generic [ref=e2013]: 172. Insalata Siziliana
+                      - heading "mit Thunfisch, Zwiebeln, Peperoni, Oliven, roten Bohnen, Hähnchenbrustfilet und Käse" [level=4] [ref=e2014]:
+                        - paragraph [ref=e2015]: mit Thunfisch, Zwiebeln, Peperoni, Oliven, roten Bohnen, Hähnchenbrustfilet und Käse
+                    - generic [ref=e2017]: 10,00 €
+                - link "173. Insalta Mamma Mia mit Feta, Mais, Möhren, Zwiebeln, roten Bohnen und Hähnchenbrustfilet 9,50 €" [ref=e2018] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371286
+                  - generic [ref=e2020]:
+                    - generic [ref=e2021]:
+                      - generic [ref=e2023]: 173. Insalta Mamma Mia
+                      - heading "mit Feta, Mais, Möhren, Zwiebeln, roten Bohnen und Hähnchenbrustfilet" [level=4] [ref=e2024]:
+                        - paragraph [ref=e2025]: mit Feta, Mais, Möhren, Zwiebeln, roten Bohnen und Hähnchenbrustfilet
+                    - generic [ref=e2027]: 9,50 €
+            - generic [ref=e2028]:
+              - generic [ref=e2030]: Geflügelgerichte
+              - generic [ref=e2031]: Alle Gerichte werden mit Maccheroni zubereitet.
+              - generic [ref=e2032]:
+                - link "138. Hähnchengeschnetzeltes mit Currysauce und Ananas 10,00 €" [ref=e2033] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371409
+                  - generic [ref=e2035]:
+                    - generic [ref=e2038]: 138. Hähnchengeschnetzeltes mit Currysauce und Ananas
+                    - generic [ref=e2040]: 10,00 €
+                - link "139. Hähnchengeschnetzeltes mit frischen Pilzen und Sahnesauce 10,00 €" [ref=e2041] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371410
+                  - generic [ref=e2043]:
+                    - generic [ref=e2046]: 139. Hähnchengeschnetzeltes mit frischen Pilzen und Sahnesauce
+                    - generic [ref=e2048]: 10,00 €
+                - link "140. Hähnchengeschnetzeltes mit Zwiebeln und Tomatensauce 10,00 €" [ref=e2049] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371411
+                  - generic [ref=e2051]:
+                    - generic [ref=e2054]: 140. Hähnchengeschnetzeltes mit Zwiebeln und Tomatensauce
+                    - generic [ref=e2056]: 10,00 €
+                - link "141. Hähnchengeschnetzeltes mit frischen Tomaten, frischen Pilzen und Sahnesauce 10,00 €" [ref=e2057] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371412
+                  - generic [ref=e2059]:
+                    - generic [ref=e2062]: 141. Hähnchengeschnetzeltes mit frischen Tomaten, frischen Pilzen und Sahnesauce
+                    - generic [ref=e2064]: 10,00 €
+                - link "142. Hähnchengeschnetzeltes mit mit Erbsen, Broccoli, Knoblauch und Tomatensauce 10,00 €" [ref=e2065] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371413
+                  - generic [ref=e2067]:
+                    - generic [ref=e2070]: 142. Hähnchengeschnetzeltes mit mit Erbsen, Broccoli, Knoblauch und Tomatensauce
+                    - generic [ref=e2072]: 10,00 €
+                - link "96. Putengeschnetzeltes mit frischen Pilzen und Sahnesauce 10,00 €" [ref=e2073] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371414
+                  - generic [ref=e2075]:
+                    - generic [ref=e2078]: 96. Putengeschnetzeltes mit frischen Pilzen und Sahnesauce
+                    - generic [ref=e2080]: 10,00 €
+                - link "97. Putengeschnetzeltes mit Currysauce 10,00 €" [ref=e2081] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371415
+                  - generic [ref=e2083]:
+                    - generic [ref=e2086]: 97. Putengeschnetzeltes mit Currysauce
+                    - generic [ref=e2088]: 10,00 €
+                - link "98. Putengeschnetzeltes mit frischen Tomaten, frischen Pilzen und Sahnesauce 10,00 €" [ref=e2089] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371416
+                  - generic [ref=e2091]:
+                    - generic [ref=e2094]: 98. Putengeschnetzeltes mit frischen Tomaten, frischen Pilzen und Sahnesauce
+                    - generic [ref=e2096]: 10,00 €
+                - link "159. Putengeschnetzeltes gegrilltes Brustfilet mit Zwiebeln, frischer Paprika, frischen Tomaten, gemischtem Salat und Brötchen 11,00 €" [ref=e2097] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371417
+                  - generic [ref=e2099]:
+                    - generic [ref=e2100]:
+                      - generic [ref=e2102]: 159. Putengeschnetzeltes
+                      - heading "gegrilltes Brustfilet mit Zwiebeln, frischer Paprika, frischen Tomaten, gemischtem Salat und Brötchen" [level=4] [ref=e2103]:
+                        - paragraph [ref=e2104]: gegrilltes Brustfilet mit Zwiebeln, frischer Paprika, frischen Tomaten, gemischtem Salat und Brötchen
+                    - generic [ref=e2106]: 11,00 €
+                - link "160. Pute al Forno mit Broccoli, frischen Pilzen, Currysauce, Käse überbacken und Brötchen 11,00 €" [ref=e2107] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371418
+                  - generic [ref=e2109]:
+                    - generic [ref=e2110]:
+                      - generic [ref=e2112]: 160. Pute al Forno
+                      - heading "mit Broccoli, frischen Pilzen, Currysauce, Käse überbacken und Brötchen" [level=4] [ref=e2113]:
+                        - paragraph [ref=e2114]: mit Broccoli, frischen Pilzen, Currysauce, Käse überbacken und Brötchen
+                    - generic [ref=e2116]: 11,00 €
+                - link "161. Putenauflauf mit frischen Pilzen, Zwiebeln, Sahnesauce, Käse überbacken und Brötchen 11,00 €" [ref=e2117] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371419
+                  - generic [ref=e2119]:
+                    - generic [ref=e2120]:
+                      - generic [ref=e2122]: 161. Putenauflauf
+                      - heading "mit frischen Pilzen, Zwiebeln, Sahnesauce, Käse überbacken und Brötchen" [level=4] [ref=e2123]:
+                        - paragraph [ref=e2124]: mit frischen Pilzen, Zwiebeln, Sahnesauce, Käse überbacken und Brötchen
+                    - generic [ref=e2126]: 11,00 €
+            - generic [ref=e2127]:
+              - generic [ref=e2129]: Alkoholfreie Getränke
+              - generic [ref=e2130]:
+                - link "Coca Cola 1,0l 3,50 €" [ref=e2131] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371430
+                  - generic [ref=e2133]:
+                    - generic [ref=e2136]: Coca Cola 1,0l
+                    - generic [ref=e2138]: 3,50 €
+                - link "Coca Cola 0,33l 2,50 €" [ref=e2139] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371447
+                  - generic [ref=e2141]:
+                    - generic [ref=e2144]: Coca Cola 0,33l
+                    - generic [ref=e2146]: 2,50 €
+                - link "Fanta 1,0l 3,50 €" [ref=e2147] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371431
+                  - generic [ref=e2149]:
+                    - generic [ref=e2152]: Fanta 1,0l
+                    - generic [ref=e2154]: 3,50 €
+                - link "Fanta 0,33l 2,50 €" [ref=e2155] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371445
+                  - generic [ref=e2157]:
+                    - generic [ref=e2160]: Fanta 0,33l
+                    - generic [ref=e2162]: 2,50 €
+                - link "Sprite 1,0l 3,50 €" [ref=e2163] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371432
+                  - generic [ref=e2165]:
+                    - generic [ref=e2168]: Sprite 1,0l
+                    - generic [ref=e2170]: 3,50 €
+                - link "Sprite 0,33l 2,50 €" [ref=e2171] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371446
+                  - generic [ref=e2173]:
+                    - generic [ref=e2176]: Sprite 0,33l
+                    - generic [ref=e2178]: 2,50 €
+                - link "Coca Cola Zero 1,0l 3,50 €" [ref=e2179] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371443
+                  - generic [ref=e2181]:
+                    - generic [ref=e2184]: Coca Cola Zero 1,0l
+                    - generic [ref=e2186]: 3,50 €
+                - link "Coca Cola Zero 0,33l 2,50 €" [ref=e2187] [cursor=pointer]:
+                  - /url: /line_items/new?cart_type=pickup&product_id=27371444
+                  - generic [ref=e2189]:
+                    - generic [ref=e2192]: Coca Cola Zero 0,33l
+                    - generic [ref=e2194]: 2,50 €
+          - button "Open cart with line items count 0" [ref=e2196] [cursor=pointer]:
+            - img [ref=e2197]
+    - contentinfo [ref=e108]:
+      - generic [ref=e109]:
+        - img "Logo" [ref=e111]
+        - generic [ref=e112]:
+          - generic [ref=e113]: Location
+          - list [ref=e114]:
+            - listitem [ref=e115]: Pizzeria Pinocchio Ennigerloh
+            - listitem [ref=e116]: Bahnhofstraße 6
+            - listitem [ref=e117]: 59320 Ennigerloh
+        - generic [ref=e118]:
+          - generic [ref=e119]: Öffnungszeiten
+          - table [ref=e120]:
+            - rowgroup [ref=e121]:
+              - row "Montag 11:00 - 22:30" [ref=e122]:
+                - cell "Montag" [ref=e123]
+                - cell "11:00 - 22:30" [ref=e124]: 11:00 - 22:30
+              - row "Dienstag 11:00 - 22:30" [ref=e125]:
+                - cell "Dienstag" [ref=e126]
+                - cell "11:00 - 22:30" [ref=e127]: 11:00 - 22:30
+              - row "Mittwoch 11:00 - 22:30" [ref=e128]:
+                - cell "Mittwoch" [ref=e129]
+                - cell "11:00 - 22:30" [ref=e130]: 11:00 - 22:30
+              - row "Donnerstag 11:00 - 22:30" [ref=e131]:
+                - cell "Donnerstag" [ref=e132]
+                - cell "11:00 - 22:30" [ref=e133]: 11:00 - 22:30
+              - row "Freitag 11:00 - 22:30" [ref=e134]:
+                - cell "Freitag" [ref=e135]
+                - cell "11:00 - 22:30" [ref=e136]: 11:00 - 22:30
+              - row "Samstag 11:00 - 22:30" [ref=e137]:
+                - cell "Samstag" [ref=e138]
+                - cell "11:00 - 22:30" [ref=e139]: 11:00 - 22:30
+              - row "Sonntag 11:00 - 22:30" [ref=e140]:
+                - cell "Sonntag" [ref=e141]
+                - cell "11:00 - 22:30" [ref=e142]: 11:00 - 22:30
+      - generic [ref=e143]:
+        - link "Impressum" [ref=e144] [cursor=pointer]:
+          - /url: /imprint?cart_type=pickup
+        - generic [ref=e145]: "-"
+        - link "AGB" [ref=e146] [cursor=pointer]:
+          - /url: /agb
+        - generic [ref=e147]: "-"
+        - link "Datenschutz" [ref=e148] [cursor=pointer]:
+          - /url: /privacy

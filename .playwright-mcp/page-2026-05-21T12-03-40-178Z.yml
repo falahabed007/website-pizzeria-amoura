@@ -1,0 +1,464 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: 🍕 Pizzeria Amoura
+        - generic [ref=e15]: Admin Dashboard
+      - generic [ref=e16]:
+        - generic [ref=e17]: 14:03:39
+        - generic [ref=e18]: Do., 21.05.
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - button "🟢 Online" [ref=e21] [cursor=pointer]
+          - button "⚪ Neutral" [ref=e22] [cursor=pointer]
+          - button "🔴 Geschlossen" [ref=e23] [cursor=pointer]
+          - generic "Automatik deaktiviert – klicken zum Aktivieren" [ref=e24] [cursor=pointer]: 🕐 Auto
+        - generic "Drucker-Status" [ref=e25] [cursor=pointer]: 🖨️ Getrennt
+        - button "Abmelden" [ref=e26] [cursor=pointer]
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - generic [ref=e29]: Umsatz heute
+        - generic [ref=e30]: 0,00 €
+        - generic [ref=e31]: 0 Bestellungen
+      - generic [ref=e32]:
+        - generic [ref=e33]: Aktiv
+        - generic [ref=e34]: "47"
+        - generic [ref=e35]: In Arbeit
+      - generic [ref=e36]:
+        - generic [ref=e37]: Fertig heute
+        - generic [ref=e38]: "0"
+        - generic [ref=e39]: Geliefert/Abgeholt
+      - generic [ref=e40]:
+        - generic [ref=e41]: Storniert
+        - generic [ref=e42]: "0"
+        - generic [ref=e43]: heute
+      - generic [ref=e44]:
+        - generic [ref=e45]: Unbezahlt
+        - generic [ref=e46]: "34"
+        - generic [ref=e47]: Offen
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e52]: 🔍
+            - textbox "Suche…" [ref=e53]
+          - generic [ref=e54]:
+            - generic [ref=e55] [cursor=pointer]: Alle
+            - generic [ref=e56] [cursor=pointer]: Neu
+            - generic [ref=e57] [cursor=pointer]: Zubereitung
+            - generic [ref=e58] [cursor=pointer]: Fertig
+            - generic [ref=e59] [cursor=pointer]: Geliefert
+            - generic [ref=e60] [cursor=pointer]: Storniert
+          - generic [ref=e61]:
+            - textbox "Datum wählen" [ref=e62] [cursor=pointer]: 2026-05-21
+            - button "💳 Stripe-Einbuchung20" [ref=e63] [cursor=pointer]
+            - button "👥 Kunden" [ref=e64] [cursor=pointer]
+            - button "📊 Tagesabschluss" [ref=e65] [cursor=pointer]
+        - generic [ref=e258]:
+          - text: 📭
+          - text: Keine Bestellungen
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - generic [ref=e70] [cursor=pointer]: Detail
+          - generic [ref=e71] [cursor=pointer]: Statistik
+          - generic [ref=e72] [cursor=pointer]: Verlauf
+          - generic [ref=e73] [cursor=pointer]: 🔴 Verfügbar
+        - generic [ref=e74]:
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - generic [ref=e261]: Mi., 20.05.
+              - generic [ref=e262]: 0,00 €
+            - generic [ref=e263] [cursor=pointer]:
+              - generic [ref=e264]: "#1137"
+              - generic [ref=e265]: 00:01
+              - generic [ref=e266]: Test Test
+              - generic [ref=e267]: 21,99 €
+          - generic [ref=e268]:
+            - generic [ref=e269]:
+              - generic [ref=e270]: Di., 19.05.
+              - generic [ref=e271]: 141,45 €
+            - generic [ref=e272] [cursor=pointer]:
+              - generic [ref=e273]: "#1135"
+              - generic [ref=e274]: 20:55
+              - generic [ref=e275]: Sarah Coni
+              - generic [ref=e276]: 19,99 €
+            - generic [ref=e277] [cursor=pointer]:
+              - generic [ref=e278]: "#1134"
+              - generic [ref=e279]: 20:20
+              - generic [ref=e280]: Angelique Pawlik
+              - generic [ref=e281]: 30,99 €
+            - generic [ref=e282] [cursor=pointer]:
+              - generic [ref=e283]: "#1132"
+              - generic [ref=e284]: 19:42
+              - generic [ref=e285]: Tim Wunder
+              - generic [ref=e286]: 33,99 €
+            - generic [ref=e287] [cursor=pointer]:
+              - generic [ref=e288]: "#1131"
+              - generic [ref=e289]: 17:53
+              - generic [ref=e290]: Pascal Reichenbach
+              - generic [ref=e291]: 31,99 €
+            - generic [ref=e292] [cursor=pointer]:
+              - generic [ref=e293]: "#1129"
+              - generic [ref=e294]: 14:06
+              - generic [ref=e295]: Alen Mujabasic
+              - generic [ref=e296]: 24,49 €
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - generic [ref=e299]: Mo., 18.05.
+              - generic [ref=e300]: 23,99 €
+            - generic [ref=e301] [cursor=pointer]:
+              - generic [ref=e302]: "#1128"
+              - generic [ref=e303]: 19:24
+              - generic [ref=e304]: Angelique Pawlik
+              - generic [ref=e305]: 23,99 €
+          - generic [ref=e306]:
+            - generic [ref=e307]:
+              - generic [ref=e308]: So., 17.05.
+              - generic [ref=e309]: 48,48 €
+            - generic [ref=e310] [cursor=pointer]:
+              - generic [ref=e311]: "#1126"
+              - generic [ref=e312]: 19:05
+              - generic [ref=e313]: Lydia Reiberger
+              - generic [ref=e314]: 25,99 €
+            - generic [ref=e315] [cursor=pointer]:
+              - generic [ref=e316]: "#1124"
+              - generic [ref=e317]: 16:11
+              - generic [ref=e318]: Juliane Schmidt
+              - generic [ref=e319]: 22,49 €
+          - generic [ref=e320]:
+            - generic [ref=e321]:
+              - generic [ref=e322]: Do., 14.05.
+              - generic [ref=e323]: 20,99 €
+            - generic [ref=e324] [cursor=pointer]:
+              - generic [ref=e325]: "#1123"
+              - generic [ref=e326]: 18:12
+              - generic [ref=e327]: Berk Sevik
+              - generic [ref=e328]: 20,99 €
+          - generic [ref=e329]:
+            - generic [ref=e330]:
+              - generic [ref=e331]: Di., 12.05.
+              - generic [ref=e332]: 30,99 €
+            - generic [ref=e333] [cursor=pointer]:
+              - generic [ref=e334]: "#1121"
+              - generic [ref=e335]: 11:24
+              - generic [ref=e336]: Kris Opperbeck c/o RP/07 GmbH & Co. KG
+              - generic [ref=e337]: 30,99 €
+          - generic [ref=e338]:
+            - generic [ref=e339]:
+              - generic [ref=e340]: Mo., 11.05.
+              - generic [ref=e341]: 18,49 €
+            - generic [ref=e342] [cursor=pointer]:
+              - generic [ref=e343]: "#1116"
+              - generic [ref=e344]: 19:01
+              - generic [ref=e345]: Thomas Wenzel
+              - generic [ref=e346]: 18,49 €
+          - generic [ref=e347]:
+            - generic [ref=e348]:
+              - generic [ref=e349]: So., 10.05.
+              - generic [ref=e350]: 62,98 €
+            - generic [ref=e351] [cursor=pointer]:
+              - generic [ref=e352]: "#1113"
+              - generic [ref=e353]: 17:47
+              - generic [ref=e354]: Kris Opperbeck
+              - generic [ref=e355]: 27,99 €
+            - generic [ref=e356] [cursor=pointer]:
+              - generic [ref=e357]: "#1111"
+              - generic [ref=e358]: 17:23
+              - generic [ref=e359]: Melanie Digulla
+              - generic [ref=e360]: 34,99 €
+          - generic [ref=e361]:
+            - generic [ref=e362]:
+              - generic [ref=e363]: Fr., 08.05.
+              - generic [ref=e364]: 43,49 €
+            - generic [ref=e365] [cursor=pointer]:
+              - generic [ref=e366]: "#1107"
+              - generic [ref=e367]: 18:07
+              - generic [ref=e368]: Elvira Hermes
+              - generic [ref=e369]: 43,49 €
+          - generic [ref=e370]:
+            - generic [ref=e371]:
+              - generic [ref=e372]: Do., 07.05.
+              - generic [ref=e373]: 27,99 €
+            - generic [ref=e374] [cursor=pointer]:
+              - generic [ref=e375]: "#1105"
+              - generic [ref=e376]: 19:34
+              - generic [ref=e377]: Sarah Coni
+              - generic [ref=e378]: 27,99 €
+          - generic [ref=e379]:
+            - generic [ref=e380]:
+              - generic [ref=e381]: Mi., 06.05.
+              - generic [ref=e382]: 108,47 €
+            - generic [ref=e383] [cursor=pointer]:
+              - generic [ref=e384]: "#1103"
+              - generic [ref=e385]: 21:08
+              - generic [ref=e386]: Hisham Baadie
+              - generic [ref=e387]: 37,49 €
+            - generic [ref=e388] [cursor=pointer]:
+              - generic [ref=e389]: "#1101"
+              - generic [ref=e390]: 20:52
+              - generic [ref=e391]: Nour Ramzi
+              - generic [ref=e392]: 24,99 €
+            - generic [ref=e393] [cursor=pointer]:
+              - generic [ref=e394]: "#1099"
+              - generic [ref=e395]: 18:56
+              - generic [ref=e396]: Noel Wiegard
+              - generic [ref=e397]: 45,99 €
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - generic [ref=e400]: Di., 05.05.
+              - generic [ref=e401]: 21,49 €
+            - generic [ref=e402] [cursor=pointer]:
+              - generic [ref=e403]: "#1097"
+              - generic [ref=e404]: 20:30
+              - generic [ref=e405]: Mario Salchert
+              - generic [ref=e406]: 21,49 €
+          - generic [ref=e407]:
+            - generic [ref=e408]:
+              - generic [ref=e409]: Mo., 04.05.
+              - generic [ref=e410]: 68,97 €
+            - generic [ref=e411] [cursor=pointer]:
+              - generic [ref=e412]: "#1095"
+              - generic [ref=e413]: 21:15
+              - generic [ref=e414]: Sean Loeseke
+              - generic [ref=e415]: 19,99 €
+            - generic [ref=e416] [cursor=pointer]:
+              - generic [ref=e417]: "#1091"
+              - generic [ref=e418]: 18:49
+              - generic [ref=e419]: René Schindler
+              - generic [ref=e420]: 18,99 €
+            - generic [ref=e421] [cursor=pointer]:
+              - generic [ref=e422]: "#1089"
+              - generic [ref=e423]: 18:43
+              - generic [ref=e424]: Alexandra Kanwischer
+              - generic [ref=e425]: 29,99 €
+          - generic [ref=e426]:
+            - generic [ref=e427]:
+              - generic [ref=e428]: So., 03.05.
+              - generic [ref=e429]: 18,99 €
+            - generic [ref=e430] [cursor=pointer]:
+              - generic [ref=e431]: "#1088"
+              - generic [ref=e432]: 18:46
+              - generic [ref=e433]: Chris Langhammer
+              - generic [ref=e434]: 18,99 €
+          - generic [ref=e435]:
+            - generic [ref=e436]:
+              - generic [ref=e437]: Sa., 02.05.
+              - generic [ref=e438]: 28,99 €
+            - generic [ref=e439] [cursor=pointer]:
+              - generic [ref=e440]: "#1085"
+              - generic [ref=e441]: 17:18
+              - generic [ref=e442]: Kris Opperbeck
+              - generic [ref=e443]: 28,99 €
+          - generic [ref=e444]:
+            - generic [ref=e445]:
+              - generic [ref=e446]: Fr., 01.05.
+              - generic [ref=e447]: 59,49 €
+            - generic [ref=e448] [cursor=pointer]:
+              - generic [ref=e449]: "#1083"
+              - generic [ref=e450]: 18:25
+              - generic [ref=e451]: Robert Rodjak
+              - generic [ref=e452]: 59,49 €
+          - generic [ref=e453]:
+            - generic [ref=e454]:
+              - generic [ref=e455]: Do., 30.04.
+              - generic [ref=e456]: 42,49 €
+            - generic [ref=e457] [cursor=pointer]:
+              - generic [ref=e458]: "#1081"
+              - generic [ref=e459]: 20:40
+              - generic [ref=e460]: Maurice Alameddine Asrawi
+              - generic [ref=e461]: 42,49 €
+          - generic [ref=e462]:
+            - generic [ref=e463]:
+              - generic [ref=e464]: Mi., 29.04.
+              - generic [ref=e465]: 34,99 €
+            - generic [ref=e466] [cursor=pointer]:
+              - generic [ref=e467]: "#1078"
+              - generic [ref=e468]: 20:52
+              - generic [ref=e469]: Bilal Jabboul
+              - generic [ref=e470]: 34,99 €
+          - generic [ref=e471]:
+            - generic [ref=e472]:
+              - generic [ref=e473]: Di., 28.04.
+              - generic [ref=e474]: 53,48 €
+            - generic [ref=e475] [cursor=pointer]:
+              - generic [ref=e476]: "#1076"
+              - generic [ref=e477]: 20:06
+              - generic [ref=e478]: Karen Kotov
+              - generic [ref=e479]: 20,49 €
+            - generic [ref=e480] [cursor=pointer]:
+              - generic [ref=e481]: "#1073"
+              - generic [ref=e482]: 18:30
+              - generic [ref=e483]: Dennis Braam
+              - generic [ref=e484]: 32,99 €
+          - generic [ref=e485]:
+            - generic [ref=e486]:
+              - generic [ref=e487]: Mo., 27.04.
+              - generic [ref=e488]: 14,99 €
+            - generic [ref=e489] [cursor=pointer]:
+              - generic [ref=e490]: "#1071"
+              - generic [ref=e491]: 00:45
+              - generic [ref=e492]: Test Test
+              - generic [ref=e493]: 14,99 €
+          - generic [ref=e494]:
+            - generic [ref=e495]:
+              - generic [ref=e496]: So., 26.04.
+              - generic [ref=e497]: 145,94 €
+            - generic [ref=e498] [cursor=pointer]:
+              - generic [ref=e499]: "#1070"
+              - generic [ref=e500]: 20:24
+              - generic [ref=e501]: Sven Samson
+              - generic [ref=e502]: 26,49 €
+            - generic [ref=e503] [cursor=pointer]:
+              - generic [ref=e504]: "#1067"
+              - generic [ref=e505]: 19:48
+              - generic [ref=e506]: Pascal Kokott
+              - generic [ref=e507]: 27,49 €
+            - generic [ref=e508] [cursor=pointer]:
+              - generic [ref=e509]: "#1063"
+              - generic [ref=e510]: 19:04
+              - generic [ref=e511]: Kerstin Gillert
+              - generic [ref=e512]: 18,49 €
+            - generic [ref=e513] [cursor=pointer]:
+              - generic [ref=e514]: "#1061"
+              - generic [ref=e515]: 18:59
+              - generic [ref=e516]: Sean Loeseke
+              - generic [ref=e517]: 29,99 €
+            - generic [ref=e518] [cursor=pointer]:
+              - generic [ref=e519]: "#1059"
+              - generic [ref=e520]: 18:52
+              - generic [ref=e521]: Sean Loeseke
+              - generic [ref=e522]: 29,99 €
+            - generic [ref=e523] [cursor=pointer]:
+              - generic [ref=e524]: "#1057"
+              - generic [ref=e525]: 18:31
+              - generic [ref=e526]: Silvia Tusch
+              - generic [ref=e527]: 21,99 €
+            - generic [ref=e528] [cursor=pointer]:
+              - generic [ref=e529]: "#1043"
+              - generic [ref=e530]: 12:31
+              - generic [ref=e531]: Leo Leovac
+              - generic [ref=e532]: 21,49 €
+          - generic [ref=e533]:
+            - generic [ref=e534]:
+              - generic [ref=e535]: Sa., 25.04.
+              - generic [ref=e536]: 20,99 €
+            - generic [ref=e537] [cursor=pointer]:
+              - generic [ref=e538]: "#1042"
+              - generic [ref=e539]: 19:09
+              - generic [ref=e540]: Test Kunde
+              - generic [ref=e541]: 5,99 €
+            - generic [ref=e542] [cursor=pointer]:
+              - generic [ref=e543]: "#1038"
+              - generic [ref=e544]: 18:09
+              - generic [ref=e545]: Mara-Rahela Iarna
+              - generic [ref=e546]: 20,99 €
+          - generic [ref=e547]:
+            - generic [ref=e548]:
+              - generic [ref=e549]: Fr., 24.04.
+              - generic [ref=e550]: 50,99 €
+            - generic [ref=e551] [cursor=pointer]:
+              - generic [ref=e552]: "#1033"
+              - generic [ref=e553]: 23:36
+              - generic [ref=e554]: Test Kunde
+              - generic [ref=e555]: 5,99 €
+            - generic [ref=e556] [cursor=pointer]:
+              - generic [ref=e557]: "#1031"
+              - generic [ref=e558]: 17:28
+              - generic [ref=e559]: Eliana Nordhorn
+              - generic [ref=e560]: 50,99 €
+          - generic [ref=e561]:
+            - generic [ref=e562]:
+              - generic [ref=e563]: Do., 23.04.
+              - generic [ref=e564]: 42,99 €
+            - generic [ref=e565] [cursor=pointer]:
+              - generic [ref=e566]: "#1029"
+              - generic [ref=e567]: 18:11
+              - generic [ref=e568]: Caspar Krogbeumker
+              - generic [ref=e569]: 42,99 €
+          - generic [ref=e570]:
+            - generic [ref=e571]:
+              - generic [ref=e572]: Mi., 22.04.
+              - generic [ref=e573]: 31,49 €
+            - generic [ref=e574] [cursor=pointer]:
+              - generic [ref=e575]: "#1027"
+              - generic [ref=e576]: 20:01
+              - generic [ref=e577]: Celina Peters
+              - generic [ref=e578]: 31,49 €
+          - generic [ref=e579]:
+            - generic [ref=e580]:
+              - generic [ref=e581]: Mo., 20.04.
+              - generic [ref=e582]: 28,48 €
+            - generic [ref=e583] [cursor=pointer]:
+              - generic [ref=e584]: "#1026"
+              - generic [ref=e585]: 21:01
+              - generic [ref=e586]: Test Test
+              - generic [ref=e587]: 1,09 €
+            - generic [ref=e588] [cursor=pointer]:
+              - generic [ref=e589]: "#1020"
+              - generic [ref=e590]: 20:59
+              - generic [ref=e591]: Test Kunde
+              - generic [ref=e592]: 5,99 €
+            - generic [ref=e593] [cursor=pointer]:
+              - generic [ref=e594]: "#1017"
+              - generic [ref=e595]: 20:46
+              - generic [ref=e596]: Test Test
+              - generic [ref=e597]: 5,99 €
+            - generic [ref=e598] [cursor=pointer]:
+              - generic [ref=e599]: "#1005"
+              - generic [ref=e600]: 20:14
+              - generic [ref=e601]: Maurice Alameddine Asrawi
+              - generic [ref=e602]: 22,49 €
+          - generic [ref=e603]:
+            - generic [ref=e604]:
+              - generic [ref=e605]: So., 19.04.
+              - generic [ref=e606]: 60,97 €
+            - generic [ref=e607] [cursor=pointer]:
+              - generic [ref=e608]: "#1024"
+              - generic [ref=e609]: 17:27
+              - generic [ref=e610]: Sabrina Dürre
+              - generic [ref=e611]: 18,49 €
+            - generic [ref=e612] [cursor=pointer]:
+              - generic [ref=e613]: "#1022"
+              - generic [ref=e614]: 17:21
+              - generic [ref=e615]: Claudia Greshake
+              - generic [ref=e616]: 25,49 €
+            - generic [ref=e617] [cursor=pointer]:
+              - generic [ref=e618]: "#1018"
+              - generic [ref=e619]: 12:40
+              - generic [ref=e620]: Sarah Coni
+              - generic [ref=e621]: 16,99 €
+          - generic [ref=e622]:
+            - generic [ref=e623]:
+              - generic [ref=e624]: Sa., 18.04.
+              - generic [ref=e625]: 18,99 €
+            - generic [ref=e626] [cursor=pointer]:
+              - generic [ref=e627]: "#1016"
+              - generic [ref=e628]: 18:59
+              - generic [ref=e629]: Annika Nettesheim
+              - generic [ref=e630]: 18,99 €
+          - generic [ref=e631]:
+            - generic [ref=e632]:
+              - generic [ref=e633]: Fr., 17.04.
+              - generic [ref=e634]: 118,97 €
+            - generic [ref=e635] [cursor=pointer]:
+              - generic [ref=e636]: "#1015"
+              - generic [ref=e637]: 19:59
+              - generic [ref=e638]: Test Kunde
+              - generic [ref=e639]: 5,99 €
+            - generic [ref=e640] [cursor=pointer]:
+              - generic [ref=e641]: "#1013"
+              - generic [ref=e642]: 19:30
+              - generic [ref=e643]: Joel Wahner
+              - generic [ref=e644]: 73,99 €
+            - generic [ref=e645] [cursor=pointer]:
+              - generic [ref=e646]: "#1011"
+              - generic [ref=e647]: 19:29
+              - generic [ref=e648]: Annika Wiegard
+              - generic [ref=e649]: 41,49 €
+            - generic [ref=e650] [cursor=pointer]:
+              - generic [ref=e651]: "#1009"
+              - generic [ref=e652]: 19:20
+              - generic [ref=e653]: Abed Falah
+              - generic [ref=e654]: 3,49 €
+  - button "➕ Neue Bestellung" [ref=e8] [cursor=pointer]
+  - button "🧪 Test-Bestellung" [ref=e9] [cursor=pointer]

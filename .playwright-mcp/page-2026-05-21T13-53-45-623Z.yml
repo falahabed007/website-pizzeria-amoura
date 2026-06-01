@@ -1,0 +1,9 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 🔥 Ararat Grill
+    - generic [ref=e5]: Admin Dashboard · Beckum
+    - textbox "Passwort eingeben..." [ref=e6]
+    - button "Anmelden →" [ref=e7] [cursor=pointer]
+  - generic [ref=e8]: ✅
+  - button "🧪 Test-Bestellung" [ref=e9] [cursor=pointer]
+  - button "+" [ref=e10] [cursor=pointer]

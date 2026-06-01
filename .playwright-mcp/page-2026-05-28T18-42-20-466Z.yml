@@ -1,0 +1,163 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e8]:
+        - link "Homepage" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+        - generic [ref=e13]:
+          - navigation "Global" [ref=e16]:
+            - list [ref=e17]:
+              - listitem [ref=e18]:
+                - button "Platform" [ref=e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=e21]
+              - listitem [ref=e23]:
+                - button "Solutions" [ref=e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=e26]
+              - listitem [ref=e28]:
+                - button "Resources" [ref=e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=e31]
+              - listitem [ref=e33]:
+                - button "Open Source" [ref=e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=e36]
+              - listitem [ref=e38]:
+                - button "Enterprise" [ref=e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - link "Pricing" [ref=e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=e45]: Pricing
+          - generic [ref=e46]:
+            - button "Search or jump to…" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+            - link "Sign in" [ref=e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FGastroun
+            - link "Sign up" [ref=e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E&source=header
+            - button "Appearance settings" [ref=e58] [cursor=pointer]:
+              - img
+  - main [ref=e61]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - generic:
+          - generic:
+            - generic:
+              - img "@Gastroun"
+            - generic:
+              - strong: Gastroun
+              - generic:
+                - generic:
+                  - link "Follow":
+                    - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FGastroun
+      - navigation "User profile" [ref=e68]:
+        - link "Overview" [ref=e69] [cursor=pointer]:
+          - /url: /Gastroun
+          - img [ref=e70]
+          - text: Overview
+        - link "Repositories 1" [ref=e72] [cursor=pointer]:
+          - /url: /Gastroun?tab=repositories
+          - img [ref=e73]
+          - text: Repositories
+          - generic "1" [ref=e75]
+        - link "Projects" [ref=e76] [cursor=pointer]:
+          - /url: /Gastroun?tab=projects
+          - img [ref=e77]
+          - text: Projects
+        - link "Packages" [ref=e79] [cursor=pointer]:
+          - /url: /Gastroun?tab=packages
+          - img [ref=e80]
+          - text: Packages
+        - link "Stars" [ref=e82] [cursor=pointer]:
+          - /url: /Gastroun?tab=stars
+          - img [ref=e83]
+          - text: Stars
+    - generic [ref=e86]:
+      - generic [ref=e88]:
+        - generic:
+          - generic:
+            - generic:
+              - img "@Gastroun"
+            - generic:
+              - generic:
+                - strong: Gastroun
+            - generic:
+              - generic:
+                - generic:
+                  - link "Follow":
+                    - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FGastroun
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - link "View Gastroun's full-sized avatar" [ref=e92] [cursor=pointer]:
+              - /url: https://avatars.githubusercontent.com/u/267630542?v=4
+              - img "View Gastroun's full-sized avatar" [ref=e93]
+            - heading "Itachi Gastroun" [level=1] [ref=e95]:
+              - generic [ref=e96]: Itachi
+              - generic [ref=e97]: Gastroun
+          - generic [ref=e98]:
+            - link "Follow" [ref=e105] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2FGastroun
+            - generic:
+              - list
+          - button "Block or report user" [ref=e107] [cursor=pointer]:
+            - generic [ref=e109]: Block or report user
+      - generic [ref=e112]:
+        - generic [ref=e114]:
+          - heading "Popular repositories Loading" [level=2] [ref=e115]:
+            - text: Popular repositories
+            - generic [ref=e116]: Loading
+            - status
+          - list [ref=e117]:
+            - listitem [ref=e118]:
+              - generic [ref=e120]:
+                - generic [ref=e121]:
+                  - link "ararat-beckum" [ref=e123] [cursor=pointer]:
+                    - /url: /Gastroun/ararat-beckum
+                  - generic [ref=e125]: Public
+                - paragraph
+                - paragraph [ref=e126]:
+                  - generic [ref=e127]: HTML
+        - img "Loading" [ref=e133]
+  - contentinfo [ref=e136]:
+    - heading "Footer" [level=2] [ref=e137]
+    - generic [ref=e138]:
+      - generic [ref=e139]:
+        - link "GitHub Homepage" [ref=e140] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e141]
+        - generic [ref=e143]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e144]:
+        - heading "Footer navigation" [level=3] [ref=e145]
+        - list "Footer navigation" [ref=e146]:
+          - listitem [ref=e147]:
+            - link "Terms" [ref=e148] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e149]:
+            - link "Privacy" [ref=e150] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e151]:
+            - link "Security" [ref=e152] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e153]:
+            - link "Status" [ref=e154] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e155]:
+            - link "Community" [ref=e156] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e157]:
+            - link "Docs" [ref=e158] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e159]:
+            - link "Contact" [ref=e160] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e161]:
+            - button "Manage cookies" [ref=e163] [cursor=pointer]
+          - listitem [ref=e164]:
+            - button "Do not share my personal information" [ref=e166] [cursor=pointer]

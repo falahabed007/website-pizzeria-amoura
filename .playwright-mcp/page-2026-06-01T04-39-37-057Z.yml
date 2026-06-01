@@ -1,0 +1,635 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e8]:
+        - link "Homepage" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+        - generic [ref=e13]:
+          - navigation "Global" [ref=e16]:
+            - list [ref=e17]:
+              - listitem [ref=e18]:
+                - button "Platform" [ref=e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=e21]
+              - listitem [ref=e23]:
+                - button "Solutions" [ref=e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=e26]
+              - listitem [ref=e28]:
+                - button "Resources" [ref=e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=e31]
+              - listitem [ref=e33]:
+                - button "Open Source" [ref=e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=e36]
+              - listitem [ref=e38]:
+                - button "Enterprise" [ref=e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - link "Pricing" [ref=e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=e45]: Pricing
+          - generic [ref=e46]:
+            - button "Search or jump to…" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+            - link "Sign in" [ref=e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Ffalahabed007%2Fwebsite-pizzeria-amoura%2Fcommits%2Fmain
+            - link "Sign up" [ref=e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E%2Fcommits%2Fshow&source=header-repo&source_repo=falahabed007%2Fwebsite-pizzeria-amoura
+            - button "Appearance settings" [disabled] [ref=e58]:
+              - img
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - link "falahabed007" [ref=e70] [cursor=pointer]:
+            - /url: /falahabed007
+          - generic [ref=e71]: /
+          - strong [ref=e72]:
+            - link "website-pizzeria-amoura" [ref=e73] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura
+          - generic [ref=e74]: Public
+        - generic [ref=e75]:
+          - list:
+            - listitem [ref=e76]:
+              - link "You must be signed in to change notification settings" [ref=e77] [cursor=pointer]:
+                - /url: /login?return_to=%2Ffalahabed007%2Fwebsite-pizzeria-amoura
+                - img [ref=e78]
+                - text: Notifications
+            - listitem [ref=e80]:
+              - link "Fork 0" [ref=e81] [cursor=pointer]:
+                - /url: /login?return_to=%2Ffalahabed007%2Fwebsite-pizzeria-amoura
+                - img [ref=e82]
+                - text: Fork
+                - generic "0" [ref=e84]
+            - listitem [ref=e85]:
+              - link "You must be signed in to star a repository" [ref=e87] [cursor=pointer]:
+                - /url: /login?return_to=%2Ffalahabed007%2Fwebsite-pizzeria-amoura
+                - img [ref=e88]
+                - text: Star
+                - generic "0 users starred this repository" [ref=e90]: "0"
+      - navigation "Repository" [ref=e91]:
+        - list [ref=e92]:
+          - listitem [ref=e93]:
+            - link "Code" [ref=e94] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura
+              - img [ref=e95]
+              - generic [ref=e97]: Code
+          - listitem [ref=e98]:
+            - link "Issues" [ref=e99] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/issues
+              - img [ref=e100]
+              - generic [ref=e103]: Issues
+          - listitem [ref=e104]:
+            - link "Pull requests" [ref=e105] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/pulls
+              - img [ref=e106]
+              - generic [ref=e108]: Pull requests
+          - listitem [ref=e109]:
+            - link "Actions" [ref=e110] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/actions
+              - img [ref=e111]
+              - generic [ref=e113]: Actions
+          - listitem [ref=e114]:
+            - link "Projects" [ref=e115] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/projects
+              - img [ref=e116]
+              - generic [ref=e118]: Projects
+          - listitem [ref=e119]:
+            - link "Security and quality" [ref=e120] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/security
+              - img [ref=e121]
+              - generic [ref=e123]: Security and quality
+          - listitem [ref=e124]:
+            - link "Insights" [ref=e125] [cursor=pointer]:
+              - /url: /falahabed007/website-pizzeria-amoura/pulse
+              - img [ref=e126]
+              - generic [ref=e128]: Insights
+    - generic [ref=e134]:
+      - heading "Commits" [level=1] [ref=e138]
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - heading "Branch selector" [level=2] [ref=e145]
+          - button "main branch" [ref=e146] [cursor=pointer]:
+            - generic [ref=e147]:
+              - generic [ref=e149]:
+                - img [ref=e151]
+                - generic [ref=e154]: main
+              - generic:
+                - img
+          - generic [ref=e155]:
+            - heading "User selector" [level=2] [ref=e156]
+            - button "All users" [ref=e158] [cursor=pointer]:
+              - generic [ref=e161]:
+                - img [ref=e163]
+                - generic [ref=e165]: All users
+              - generic:
+                - img
+            - heading "Datepicker" [level=2] [ref=e166]
+            - button "All time" [ref=e167] [cursor=pointer]:
+              - generic [ref=e168]:
+                - generic:
+                  - img
+                - generic [ref=e169]: All time
+                - generic:
+                  - img
+        - generic [ref=e170]:
+          - heading "Commit History" [level=2] [ref=e171]
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - img [ref=e176]
+              - generic [ref=e178]:
+                - heading "Commits on Jun 1, 2026" [level=3] [ref=e179]
+                - list "Commits on Jun 1, 2026" [ref=e182]:
+                  - 'listitem "Amoura: Monatsbericht manuell triggerbar + Speise-Notiz live. More information available below." [ref=e183]':
+                    - generic [ref=e184]:
+                      - 'heading "Amoura: Monatsbericht manuell triggerbar + Speise-Notiz live" [level=4] [ref=e185]':
+                        - 'link "Amoura: Monatsbericht manuell triggerbar + Speise-Notiz live" [ref=e187] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/a68322644ca583330986f7fbdf91924fb502da89
+                      - button "Show description for a683226" [ref=e188] [cursor=pointer]:
+                        - img [ref=e189]
+                    - generic [ref=e195]:
+                      - generic [ref=e197]:
+                        - img "falahabed007" [ref=e198]
+                        - img "claude" [ref=e199]
+                      - generic "falahabed007" [ref=e201]
+                      - generic [ref=e202]: and
+                      - link "commits by claude" [ref=e204] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e205]: committed
+                      - generic "Jun 1, 2026, 5:50 AM GMT+2" [ref=e206]: Jun 1, 202649 minutes ago
+                    - generic [ref=e209]:
+                      - generic [ref=e210]:
+                        - tooltip "View commit details" [ref=e211]:
+                          - link "a683226" [ref=e212] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/a68322644ca583330986f7fbdf91924fb502da89
+                            - generic [ref=e214]: a683226
+                        - button "Copy full SHA for a683226" [ref=e216] [cursor=pointer]:
+                          - img [ref=e217]
+                      - tooltip "Browse repository at this point" [ref=e220]:
+                        - link "Browse repository at this point" [ref=e221] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/a68322644ca583330986f7fbdf91924fb502da89
+                          - img [ref=e222]
+            - generic [ref=e224]:
+              - img [ref=e227]
+              - generic [ref=e229]:
+                - heading "Commits on May 31, 2026" [level=3] [ref=e230]
+                - list "Commits on May 31, 2026" [ref=e233]:
+                  - 'listitem "Amoura: Speise-Notiz pro Artikel – Textarea in allen Popups. More information available below." [ref=e234]':
+                    - generic [ref=e235]:
+                      - 'heading "Amoura: Speise-Notiz pro Artikel – Textarea in allen Popups" [level=4] [ref=e236]':
+                        - 'link "Amoura: Speise-Notiz pro Artikel – Textarea in allen Popups" [ref=e238] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/d9f9c1e5147df7b05f5bab196752bf2a2e1cad64
+                      - button "Show description for d9f9c1e" [ref=e239] [cursor=pointer]:
+                        - img [ref=e240]
+                    - generic [ref=e246]:
+                      - generic [ref=e248]:
+                        - img "falahabed007" [ref=e249]
+                        - img "claude" [ref=e250]
+                      - generic "falahabed007" [ref=e252]
+                      - generic [ref=e253]: and
+                      - link "commits by claude" [ref=e255] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e256]: committed
+                      - generic "May 31, 2026, 8:29 PM GMT+2" [ref=e257]: May 31, 202610 hours ago
+                    - generic [ref=e260]:
+                      - generic [ref=e261]:
+                        - tooltip "View commit details" [ref=e262]:
+                          - link "d9f9c1e" [ref=e263] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/d9f9c1e5147df7b05f5bab196752bf2a2e1cad64
+                            - generic [ref=e265]: d9f9c1e
+                        - button "Copy full SHA for d9f9c1e" [ref=e267] [cursor=pointer]:
+                          - img [ref=e268]
+                      - tooltip "Browse repository at this point" [ref=e271]:
+                        - link "Browse repository at this point" [ref=e272] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/d9f9c1e5147df7b05f5bab196752bf2a2e1cad64
+                          - img [ref=e273]
+                  - 'listitem "Amoura: Wochen- und Monatsbericht auf 22:00 Uhr (bei Schließung). More information available below." [ref=e275]':
+                    - generic [ref=e276]:
+                      - 'heading "Amoura: Wochen- und Monatsbericht auf 22:00 Uhr (bei Schließung)" [level=4] [ref=e277]':
+                        - 'link "Amoura: Wochen- und Monatsbericht auf 22:00 Uhr (bei Schließung)" [ref=e279] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/4ecbfc12e5b77419f42d0cef041fb9666334d964
+                      - button "Show description for 4ecbfc1" [ref=e280] [cursor=pointer]:
+                        - img [ref=e281]
+                    - generic [ref=e287]:
+                      - generic [ref=e289]:
+                        - img "falahabed007" [ref=e290]
+                        - img "claude" [ref=e291]
+                      - generic "falahabed007" [ref=e293]
+                      - generic [ref=e294]: and
+                      - link "commits by claude" [ref=e296] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e297]: committed
+                      - generic "May 31, 2026, 11:45 AM GMT+2" [ref=e298]: May 31, 202618 hours ago
+                    - generic [ref=e301]:
+                      - generic [ref=e302]:
+                        - tooltip "View commit details" [ref=e303]:
+                          - link "4ecbfc1" [ref=e304] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/4ecbfc12e5b77419f42d0cef041fb9666334d964
+                            - generic [ref=e306]: 4ecbfc1
+                        - button "Copy full SHA for 4ecbfc1" [ref=e308] [cursor=pointer]:
+                          - img [ref=e309]
+                      - tooltip "Browse repository at this point" [ref=e312]:
+                        - link "Browse repository at this point" [ref=e313] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/4ecbfc12e5b77419f42d0cef041fb9666334d964
+                          - img [ref=e314]
+                  - 'listitem "Amoura: Berichte bei Schließung – Wochenbericht und Monatsbericht auf 22:00 Uhr. More information available below." [ref=e316]':
+                    - generic [ref=e317]:
+                      - 'heading "Amoura: Berichte bei Schließung – Wochenbericht und Monatsbericht auf 22:00 Uhr" [level=4] [ref=e318]':
+                        - 'link "Amoura: Berichte bei Schließung – Wochenbericht und Monatsbericht auf 22:00 Uhr" [ref=e320] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/faba820d839bda9cee16ba16980758fe3ad3873d
+                      - button "Show description for faba820" [ref=e321] [cursor=pointer]:
+                        - img [ref=e322]
+                    - generic [ref=e328]:
+                      - generic [ref=e330]:
+                        - img "falahabed007" [ref=e331]
+                        - img "claude" [ref=e332]
+                      - generic "falahabed007" [ref=e334]
+                      - generic [ref=e335]: and
+                      - link "commits by claude" [ref=e337] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e338]: committed
+                      - generic "May 31, 2026, 11:41 AM GMT+2" [ref=e339]: May 31, 202619 hours ago
+                    - generic [ref=e342]:
+                      - generic [ref=e343]:
+                        - tooltip "View commit details" [ref=e344]:
+                          - link "faba820" [ref=e345] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/faba820d839bda9cee16ba16980758fe3ad3873d
+                            - generic [ref=e347]: faba820
+                        - button "Copy full SHA for faba820" [ref=e349] [cursor=pointer]:
+                          - img [ref=e350]
+                      - tooltip "Browse repository at this point" [ref=e353]:
+                        - link "Browse repository at this point" [ref=e354] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/faba820d839bda9cee16ba16980758fe3ad3873d
+                          - img [ref=e355]
+            - generic [ref=e357]:
+              - img [ref=e360]
+              - generic [ref=e362]:
+                - heading "Commits on May 25, 2026" [level=3] [ref=e363]
+                - list "Commits on May 25, 2026" [ref=e366]:
+                  - 'listitem "Amoura: Wochen- & Monatsbericht – Ararat-Format mit Kacheln, Kundenliste und Bar-Rechnung. More information available below." [ref=e367]':
+                    - generic [ref=e368]:
+                      - 'heading "Amoura: Wochen- & Monatsbericht – Ararat-Format mit Kacheln, Kundenliste und Bar-Rechnung" [level=4] [ref=e369]':
+                        - 'link "Amoura: Wochen- & Monatsbericht – Ararat-Format mit Kacheln, Kundenliste und Bar-Rechnung" [ref=e371] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/851e7fc0c68fbd78a1d0f400089efa6de4ddcd29
+                      - button "Show description for 851e7fc" [ref=e372] [cursor=pointer]:
+                        - img [ref=e373]
+                    - generic [ref=e379]:
+                      - generic [ref=e381]:
+                        - img "falahabed007" [ref=e382]
+                        - img "claude" [ref=e383]
+                      - link "commits by falahabed007" [ref=e385] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=falahabed007
+                        - text: falahabed007
+                      - generic [ref=e386]: and
+                      - link "commits by claude" [ref=e388] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e389]: committed
+                      - generic "May 26, 2026, 1:05 AM GMT+2" [ref=e390]: May 26, 2026last week
+                    - generic [ref=e393]:
+                      - generic [ref=e394]:
+                        - tooltip "View commit details" [ref=e395]:
+                          - link "851e7fc" [ref=e396] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/851e7fc0c68fbd78a1d0f400089efa6de4ddcd29
+                            - generic [ref=e398]: 851e7fc
+                        - button "Copy full SHA for 851e7fc" [ref=e400] [cursor=pointer]:
+                          - img [ref=e401]
+                      - tooltip "Browse repository at this point" [ref=e404]:
+                        - link "Browse repository at this point" [ref=e405] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/851e7fc0c68fbd78a1d0f400089efa6de4ddcd29
+                          - img [ref=e406]
+                  - 'listitem "Amoura: Barzahlung + Stripe – korrekte Menge und Einzelpreis im Bon. More information available below." [ref=e408]':
+                    - generic [ref=e409]:
+                      - 'heading "Amoura: Barzahlung + Stripe – korrekte Menge und Einzelpreis im Bon" [level=4] [ref=e410]':
+                        - 'link "Amoura: Barzahlung + Stripe – korrekte Menge und Einzelpreis im Bon" [ref=e412] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/d5b279681bf7ae2f77943a4f0fcbcfe11bb8366d
+                      - button "Show description for d5b2796" [ref=e413] [cursor=pointer]:
+                        - img [ref=e414]
+                    - generic [ref=e420]:
+                      - generic [ref=e422]:
+                        - img "falahabed007" [ref=e423]
+                        - img "claude" [ref=e424]
+                      - link "commits by falahabed007" [ref=e426] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=falahabed007
+                        - text: falahabed007
+                      - generic [ref=e427]: and
+                      - link "commits by claude" [ref=e429] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e430]: committed
+                      - generic "May 26, 2026, 12:35 AM GMT+2" [ref=e431]: May 26, 2026last week
+                    - generic [ref=e434]:
+                      - generic [ref=e435]:
+                        - tooltip "View commit details" [ref=e436]:
+                          - link "d5b2796" [ref=e437] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/d5b279681bf7ae2f77943a4f0fcbcfe11bb8366d
+                            - generic [ref=e439]: d5b2796
+                        - button "Copy full SHA for d5b2796" [ref=e441] [cursor=pointer]:
+                          - img [ref=e442]
+                      - tooltip "Browse repository at this point" [ref=e445]:
+                        - link "Browse repository at this point" [ref=e446] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/d5b279681bf7ae2f77943a4f0fcbcfe11bb8366d
+                          - img [ref=e447]
+                  - 'listitem "Amoura: Stripe-Checkout – korrekte Menge und Einzelpreis. More information available below." [ref=e449]':
+                    - generic [ref=e450]:
+                      - 'heading "Amoura: Stripe-Checkout – korrekte Menge und Einzelpreis" [level=4] [ref=e451]':
+                        - 'link "Amoura: Stripe-Checkout – korrekte Menge und Einzelpreis" [ref=e453] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/c3a0b05b81bf0c839c3e164cc8a2a50618d93699
+                      - button "Show description for c3a0b05" [ref=e454] [cursor=pointer]:
+                        - img [ref=e455]
+                    - generic [ref=e461]:
+                      - generic [ref=e463]:
+                        - img "falahabed007" [ref=e464]
+                        - img "claude" [ref=e465]
+                      - generic "falahabed007" [ref=e467]
+                      - generic [ref=e468]: and
+                      - link "commits by claude" [ref=e470] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e471]: committed
+                      - generic "May 26, 2026, 12:25 AM GMT+2" [ref=e472]: May 26, 2026last week
+                    - generic [ref=e475]:
+                      - generic [ref=e476]:
+                        - tooltip "View commit details" [ref=e477]:
+                          - link "c3a0b05" [ref=e478] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/c3a0b05b81bf0c839c3e164cc8a2a50618d93699
+                            - generic [ref=e480]: c3a0b05
+                        - button "Copy full SHA for c3a0b05" [ref=e482] [cursor=pointer]:
+                          - img [ref=e483]
+                      - tooltip "Browse repository at this point" [ref=e486]:
+                        - link "Browse repository at this point" [ref=e487] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/c3a0b05b81bf0c839c3e164cc8a2a50618d93699
+                          - img [ref=e488]
+            - generic [ref=e490]:
+              - img [ref=e493]
+              - generic [ref=e495]:
+                - heading "Commits on May 24, 2026" [level=3] [ref=e496]
+                - list "Commits on May 24, 2026" [ref=e499]:
+                  - 'listitem "Amoura: Barzahlung – korrekte Menge und Einzelpreis im Bon. More information available below." [ref=e500]':
+                    - generic [ref=e501]:
+                      - 'heading "Amoura: Barzahlung – korrekte Menge und Einzelpreis im Bon" [level=4] [ref=e502]':
+                        - 'link "Amoura: Barzahlung – korrekte Menge und Einzelpreis im Bon" [ref=e504] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/e4714f6222cc5fea65cd1d9ae96e9a3126b184f0
+                      - button "Show description for e4714f6" [ref=e505] [cursor=pointer]:
+                        - img [ref=e506]
+                    - generic [ref=e512]:
+                      - generic [ref=e514]:
+                        - img "falahabed007" [ref=e515]
+                        - img "claude" [ref=e516]
+                      - generic "falahabed007" [ref=e518]
+                      - generic [ref=e519]: and
+                      - link "commits by claude" [ref=e521] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e522]: committed
+                      - generic "May 24, 2026, 6:45 PM GMT+2" [ref=e523]: May 24, 2026last week
+                    - generic [ref=e526]:
+                      - generic [ref=e527]:
+                        - tooltip "View commit details" [ref=e528]:
+                          - link "e4714f6" [ref=e529] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/e4714f6222cc5fea65cd1d9ae96e9a3126b184f0
+                            - generic [ref=e531]: e4714f6
+                        - button "Copy full SHA for e4714f6" [ref=e533] [cursor=pointer]:
+                          - img [ref=e534]
+                      - tooltip "Browse repository at this point" [ref=e537]:
+                        - link "Browse repository at this point" [ref=e538] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/e4714f6222cc5fea65cd1d9ae96e9a3126b184f0
+                          - img [ref=e539]
+            - generic [ref=e541]:
+              - img [ref=e544]
+              - generic [ref=e546]:
+                - heading "Commits on May 20, 2026" [level=3] [ref=e547]
+                - list "Commits on May 20, 2026" [ref=e550]:
+                  - 'listitem "Amoura: Mindestbestellwert – Beckum 15€, Roland/Vellern 20€. More information available below." [ref=e551]':
+                    - generic [ref=e552]:
+                      - 'heading "Amoura: Mindestbestellwert – Beckum 15€, Roland/Vellern 20€" [level=4] [ref=e553]':
+                        - 'link "Amoura: Mindestbestellwert – Beckum 15€, Roland/Vellern 20€" [ref=e555] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/92cdca50b877abcb6419c0045296d89747353d41
+                      - button "Show description for 92cdca5" [ref=e556] [cursor=pointer]:
+                        - img [ref=e557]
+                    - generic [ref=e563]:
+                      - generic [ref=e565]:
+                        - img "falahabed007" [ref=e566]
+                        - img "claude" [ref=e567]
+                      - generic "falahabed007" [ref=e569]
+                      - generic [ref=e570]: and
+                      - link "commits by claude" [ref=e572] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e573]: committed
+                      - generic "May 20, 2026, 2:25 PM GMT+2" [ref=e574]: May 20, 20262 weeks ago
+                    - generic [ref=e577]:
+                      - generic [ref=e578]:
+                        - tooltip "View commit details" [ref=e579]:
+                          - link "92cdca5" [ref=e580] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/92cdca50b877abcb6419c0045296d89747353d41
+                            - generic [ref=e582]: 92cdca5
+                        - button "Copy full SHA for 92cdca5" [ref=e584] [cursor=pointer]:
+                          - img [ref=e585]
+                      - tooltip "Browse repository at this point" [ref=e588]:
+                        - link "Browse repository at this point" [ref=e589] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/92cdca50b877abcb6419c0045296d89747353d41
+                          - img [ref=e590]
+            - generic [ref=e592]:
+              - img [ref=e595]
+              - generic [ref=e597]:
+                - heading "Commits on May 19, 2026" [level=3] [ref=e598]
+                - list "Commits on May 19, 2026" [ref=e601]:
+                  - 'listitem "Amoura: Wochenbericht – tagesweise Aufschlüsselung mit Bar/Stripe je Tag. More information available below." [ref=e602]':
+                    - generic [ref=e603]:
+                      - 'heading "Amoura: Wochenbericht – tagesweise Aufschlüsselung mit Bar/Stripe je Tag" [level=4] [ref=e604]':
+                        - 'link "Amoura: Wochenbericht – tagesweise Aufschlüsselung mit Bar/Stripe je Tag" [ref=e606] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/e119879e7f15cb3d9a0ec8cf236075f50acb4e62
+                      - button "Show description for e119879" [ref=e607] [cursor=pointer]:
+                        - img [ref=e608]
+                    - generic [ref=e614]:
+                      - generic [ref=e616]:
+                        - img "falahabed007" [ref=e617]
+                        - img "claude" [ref=e618]
+                      - generic "falahabed007" [ref=e620]
+                      - generic [ref=e621]: and
+                      - link "commits by claude" [ref=e623] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e624]: committed
+                      - generic "May 19, 2026, 11:02 PM GMT+2" [ref=e625]: May 19, 20262 weeks ago
+                    - generic [ref=e628]:
+                      - generic [ref=e629]:
+                        - tooltip "View commit details" [ref=e630]:
+                          - link "e119879" [ref=e631] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/e119879e7f15cb3d9a0ec8cf236075f50acb4e62
+                            - generic [ref=e633]: e119879
+                        - button "Copy full SHA for e119879" [ref=e635] [cursor=pointer]:
+                          - img [ref=e636]
+                      - tooltip "Browse repository at this point" [ref=e639]:
+                        - link "Browse repository at this point" [ref=e640] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/e119879e7f15cb3d9a0ec8cf236075f50acb4e62
+                          - img [ref=e641]
+                  - 'listitem "Amoura: Wochen- & Monatsbericht – Stripe/Bar-Trennung + vollständige Kundenliste. More information available below." [ref=e643]':
+                    - generic [ref=e644]:
+                      - 'heading "Amoura: Wochen- & Monatsbericht – Stripe/Bar-Trennung + vollständige Kundenliste" [level=4] [ref=e645]':
+                        - 'link "Amoura: Wochen- & Monatsbericht – Stripe/Bar-Trennung + vollständige Kundenliste" [ref=e647] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/34b669c4fe110907c07b4cf28c85fab46be56748
+                      - button "Show description for 34b669c" [ref=e648] [cursor=pointer]:
+                        - img [ref=e649]
+                    - generic [ref=e655]:
+                      - generic [ref=e657]:
+                        - img "falahabed007" [ref=e658]
+                        - img "claude" [ref=e659]
+                      - generic "falahabed007" [ref=e661]
+                      - generic [ref=e662]: and
+                      - link "commits by claude" [ref=e664] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e665]: committed
+                      - generic "May 19, 2026, 10:59 PM GMT+2" [ref=e666]: May 19, 20262 weeks ago
+                    - generic [ref=e669]:
+                      - generic [ref=e670]:
+                        - tooltip "View commit details" [ref=e671]:
+                          - link "34b669c" [ref=e672] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/34b669c4fe110907c07b4cf28c85fab46be56748
+                            - generic [ref=e674]: 34b669c
+                        - button "Copy full SHA for 34b669c" [ref=e676] [cursor=pointer]:
+                          - img [ref=e677]
+                      - tooltip "Browse repository at this point" [ref=e680]:
+                        - link "Browse repository at this point" [ref=e681] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/34b669c4fe110907c07b4cf28c85fab46be56748
+                          - img [ref=e682]
+                  - 'listitem "Amoura: Fix Jahreszahl 2025→2026 bei Promotion & Coupon-Daten. More information available below." [ref=e684]':
+                    - generic [ref=e685]:
+                      - 'heading "Amoura: Fix Jahreszahl 2025→2026 bei Promotion & Coupon-Daten" [level=4] [ref=e686]':
+                        - 'link "Amoura: Fix Jahreszahl 2025→2026 bei Promotion & Coupon-Daten" [ref=e688] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/08a10b8d717d6663c7f42ad91c21adbee2d96201
+                      - button "Show description for 08a10b8" [ref=e689] [cursor=pointer]:
+                        - img [ref=e690]
+                    - generic [ref=e696]:
+                      - generic [ref=e698]:
+                        - img "falahabed007" [ref=e699]
+                        - img "claude" [ref=e700]
+                      - generic "falahabed007" [ref=e702]
+                      - generic [ref=e703]: and
+                      - link "commits by claude" [ref=e705] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e706]: committed
+                      - generic "May 19, 2026, 11:51 AM GMT+2" [ref=e707]: May 19, 20262 weeks ago
+                    - generic [ref=e710]:
+                      - generic [ref=e711]:
+                        - tooltip "View commit details" [ref=e712]:
+                          - link "08a10b8" [ref=e713] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/08a10b8d717d6663c7f42ad91c21adbee2d96201
+                            - generic [ref=e715]: 08a10b8
+                        - button "Copy full SHA for 08a10b8" [ref=e717] [cursor=pointer]:
+                          - img [ref=e718]
+                      - tooltip "Browse repository at this point" [ref=e721]:
+                        - link "Browse repository at this point" [ref=e722] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/08a10b8d717d6663c7f42ad91c21adbee2d96201
+                          - img [ref=e723]
+                  - 'listitem "Amoura: Mindestbestellwert erhöht – Beckum 20€, Roland/Vellern 25€. More information available below." [ref=e725]':
+                    - generic [ref=e726]:
+                      - 'heading "Amoura: Mindestbestellwert erhöht – Beckum 20€, Roland/Vellern 25€" [level=4] [ref=e727]':
+                        - 'link "Amoura: Mindestbestellwert erhöht – Beckum 20€, Roland/Vellern 25€" [ref=e729] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/a21dd5622a0095d3dd52e70f16c4ed2ddc6c6d2a
+                      - button "Show description for a21dd56" [ref=e730] [cursor=pointer]:
+                        - img [ref=e731]
+                    - generic [ref=e737]:
+                      - generic [ref=e739]:
+                        - img "falahabed007" [ref=e740]
+                        - img "claude" [ref=e741]
+                      - generic "falahabed007" [ref=e743]
+                      - generic [ref=e744]: and
+                      - link "commits by claude" [ref=e746] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e747]: committed
+                      - generic "May 19, 2026, 11:41 AM GMT+2" [ref=e748]: May 19, 20262 weeks ago
+                    - generic [ref=e751]:
+                      - generic [ref=e752]:
+                        - tooltip "View commit details" [ref=e753]:
+                          - link "a21dd56" [ref=e754] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/a21dd5622a0095d3dd52e70f16c4ed2ddc6c6d2a
+                            - generic [ref=e756]: a21dd56
+                        - button "Copy full SHA for a21dd56" [ref=e758] [cursor=pointer]:
+                          - img [ref=e759]
+                      - tooltip "Browse repository at this point" [ref=e762]:
+                        - link "Browse repository at this point" [ref=e763] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/a21dd5622a0095d3dd52e70f16c4ed2ddc6c6d2a
+                          - img [ref=e764]
+                  - 'listitem "Amoura: ROLLNCONE Gutschein auf 19.05–02.06.2025 begrenzt, BCC auf rachmanfalah5@gmail.com. More information available below." [ref=e766]':
+                    - generic [ref=e767]:
+                      - 'heading "Amoura: ROLLNCONE Gutschein auf 19.05–02.06.2025 begrenzt, BCC auf rachmanfalah5@gmail.com" [level=4] [ref=e768]':
+                        - 'link "Amoura: ROLLNCONE Gutschein auf 19.05–02.06.2025 begrenzt, BCC auf rachmanfalah5@gmail.com" [ref=e770] [cursor=pointer]':
+                          - /url: /falahabed007/website-pizzeria-amoura/commit/09015ffe1664c54cef04225e1b0ef9b48cc8f2ba
+                      - button "Show description for 09015ff" [ref=e771] [cursor=pointer]:
+                        - img [ref=e772]
+                    - generic [ref=e778]:
+                      - generic [ref=e780]:
+                        - img "falahabed007" [ref=e781]
+                        - img "claude" [ref=e782]
+                      - generic "falahabed007" [ref=e784]
+                      - generic [ref=e785]: and
+                      - link "commits by claude" [ref=e787] [cursor=pointer]:
+                        - /url: /falahabed007/website-pizzeria-amoura/commits?author=claude
+                        - text: claude
+                      - generic [ref=e788]: committed
+                      - generic "May 19, 2026, 11:35 AM GMT+2" [ref=e789]: May 19, 20262 weeks ago
+                    - generic [ref=e792]:
+                      - generic [ref=e793]:
+                        - tooltip "View commit details" [ref=e794]:
+                          - link "09015ff" [ref=e795] [cursor=pointer]:
+                            - /url: /falahabed007/website-pizzeria-amoura/commit/09015ffe1664c54cef04225e1b0ef9b48cc8f2ba
+                            - generic [ref=e797]: 09015ff
+                        - button "Copy full SHA for 09015ff" [ref=e799] [cursor=pointer]:
+                          - img [ref=e800]
+                      - tooltip "Browse repository at this point" [ref=e803]:
+                        - link "Browse repository at this point" [ref=e804] [cursor=pointer]:
+                          - /url: /falahabed007/website-pizzeria-amoura/tree/09015ffe1664c54cef04225e1b0ef9b48cc8f2ba
+                          - img [ref=e805]
+  - contentinfo [ref=e807]:
+    - heading "Footer" [level=2] [ref=e808]
+    - generic [ref=e809]:
+      - generic [ref=e810]:
+        - link "GitHub Homepage" [ref=e811] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e812]
+        - generic [ref=e814]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e815]:
+        - heading "Footer navigation" [level=3] [ref=e816]
+        - list "Footer navigation" [ref=e817]:
+          - listitem [ref=e818]:
+            - link "Terms" [ref=e819] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e820]:
+            - link "Privacy" [ref=e821] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e822]:
+            - link "Security" [ref=e823] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e824]:
+            - link "Status" [ref=e825] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e826]:
+            - link "Community" [ref=e827] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e828]:
+            - link "Docs" [ref=e829] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e830]:
+            - link "Contact" [ref=e831] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e832]:
+            - button "Manage cookies" [ref=e834] [cursor=pointer]
+          - listitem [ref=e835]:
+            - button "Do not share my personal information" [ref=e837] [cursor=pointer]

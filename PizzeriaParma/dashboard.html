@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🍕 Pizzeria Parma – Dashboard</title>
+<style>
+:root{
+  --bg:#0f0f1a;--bg2:#1a1a2e;--bg3:#22223b;--border:#2e2e4a;
+  --text:#e8e8f0;--muted:#888;--gold:#C8A851;--red:#e53935;--red2:#b71c1c;
+  --green:#4caf50;--primary:#C41230;--blue:#2196f3;--purple:#9c27b0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+/* Login */
+#loginScreen{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0a0a14,#1a0810)}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;width:360px;text-align:center}
+.login-logo{font-size:1.8rem;font-weight:800;color:var(--gold);margin-bottom:6px}
+.login-sub{font-size:.85rem;color:var(--muted);margin-bottom:28px}
+.login-box input[type=password]{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:15px;margin-bottom:12px;outline:none}
+.login-btn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:700;cursor:pointer}
+.login-err{color:#ef5350;font-size:.82rem;margin-top:10px}
+/* App */
+#app{display:none;flex-direction:column;height:100vh}
+/* Topbar */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.topbar-brand{font-weight:800;font-size:1rem;color:var(--gold);margin-right:8px}
+#clock{font-size:1.1rem;font-weight:700;color:var(--text)}
+#clockDate{font-size:.75rem;color:var(--muted);margin-right:8px}
+.mode-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.78rem}
+.mode-btn.active-online{background:#1a6b2f;border-color:#1a6b2f;color:#fff}
+.mode-btn.active-neutral{background:#444;border-color:#888;color:#fff}
+.mode-btn.active-geschlossen{background:var(--red2);border-color:var(--red);color:#fff}
+.mode-auto-badge{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:.78rem}
+.mode-auto-badge.auto-on{background:rgba(100,200,100,.15);border-color:#4caf50;color:#4caf50}
+#printerStatus{font-size:.75rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border);color:var(--muted)}
+.topbar-spacer{flex:1}
+.topbar-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 12px;cursor:pointer;font-size:.8rem;white-space:nowrap}
+.topbar-btn:hover{background:var(--border)}
+/* Stats */
+.stats-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;min-width:110px}
+.stat-label{font-size:.68rem;color:var(--muted);margin-bottom:2px}
+.stat-val{font-size:1.1rem;font-weight:800;color:var(--gold)}
+.stat-sub{font-size:.65rem;color:var(--muted)}
+/* Alert Banner */
+.alert-banner{background:var(--primary);color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;display:none}
+.alert-banner.show{display:flex}
+.alert-banner button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer}
+/* Main layout */
+.main-layout{display:flex;flex:1;overflow:hidden}
+/* Orders panel */
+.orders-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+.filter-bar{padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.pill{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:.78rem;white-space:nowrap}
+.pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.search-input{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:.82rem;width:130px;outline:none}
+.day-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;cursor:pointer;font-size:.82rem}
+input[type=date]{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:.82rem;outline:none}
+#ordersList{overflow-y:auto;flex:1;padding:8px}
+/* Order cards */
+.order-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:.15s}
+.order-card:hover{border-color:var(--gold)}
+.order-card.selected{border-color:var(--gold);background:rgba(200,168,81,.06)}
+.oc-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+.oc-num{font-weight:800;font-size:.95rem;color:var(--gold)}
+.oc-time{font-size:.75rem;color:var(--muted)}
+.oc-mode{font-size:.75rem;color:var(--muted)}
+.oc-badges{display:flex;gap:4px;margin-left:auto}
+.badge{font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:10px;cursor:pointer}
+.b-new{background:#e8a020;color:#000}
+.b-prep{background:#2196f3;color:#fff}
+.b-ready{background:#4caf50;color:#fff}
+.b-del{background:#9c27b0;color:#fff}
+.b-cancel{background:#e53935;color:#fff}
+.b-paid{background:rgba(76,175,80,.2);color:#4caf50}
+.b-unpaid{background:rgba(229,57,53,.2);color:#ef5350}
+.b-stripe-wait{background:rgba(255,193,7,.2);color:#ffc107}
+.oc-items{font-size:.78rem;color:var(--muted);margin-bottom:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.oc-bottom{display:flex;align-items:center;justify-content:space-between}
+.oc-price{font-weight:800;font-size:.95rem;color:var(--gold)}
+.oc-actions{display:flex;gap:4px}
+.oc-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:.75rem}
+.oc-btn.next{background:var(--primary);border-color:var(--primary);color:#fff}
+.oc-btn.cancel{background:rgba(229,57,53,.15);border-color:var(--red);color:#ef5350}
+.empty-state{text-align:center;color:var(--muted);padding:40px;font-size:.9rem;line-height:2}
+/* Sidebar */
+.sidebar{width:340px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sidebar-tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-tab{flex:1;padding:10px 4px;text-align:center;font-size:.75rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+.sidebar-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.sidebar-content{flex:1;overflow-y:auto;padding:14px}
+.no-sel{text-align:center;color:var(--muted);padding:40px;line-height:2}
+/* Detail */
+.detail-num{font-size:1.4rem;font-weight:800;color:var(--gold)}
+.detail-meta{font-size:.75rem;color:var(--muted);margin-bottom:10px}
+.detail-sec{background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.detail-sec-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;letter-spacing:.5px}
+.detail-item{display:flex;justify-content:space-between;font-size:.82rem;padding:3px 0}
+.di-name{color:var(--text)}
+.di-price{color:var(--gold);font-weight:700}
+.detail-total{display:flex;justify-content:space-between;font-size:.82rem;padding:2px 0;color:var(--muted)}
+.detail-total.grand{font-weight:800;font-size:.95rem;color:var(--gold);margin-top:4px;border-top:1px solid var(--border);padding-top:6px}
+.mini-btns{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.mini-btn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:.75rem}
+.mini-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.mini-btn:hover{border-color:var(--gold)}
+.paid-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;cursor:pointer;border-bottom:1px solid var(--border);margin-bottom:6px}
+.detail-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.detail-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:.8rem;flex:1}
+.detail-btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.detail-btn.danger{background:rgba(229,57,53,.15);border-color:var(--red);color:#ef5350}
+/* Stats bars */
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.bar-name{font-size:.72rem;color:var(--muted);width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.bar-track{flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;background:var(--primary);border-radius:5px}
+.bar-val{font-size:.72rem;color:var(--gold);width:24px;text-align:right;flex-shrink:0}
+/* History */
+.hist-day{margin-bottom:12px}
+.hist-day-hd{display:flex;justify-content:space-between;font-size:.75rem;font-weight:700;color:var(--gold);margin-bottom:4px}
+.hist-item{display:grid;grid-template-columns:40px 36px 1fr 60px;gap:4px;font-size:.75rem;padding:4px 6px;border-radius:4px;cursor:pointer;background:var(--bg3);margin-bottom:2px}
+.hist-item:hover{border-left:2px solid var(--gold)}
+.hi-num,.hi-time,.hi-name,.hi-price{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hi-price{text-align:right;color:var(--gold);font-weight:700}
+/* Sold out */
+.so-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:4px}
+.so-name{font-size:.78rem;color:var(--text)}
+.so-toggle{position:relative;width:40px;height:22px;display:inline-block}
+.so-toggle input{opacity:0;width:0;height:0}
+.so-slider{position:absolute;inset:0;background:#555;border-radius:24px;cursor:pointer;transition:.3s}
+.so-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.so-toggle input:checked+.so-slider{background:var(--green)}
+.so-toggle input:checked+.so-slider:before{transform:translateX(18px)}
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;transition:transform .3s;pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0)}
+/* Modal overlay */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;overflow-y:auto;padding:20px}
+.modal-ov.show{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.modal-head h2{font-size:1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.modal-body{overflow-y:auto;padding:20px;flex:1}
+/* Pending modal */
+.pending-info{background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:12px}
+.pi-row{display:flex;justify-content:space-between;font-size:.82rem;padding:3px 0;border-bottom:1px solid var(--border)}
+.pi-row:last-child{border:none}
+.pi-label{color:var(--muted)}
+.pi-val{color:var(--text);font-weight:600;text-align:right;max-width:55%}
+.items-list{background:var(--bg3);border-radius:8px;padding:10px;margin-bottom:12px}
+.il-item{display:flex;justify-content:space-between;font-size:.82rem;padding:3px 0;border-bottom:1px solid var(--border)}
+.il-total{display:flex;justify-content:space-between;font-weight:800;font-size:.92rem;color:var(--gold);padding-top:6px}
+.time-btns{display:flex;gap:6px;margin-bottom:12px}
+.time-btn{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px;text-align:center;cursor:pointer;font-size:.85rem;font-weight:700}
+.time-btn.selected{background:var(--primary);border-color:var(--primary);color:#fff}
+.confirm-btn{width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:8px}
+.confirm-btn:disabled{background:#555;cursor:default}
+.cancel-btn{width:100%;background:rgba(229,57,53,.15);border:1px solid var(--red);color:#ef5350;border-radius:8px;padding:10px;cursor:pointer;font-size:.85rem;font-weight:600;margin-bottom:6px}
+.cancel-reason{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:.85rem;margin-bottom:6px;resize:none}
+/* POS Modal */
+#posModal .modal-box{max-width:900px}
+.pos-layout{display:flex;gap:0;height:500px}
+.pos-left{flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+.pos-right{width:280px;display:flex;flex-direction:column}
+.pos-cats{display:flex;gap:4px;flex-wrap:wrap;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.pos-cat{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.75rem}
+.pos-cat.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.pos-search{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.pos-search input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:.82rem;outline:none}
+#posMenu{overflow-y:auto;flex:1;padding:6px}
+.pos-item{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+.pos-item:hover{background:var(--bg3);border-color:var(--border)}
+.pos-item-num{font-size:.7rem;color:var(--muted);width:28px;flex-shrink:0}
+.pos-item-name{flex:1;font-size:.82rem}
+.pos-item-price{font-size:.8rem;color:var(--gold);font-weight:700;white-space:nowrap}
+.pos-add{background:var(--primary);color:#fff;border:none;border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:.9rem}
+/* POS right panel */
+.pos-cart-header{padding:10px;border-bottom:1px solid var(--border);font-size:.82rem;font-weight:700;flex-shrink:0}
+#posCartItems{flex:1;overflow-y:auto;padding:6px}
+.pos-cart-item{display:flex;align-items:center;gap:6px;font-size:.78rem;padding:5px 6px;border-bottom:1px solid var(--border)}
+.pci-qty{color:var(--gold);font-weight:700;width:24px}
+.pci-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pci-price{color:var(--gold);font-size:.78rem;white-space:nowrap}
+.pos-cart-item button{background:var(--bg3);border:1px solid var(--border);color:var(--red);border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:.8rem}
+.pos-cart-empty{text-align:center;color:var(--muted);padding:20px;font-size:.8rem}
+.pos-totals-area{padding:8px 10px;border-top:1px solid var(--border);flex-shrink:0}
+.pos-total-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);padding:2px 0}
+.pos-total-row.grand{font-weight:800;font-size:.95rem;color:var(--gold);border-top:1px solid var(--border);padding-top:4px;margin-top:2px}
+/* POS customer */
+.pos-customer{padding:10px;border-top:1px solid var(--border);flex-shrink:0}
+.pos-field{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:.8rem;margin-bottom:5px;outline:none}
+.pos-field select{color:var(--text)}
+.pos-mode-btns{display:flex;gap:4px;margin-bottom:6px}
+.pos-mode-btn{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px;cursor:pointer;font-size:.75rem;text-align:center}
+.pos-mode-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+#posSubmitBtn{width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px;font-weight:700;cursor:pointer;font-size:.85rem;margin-top:6px}
+/* Bon modal */
+#bonModal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center}
+.bon-box{background:var(--bg2);border-radius:12px;max-width:420px;width:95%;max-height:90vh;display:flex;flex-direction:column}
+.bon-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.bon-head button{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+#bonContent{overflow-y:auto;padding:16px;flex:1}
+.bon-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
+.bon-foot button{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px;cursor:pointer;font-size:.82rem}
+/* Stripe modal */
+#stripeModal .modal-box{max-width:500px}
+.il-card{margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.stripe-empty{text-align:center;color:var(--muted);padding:20px;font-size:.85rem}
+@media(max-width:900px){
+  .sidebar{width:300px}
+  .stat-card{min-width:90px}
+}
+@media(max-width:700px){
+  .main-layout{flex-direction:column}
+  .sidebar{width:100%;max-height:350px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🍕 Pizzeria Parma</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" id="loginPw" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
+    <label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;margin-bottom:12px;cursor:pointer">
+      <input type="checkbox" id="rememberPw" style="width:auto;margin:0;accent-color:var(--gold)"> Passwort merken
+    </label>
+    <button class="login-btn" onclick="doLogin()">Einloggen</button>
+    <div class="login-err" id="loginErr" style="display:none">❌ Falsches Passwort</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="topbar-brand">🍕 Parma</span>
+    <div id="clock">--:--</div>
+    <div id="clockDate"></div>
+    <span id="printerStatus">🖨️ Prüfe...</span>
+    <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()">🕐 Auto</span>
+    <button class="mode-btn" id="modeOnline" onclick="setMode('online')">🟢 Online</button>
+    <button class="mode-btn" id="modeNeutral" onclick="setMode('neutral')">⚪ Neutral</button>
+    <button class="mode-btn" id="modeGeschlossen" onclick="setMode('geschlossen')">🔴 Geschlossen</button>
+    <div class="topbar-spacer"></div>
+    <button class="topbar-btn" onclick="openPOS()">📞 Neue Bestellung</button>
+    <button class="topbar-btn" id="btnStripePanel" onclick="openStripeModal()">💳 Stripe</button>
+    <button class="topbar-btn" onclick="doLogout()" style="color:#ef5350">Logout</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-label" id="lRevenue">Umsatz heute</div><div class="stat-val" id="sRevenue">–</div><div class="stat-sub" id="sTodayCount"></div></div>
+    <div class="stat-card"><div class="stat-label">Aktiv</div><div class="stat-val" id="sActive">–</div></div>
+    <div class="stat-card"><div class="stat-label" id="lDone">Fertig heute</div><div class="stat-val" id="sDone">–</div></div>
+    <div class="stat-card"><div class="stat-label">Storniert <span id="lCancelledSub"></span></div><div class="stat-val" id="sCancelled">–</div></div>
+    <div class="stat-card"><div class="stat-label">Unbezahlt</div><div class="stat-val" id="sUnpaid">–</div></div>
+  </div>
+
+  <!-- ALERT -->
+  <div class="alert-banner" id="alertBanner">
+    <span id="alertText">🔔 Neue Bestellung!</span>
+    <button onclick="dismissAlert()">Schließen</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-layout">
+    <!-- ORDERS -->
+    <div class="orders-panel">
+      <div class="filter-bar">
+        <input class="search-input" type="text" id="searchInput" placeholder="🔍 Suche…" oninput="renderOrders()">
+        <span class="pill active" onclick="setFilter('all',this)">Alle</span>
+        <span class="pill" onclick="setFilter('neu',this)">Neu</span>
+        <span class="pill" onclick="setFilter('zubereitung',this)">Zubereitung</span>
+        <span class="pill" onclick="setFilter('fertig',this)">Fertig</span>
+        <span class="pill" onclick="setFilter('storniert',this)">Storniert</span>
+        <button class="day-btn" onclick="shiftDate(-1)">←</button>
+        <input type="date" id="reportDate" onchange="onDateChange()" oninput="onDateChange()">
+        <button class="day-btn" onclick="shiftDate(1)">→</button>
+        <button class="topbar-btn" onclick="printDayReport()">📊 Abschluss</button>
+      </div>
+      <div id="ordersList"><div class="empty-state">⏳ Lade...</div></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" onclick="setSideTab('detail',this)">Detail</div>
+        <div class="sidebar-tab" onclick="setSideTab('stats',this)">Statistik</div>
+        <div class="sidebar-tab" onclick="setSideTab('history',this)">Verlauf</div>
+        <div class="sidebar-tab" onclick="setSideTab('soldout',this)">🔴 Verfügbar</div>
+      </div>
+      <div class="sidebar-content" id="sideContent">
+        <div class="no-sel">📋<br>Bestellung auswählen</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PENDING MODAL -->
+<div class="modal-ov" id="pendingModal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-head" style="background:var(--primary)">
+      <h2>🔔 Neue Bestellung!</h2>
+      <button class="modal-close" onclick="closePendingModal()">✕</button>
+    </div>
+    <div class="modal-body" id="pendingModalBody"></div>
+  </div>
+</div>
+
+<!-- BON MODAL -->
+<div id="bonModal">
+  <div class="bon-box">
+    <div class="bon-head"><span>🧾 Bon Vorschau</span><button onclick="closeBonModal()">✕</button></div>
+    <div id="bonContent"></div>
+    <div class="bon-foot">
+      <button onclick="bonModalPrint()">🖨️ Drucken</button>
+      <button onclick="bonModalPDF()">📄 PDF</button>
+      <button onclick="closeBonModal()">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<!-- STRIPE MODAL -->
+<div class="modal-ov" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-head" style="background:linear-gradient(135deg,#7a5200,#c88a00)">
+      <h2>💳 Stripe-Zahlungen ausstehend</h2>
+      <button class="modal-close" onclick="closeStripeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">Diese Bestellungen warten auf Stripe-Zahlung.</p>
+      <div id="stripeModalList"></div>
+      <button class="confirm-btn" onclick="doRecoverStripe()" id="btnRecoverAction">🔁 Bei Stripe prüfen & einbuchen</button>
+    </div>
+  </div>
+</div>
+
+<!-- POS MODAL -->
+<div class="modal-ov" id="posModal" onclick="if(event.target===this)closePOS()">
+  <div class="modal-box" style="max-width:960px">
+    <div class="modal-head"><h2>📞 Neue Bestellung (POS)</h2><button class="modal-close" onclick="closePOS()">✕</button></div>
+    <div style="display:flex;flex:1;overflow:hidden;height:520px">
+      <!-- LEFT: MENU -->
+      <div class="pos-left">
+        <div class="pos-cats" id="posCatTabs"></div>
+        <div class="pos-search"><input type="text" id="posSearch" placeholder="🔍 Gericht suchen…" oninput="renderPOSItems()"></div>
+        <div id="posMenu"></div>
+      </div>
+      <!-- RIGHT: CART + CUSTOMER -->
+      <div class="pos-right" style="display:flex;flex-direction:column">
+        <div class="pos-cart-header">🛒 Warenkorb</div>
+        <div id="posCartItems" style="flex:1;overflow-y:auto;padding:6px"></div>
+        <div class="pos-totals-area" id="posTotals"></div>
+        <div class="pos-customer">
+          <div class="pos-mode-btns">
+            <div class="pos-mode-btn active" id="posBtnLief" onclick="setPOSMode('lieferung')">🛵 Lieferung</div>
+            <div class="pos-mode-btn" id="posBtnAbh" onclick="setPOSMode('abholung')">🏃 Abholung</div>
+          </div>
+          <input class="pos-field" type="text" id="posFirst" placeholder="Vorname *">
+          <input class="pos-field" type="text" id="posLast" placeholder="Nachname *">
+          <input class="pos-field" type="tel" id="posPhone" placeholder="Telefon">
+          <div id="posAddrFields">
+            <input class="pos-field" type="text" id="posStreet" placeholder="Straße">
+            <input class="pos-field" type="text" id="posHouse" placeholder="Hausnr.">
+            <input class="pos-field" type="text" id="posCity" placeholder="Stadt" value="Hamm" onchange="renderPOSTotals()">
+          </div>
+          <select class="pos-field" id="posPayment">
+            <option value="bar">💵 Barzahlung</option>
+            <option value="karte">💳 EC-Karte</option>
+            <option value="stripe">💳 Stripe</option>
+          </select>
+          <button id="posSubmitBtn" onclick="submitPOS()">✅ Speichern & Drucken</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const API_BASE        = 'https://pizzeria-parma.onrender.com/api';
+const DASHBOARD_PW    = 'Parma2025Admin!';
+const ADMIN_TOKEN_SEC = 'ParmaGeheimToken2025xyzABCDEFGHIJKLMNOPQRST';
+const SERVICE_FEE     = 0.99;
+const DELIVERY_FEES   = { 'Hamm': 2.50 };
+
+// ═══════════════════════════════════════════════════════════════
+// POS MENU (alle Gerichte 1:1 wie index.html)
+// ═══════════════════════════════════════════════════════════════
+const POS_MENU = {
+  'Pizza': [
+    {num:'1', name:'Pizza Margherita',price:7},
+    {num:'2', name:'Pizza Brokkoli',price:10},{num:'3', name:'Pizza Pilze',price:10},
+    {num:'4', name:'Pizza Spinat',price:10},{num:'5', name:'Pizza Mais',price:10},
+    {num:'6', name:'Pizza Paprika',price:10},{num:'7', name:'Pizza Oliven',price:10},
+    {num:'8', name:'Pizza Zwiebeln',price:10},{num:'9', name:'Pizza Spargel',price:10},
+    {num:'10',name:'Pizza Peperoni',price:10},{num:'11',name:'Pizza Artischocken',price:10},
+    {num:'12',name:'Pizza Tomaten',price:10},{num:'13',name:'Pizza Ananas',price:10},
+    {num:'14',name:'Pizza Vegetarisch',price:10},{num:'15',name:'Pizza Salami',price:10},
+    {num:'16',name:'Pizza Schinken',price:10},{num:'17',name:'Pizza Sucuk',price:10},
+    {num:'18',name:'Pizza Hawaii',price:10},{num:'19',name:'Pizza Bolognese',price:10},
+    {num:'20',name:'Pizza Thunfisch mit Zwiebeln',price:10},
+    {num:'21',name:'Pizza Hähnchen',price:10},{num:'22',name:'Pizza Rucola',price:10},
+    {num:'23',name:'Pizza Lachs',price:10},{num:'24',name:'Pizza Krabben',price:10},
+    {num:'25',name:'Pizza Frutti di Mare',price:10},{num:'26',name:'Pizza Gyros',price:10},
+    {num:'27',name:'Pizza Döner',price:10},{num:'28',name:'Pizza Schafskäse',price:10},
+    {num:'29',name:'Pizza Mozzarella',price:10},{num:'30',name:'Pizza Sardellen',price:10},
+    {num:'31',name:'Pizza Kapern',price:10},{num:'32',name:'Pizza Gorgonzola',price:10},
+    {num:'33',name:'Pizza Hähnchen Brokkoli',price:10},{num:'34',name:'Pizza Hähnchen Ananas',price:10},
+    {num:'35',name:'Pizza Hähnchen Paprika',price:10},{num:'36',name:'Pizza Hähnchen Pilze',price:10},
+    {num:'37',name:'Pizza Hähnchen Spinat',price:10},{num:'38',name:'Pizza Hähnchen Thunfisch',price:10},
+    {num:'39',name:'Pizza Hähnchen Salami',price:10},{num:'40',name:'Pizza Hähnchen Mais',price:10},
+    {num:'41',name:'Pizza Salami Pilze',price:10},{num:'42',name:'Pizza Salami Schinken',price:10},
+    {num:'43',name:'Pizza Schinken Rucola',price:10},
+    {num:'44',name:'Pizza Thunfisch Spinat',price:10},{num:'45',name:'Pizza Schinken Oliven',price:10},
+    {num:'46',name:'Pizza Thunfisch Brokkoli',price:10},{num:'47',name:'Pizza Thunfisch Peperoni',price:10},
+    {num:'48',name:'Pizza Lachs Brokkoli',price:10},{num:'49',name:'Pizza Krabben Brokkoli',price:10},
+    {num:'50',name:'Pizza Gyros Zwiebeln',price:10},
+    {num:'51',name:'Pizza Schinken Brokkoli',price:10},  // war fälschlich "Hähnchen Brokkoli Mais"
+    {num:'52',name:'Pizza Gyros Tomaten',price:10},{num:'53',name:'Pizza Lachs Spinat',price:10},
+    {num:'54',name:'Pizza Thunfisch Salami',price:10},{num:'55',name:'Pizza Schinken Brokkoli Hollandaise',price:10},
+    {num:'56',name:'Pizza Schinken Pilze',price:10},{num:'57',name:'Pizza Döner Paprika',price:10},
+    {num:'58',name:'Pizza Döner Brokkoli',price:10},{num:'59',name:'Pizza Sucuk Zwiebeln',price:10},
+    {num:'60',name:'Pizza Sucuk Pilze',price:10},{num:'61',name:'Pizza Sucuk Tomaten',price:10},
+    {num:'62',name:'Pizza Calzone Schinken',price:10},{num:'63',name:'Pizza Calzone Vegetarier',price:10},
+    {num:'64',name:'Pizza Calzone Hähnchen',price:10},{num:'65',name:'Pizza Calzone Sucuk',price:10},
+    {num:'WP',  name:'Wunsch Pizza 28cm (3 Zutaten)',price:10},
+    {num:'WP32',name:'Wunsch Pizza 32cm (3 Zutaten)',price:12},
+    {num:'P32', name:'Pizza 32cm Aufpreis',price:2},
+    {num:'FP',  name:'Familienpizza 40×60cm (3 Zutaten)',price:27},
+  ],
+  'Salate': [
+    {num:'80',name:'Salat Hawaii',price:10},{num:'81',name:'Salat Thunfisch',price:10},
+    {num:'82',name:'Krabben Salat',price:10},{num:'83',name:'Hähnchen Salat',price:10},
+    {num:'84',name:'Tomaten Salat',price:10},{num:'85',name:'Salat Primavera',price:10},
+    {num:'86',name:'Salat Capricciosa',price:10},{num:'87',name:'Salat Caprese',price:10},
+    {num:'88',name:'Rose Salat',price:10},{num:'89',name:'Döner Salat',price:10},
+    {num:'90',name:'Salat Salmone',price:10},{num:'91',name:'Gurken Salat',price:10},
+    {num:'92',name:'Wunsch Salat (3 Zutaten)',price:10},
+  ],
+  'Nudeln': [
+    {num:'100',name:'Penne mit Hähnchen',price:10},{num:'101',name:'Penne mit Gyros',price:10},
+    {num:'102',name:'Penne mit Thunfisch',price:10},{num:'103',name:'Penne Hähnchen Spinat',price:10},
+    {num:'104',name:'Penne Hähnchen Pilze',price:10},{num:'105',name:'Penne Hähnchen Brokkoli',price:10},
+    {num:'106',name:'Penne mit Krabben',price:10},{num:'107',name:'Penne Vegetarisch',price:10},
+    {num:'108',name:'Penne Bolognese',price:10},{num:'109',name:'Penne Tomatensauce',price:10},
+    {num:'110',name:'Penne mit Lachs',price:10},{num:'111',name:'Penne Frutti di Mare',price:10},
+    {num:'112',name:'Penne Quattro Formaggie',price:10},{num:'113',name:'Penne Carbonara',price:10},
+    {num:'114',name:'Wunsch Penne (3 Zutaten)',price:10},
+    {num:'115',name:'Spaghetti Hähnchen Brokkoli',price:10},{num:'116',name:'Spaghetti Hähnchen Spinat',price:10},
+    {num:'117',name:'Spaghetti Quattro Formaggie',price:10},{num:'118',name:'Spaghetti Carbonara',price:10},
+    {num:'119',name:'Spaghetti Bolognese',price:10},{num:'120',name:'Spaghetti Tomatensauce',price:10},
+    {num:'121',name:'Spaghetti Lachs Spinat',price:10},{num:'122',name:'Spaghetti Thunfisch',price:10},
+    {num:'123',name:'Spaghetti Brokkoli',price:10},{num:'124',name:'Spaghetti Krabben',price:10},
+    {num:'125',name:'Spaghetti Vegetarisch',price:10},{num:'126',name:'Spaghetti Frutti di Mare',price:10},
+    {num:'127',name:'Spaghetti Gyros Pilze',price:10},{num:'128',name:'Spaghetti Gyros Peperoni',price:10},
+    {num:'129',name:'Spaghetti Peperoni Knoblauch',price:10},{num:'130',name:'Wunsch Spaghetti (3 Zutaten)',price:10},
+  ],
+  'Tortellini': [
+    {num:'160',name:'Tortellini Gyros',price:10},{num:'161',name:'Tortellini Carbonara',price:10},
+    {num:'162',name:'Tortellini Champignons',price:10},{num:'163',name:'Tortellini Hähnchen',price:10},
+    {num:'164',name:'Tortellini Vegetarier',price:10},{num:'165',name:'Tortellini Krabben',price:10},
+    {num:'166',name:'Tortellini Thunfisch',price:10},{num:'167',name:'Tortellini Tomatensauce',price:10},
+    {num:'168',name:'Tortellini Lachs Spinat',price:10},{num:'169',name:'Tortellini Bolognese',price:10},
+    {num:'170',name:'Tortellini Krabben Pilze',price:10},{num:'171',name:'Tortellini Gyros Zwiebeln',price:10},
+    {num:'172',name:'Tortellini Frutti di Mare',price:10},{num:'173',name:'Tortellini Peperoni',price:10},
+    {num:'174',name:'Tortellini Hähnchen Spinat',price:10},{num:'175',name:'Tortellini Bolognese Hähnchen',price:10},
+    {num:'176',name:'Wunsch Tortellini (3 Zutaten)',price:10},
+  ],
+  'Tagliatelle': [
+    {num:'180',name:'Tagliatelle Gyros',price:10},{num:'181',name:'Tagliatelle Carbonara',price:10},
+    {num:'182',name:'Tagliatelle Champignons',price:10},{num:'183',name:'Tagliatelle Hähnchen',price:10},
+    {num:'184',name:'Tagliatelle Vegetarier',price:10},{num:'185',name:'Tagliatelle Krabben',price:10},
+    {num:'186',name:'Tagliatelle Thunfisch',price:10},{num:'187',name:'Tagliatelle Tomatensauce',price:10},
+    {num:'188',name:'Tagliatelle Lachs Spinat',price:10},{num:'189',name:'Tagliatelle Bolognese',price:10},
+    {num:'190',name:'Tagliatelle Gyros Zwiebeln',price:10},{num:'191',name:'Tagliatelle Frutti di Mare',price:10},
+    {num:'192',name:'Tagliatelle Peperoni',price:10},{num:'193',name:'Tagliatelle Hähnchen Spinat',price:10},
+    {num:'194',name:'Tagliatelle Bolognese Hähnchen',price:10},{num:'195',name:'Wunsch Tagliatelle (3 Zutaten)',price:10},
+  ],
+  'Gnocchi': [
+    {num:'200',name:'Gnocchi Gyros',price:10},{num:'201',name:'Gnocchi Carbonara',price:10},
+    {num:'202',name:'Gnocchi Champignons',price:10},{num:'203',name:'Gnocchi Hähnchen',price:10},
+    {num:'204',name:'Gnocchi Vegetarier',price:10},{num:'205',name:'Gnocchi Krabben',price:10},
+    {num:'206',name:'Gnocchi Thunfisch',price:10},{num:'207',name:'Gnocchi Tomatensauce',price:10},
+    {num:'208',name:'Gnocchi Lachs Spinat',price:10},{num:'209',name:'Gnocchi Bolognese',price:10},
+    {num:'210',name:'Gnocchi Krabben Pilze',price:10},{num:'211',name:'Gnocchi Gyros Zwiebeln',price:10},
+    {num:'213',name:'Gnocchi Frutti di Mare',price:10},{num:'214',name:'Gnocchi Peperoni',price:10},
+    {num:'215',name:'Gnocchi Hähnchen Spinat',price:10},{num:'216',name:'Gnocchi Bolognese Hähnchen',price:10},
+    {num:'217',name:'Wunsch Gnocchi (3 Zutaten)',price:10},
+  ],
+  'Aufläufe': [
+    {num:'140',name:'Kartoffelauflauf Hähnchen',price:10},{num:'141',name:'Kartoffelauflauf Lachs Spinat',price:10},
+    {num:'142',name:'Kartoffelauflauf Hähnchen Brokkoli',price:10},{num:'143',name:'Kartoffelauflauf Hähnchen Spinat',price:10},
+    {num:'144',name:'Kartoffelauflauf Bolognese',price:10},{num:'145',name:'Kartoffelauflauf Tomatensauce',price:10},
+    {num:'146',name:'Kartoffelauflauf Krabben',price:10},{num:'147',name:'Kartoffelauflauf Vegetarisch',price:10},
+    {num:'148',name:'Kartoffelauflauf Gyros',price:10},
+    {num:'220',name:'Lasagne Cannelloni Hackfleisch',price:10},{num:'221',name:'Lasagne Cannelloni Hähnchen',price:10},
+    {num:'222',name:'Lasagne Cannelloni Hähnchen Sahne',price:10},{num:'223',name:'Lasagne Cannelloni Lachs Spinat',price:10},
+    {num:'224',name:'Lasagne Cannelloni Vegetarisch',price:10},{num:'225',name:'Lasagne Cannelloni Wunsch',price:10},
+  ],
+  'Spezial': [
+    {num:'PB15', name:'15 Pizzabrötchen Kräuterbutter',price:5},
+    {num:'PB15K',name:'15 Pizzabrötchen Knoblauch',price:5},
+    {num:'PB12', name:'12 gefüllte Pizzabrötchen (3 Zutaten)',price:9},
+    {num:'M1',   name:'Menü 1 (Nudel+Pizza 28cm+Salat+Getränk+15 Brötchen)',price:30},
+    {num:'M2',   name:'Menü 2 (6× Pizza 28cm + 1L Getränk)',price:45},
+  ],
+  'Getränke': [
+    {num:'G1', name:'Cola 0,33L',      price:2},
+    {num:'G3', name:'Cola 1,0L',       price:3},
+    {num:'G4', name:'Fanta 0,33L',     price:2},
+    {num:'G6', name:'Fanta 1,0L',      price:3},
+    {num:'G7', name:'Sprite 0,33L',    price:2},
+    {num:'G9', name:'Mezzo Mix 0,33L', price:2},
+    {num:'G11',name:'Uludag 0,33L',    price:2},
+    {num:'G13',name:'Ice Tea 0,25L',   price:1.50},
+    {num:'G14',name:'Ayran 0,5L',      price:1.80},
+    {num:'G15',name:'Wasser',          price:1.50},
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let token          = sessionStorage.getItem('parmaToken') || '';
+let allOrders      = [];
+let stripeOrders   = [];
+let selOrder       = null;
+let sideTab        = 'detail';
+let filter         = 'all';
+let posCart        = [];
+let posMode        = 'lieferung';
+let posCategory    = 'Pizza';
+let manualOverride = false;
+let soldOutList    = [];
+let currentPending = null;
+let selectedTime   = null;
+let bonModalOrder  = null;
+let loadOrdersCtrl = null;
+let dateChangeTimer= null;
+let rawbtConnected = false;
+let eposConnected  = false;
+let toastTimer;
+
+let knownIds = new Set(JSON.parse(localStorage.getItem('parmaKnownIds') || '[]'));
+const _kd    = localStorage.getItem('parmaKnownIdsDate');
+if (_kd !== new Date().toDateString()) {
+  knownIds = new Set();
+  localStorage.setItem('parmaKnownIds','[]');
+  localStorage.setItem('parmaKnownIdsDate', new Date().toDateString());
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+function apiHeaders() { return {'Content-Type':'application/json','Authorization':'Bearer '+token}; }
+function api(path, opts={}) { return fetch(API_BASE+path, {...opts, headers:{...apiHeaders(),...(opts.headers||{})}}); }
+
+async function doLogin() {
+  const pw = document.getElementById('loginPw').value.trim();
+  if (!pw) return;
+  const remember = document.getElementById('rememberPw').checked;
+  document.getElementById('loginErr').style.display = 'none';
+  if (pw === DASHBOARD_PW) {
+    token = ADMIN_TOKEN_SEC;
+    sessionStorage.setItem('parmaToken', token);
+    if (remember) localStorage.setItem('parmaSavedPw', pw);
+    else localStorage.removeItem('parmaSavedPw');
+    showApp(); return;
+  }
+  try {
+    const r = await fetch(API_BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    const d = await r.json();
+    if (d.token) { token=d.token; sessionStorage.setItem('parmaToken',token); if(remember)localStorage.setItem('parmaSavedPw',pw); showApp(); }
+    else document.getElementById('loginErr').style.display='block';
+  } catch { document.getElementById('loginErr').style.display='block'; }
+}
+function showApp() {
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  initDashboard();
+}
+function doLogout() { sessionStorage.removeItem('parmaToken'); location.reload(); }
+
+(function(){
+  const saved = localStorage.getItem('parmaSavedPw');
+  if (saved) { document.getElementById('loginPw').value=saved; document.getElementById('rememberPw').checked=true; }
+  if (token) showApp();
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+function initDashboard() {
+  startClock();
+  document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
+  loadOrders();
+  setInterval(()=>{ pollPending(); loadOrders(); }, 5000);
+  pollPending();
+  loadSoldOut();
+  loadRestaurantStatus();
+  setInterval(loadRestaurantStatus, 30000);
+  if (Notification && Notification.permission==='default') Notification.requestPermission();
+  checkEpos(); checkRawbt();
+  setInterval(()=>{ checkEpos(); checkRawbt(); }, 30000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════════
+function startClock() {
+  function tick(){
+    const now=new Date();
+    document.getElementById('clock').textContent=now.toLocaleTimeString('de-DE');
+    document.getElementById('clockDate').textContent=now.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+  }
+  tick(); setInterval(tick,1000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD ORDERS
+// ═══════════════════════════════════════════════════════════════
+function onDateChange() {
+  clearTimeout(dateChangeTimer);
+  document.getElementById('ordersList').innerHTML='<div class="empty-state">⏳ Lade…</div>';
+  dateChangeTimer=setTimeout(loadOrders,300);
+}
+function shiftDate(delta) {
+  const input=document.getElementById('reportDate');
+  const base=input.value?new Date(input.value+'T12:00:00'):new Date();
+  base.setDate(base.getDate()+delta);
+  input.value=base.toISOString().slice(0,10);
+  onDateChange();
+}
+async function loadOrders() {
+  if (loadOrdersCtrl) loadOrdersCtrl.abort();
+  loadOrdersCtrl=new AbortController();
+  const signal=loadOrdersCtrl.signal;
+  try {
+    const dv=document.getElementById('reportDate')?.value||'';
+    const ts=new Date().toISOString().slice(0,10);
+    const isToday=!dv||dv===ts;
+    const url=isToday?`${API_BASE}/admin/orders`:`${API_BASE}/admin/orders?date=${dv}`;
+    const r=await fetch(url,{headers:apiHeaders(),signal});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const raw=d.orders||[];
+    stripeOrders=raw.filter(o=>o.status==='awaiting_payment');
+    allOrders=raw.filter(o=>o.status!=='awaiting_payment');
+    updateStripeBadge();
+    const dateLabel=isToday?'heute':new Date(dv+'T12:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    const lblRev=document.getElementById('lRevenue'); if(lblRev) lblRev.textContent=`Umsatz ${dateLabel}`;
+    const lblDone=document.getElementById('lDone'); if(lblDone) lblDone.textContent=`Fertig ${dateLabel}`;
+    const lblCs=document.getElementById('lCancelledSub'); if(lblCs) lblCs.textContent=dateLabel;
+    const s=d.stats||{};
+    document.getElementById('sRevenue').textContent=(s.todayRevenue||0).toFixed(2).replace('.',',')+' €';
+    document.getElementById('sTodayCount').textContent=(s.todayCount||0)+' Bestellungen';
+    document.getElementById('sActive').textContent=s.active||0;
+    document.getElementById('sDone').textContent=s.done||0;
+    document.getElementById('sCancelled').textContent=s.cancelled||0;
+    document.getElementById('sUnpaid').textContent=s.unpaid||0;
+    renderOrders();
+    if(sideTab==='stats') renderStats();
+    if(sideTab==='history') renderHistory();
+  } catch(e){ if(e.name==='AbortError') return; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER ORDERS
+// ═══════════════════════════════════════════════════════════════
+const getDisplayStatus=s=>({confirmed:'Neu',preparing:'In Zubereitung',ready:'Fertig',delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend',awaiting_payment:'💳 Stripe'}[s]||s);
+const getStatusClass  =s=>({confirmed:'b-new',preparing:'b-prep',ready:'b-ready',delivered:'b-del',cancelled:'b-cancel',awaiting_payment:'b-stripe-wait'}[s]||'b-new');
+const getNextStatus   =s=>({confirmed:'preparing',preparing:'ready',ready:'delivered'}[s]||null);
+const getNextLabel    =s=>({confirmed:'🔥 Zubereitung',preparing:'✅ Fertig',ready:'🚀 Geliefert'}[s]||null);
+const fmt             =v=>(v||0).toFixed(2).replace('.',',')+' €';
+const cleanName       =n=>n.replace(/[A-Z0-9](,[A-Z0-9])+$/g,'').trimEnd();
+function isToday(ds){ const d=new Date(ds),t=new Date(); return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear(); }
+
+function setFilter(f,el){filter=f;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');renderOrders();}
+
+function renderOrders(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const dv=document.getElementById('reportDate')?.value||'';
+  const ts=new Date().toISOString().slice(0,10);
+  const isViewingToday=!dv||dv===ts;
+  let list=allOrders.filter(o=>{
+    if(!q){
+      if(isViewingToday){ const s=new Date(); s.setHours(0,0,0,0); if(new Date(o.createdAt)<s) return false; }
+    }
+    if(filter==='neu') return o.status==='confirmed';
+    if(filter==='zubereitung') return o.status==='preparing';
+    if(filter==='fertig') return o.status==='ready';
+    if(filter==='storniert') return o.status==='cancelled';
+    return true;
+  });
+  if(q) list=list.filter(o=>String(o.orderNum).includes(q)||`${o.customer?.first||''} ${o.customer?.last||''}`.toLowerCase().includes(q));
+  const el=document.getElementById('ordersList');
+  if(!list.length){el.innerHTML='<div class="empty-state">📭<br>Keine Bestellungen</div>';return;}
+  el.innerHTML=list.map(o=>{
+    const next=getNextStatus(o.status),nxt=getNextLabel(o.status);
+    const items=(o.items||[]).slice(0,3).map(i=>`${i.qty}× ${cleanName(i.name)}`).join(', ');
+    const more=(o.items||[]).length>3?` +${o.items.length-3}`:'';
+    return `<div class="order-card${selOrder?._id===o._id?' selected':''}" onclick="selectOrder('${o._id}')">
+      <div class="oc-top">
+        <span class="oc-num">#${o.orderNum}</span>
+        <span class="oc-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''} ${o.payment==='stripe'?'💳':o.payment==='karte'?'💳EC':'💵'}</span>
+        <div class="oc-badges">
+          <span class="badge ${getStatusClass(o.status)}">${getDisplayStatus(o.status)}</span>
+          <span class="badge ${o.paymentStatus==='paid'?'b-paid':'b-unpaid'}" onclick="togglePaid(event,'${o._id}',${o.paymentStatus==='paid'})">${o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen'}</span>
+        </div>
+      </div>
+      <div class="oc-items">${items}${more}</div>
+      <div class="oc-bottom">
+        <span class="oc-price">${fmt(o.total)}</span>
+        <div class="oc-actions">
+          ${next?`<button class="oc-btn next" onclick="nextStatus(event,'${o._id}','${next}')">${nxt}</button>`:''}
+          <button class="oc-btn" onclick="printOrder(event,'${o._id}')">🖨️</button>
+          <button class="oc-btn" onclick="showBonModal(event,'${o._id}')">📄</button>
+          ${o.status!=='cancelled'?`<button class="oc-btn cancel" onclick="doCancel(event,'${o._id}',${o.orderNum})">✕</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectOrder(id){ selOrder=allOrders.find(o=>o._id===id); renderOrders(); setSideTab(sideTab); }
+
+async function nextStatus(e,id,status){ e.stopPropagation(); await api(`/admin/orders/${id}/status`,{method:'PATCH',body:JSON.stringify({status})}); await loadOrders(); }
+async function togglePaid(e,id,wasPaid){ e.stopPropagation(); const s=wasPaid?'unpaid':'paid'; await api(`/admin/orders/${id}/payment`,{method:'PATCH',body:JSON.stringify({paymentStatus:s})}); await loadOrders(); }
+async function doCancel(e,id,num){ e.stopPropagation(); const r=prompt(`Bestellung #${num} stornieren?\nGrund (optional):`); if(r===null)return; const resp=await(await api(`/admin/orders/${id}`,{method:'DELETE',body:JSON.stringify({cancelReason:r})})).json(); await loadOrders(); showToast(`❌ #${num} storniert${resp.refundStatus==='succeeded'?' · Refund':''}`); }
+
+// ═══════════════════════════════════════════════════════════════
+// SIDEBAR TABS
+// ═══════════════════════════════════════════════════════════════
+function setSideTab(tab,el){
+  sideTab=tab;
+  document.querySelectorAll('.sidebar-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const c=document.getElementById('sideContent');
+  if(tab==='detail')  renderDetail(c);
+  if(tab==='stats')   renderStats(c);
+  if(tab==='history') renderHistory(c);
+  if(tab==='soldout') renderSoldOut(c);
+}
+
+function renderDetail(c){
+  c=c||document.getElementById('sideContent');
+  if(!selOrder){c.innerHTML='<div class="no-sel">📋<br>Bestellung auswählen</div>';return;}
+  const o=selOrder;
+  const next=getNextStatus(o.status),nxt=getNextLabel(o.status);
+  const rows=(o.items||[]).map(i=>{
+    const extras=(i.extraDetails||[]).filter(e=>e.name);
+    let html=`<div class="detail-item"><span class="di-name">${i.qty}× ${cleanName(i.name)}${i.note&&!extras.length?' <em style="font-size:.72rem;color:var(--muted)">('+i.note+')</em>':''}</span><span class="di-price">${fmt(i.price*i.qty)}</span></div>`;
+    extras.forEach(e=>{ html+=`<div style="font-size:.72rem;color:var(--muted);padding-left:14px;">↳ ${e.name}${e.price>0?' (+'+e.price.toFixed(2)+'€)':''}</div>`; });
+    return html;
+  }).join('');
+  c.innerHTML=`
+    <div class="detail-num">#${o.orderNum}</div>
+    <div class="detail-meta">${new Date(o.createdAt).toLocaleString('de-DE')} · ${o.source==='pos'?'📞 POS':'🌐 Online'}</div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Kunde</div>
+      <div style="font-size:.8rem;line-height:1.8;color:var(--muted)">
+        <b style="color:var(--text)">${o.customer?.first||''} ${o.customer?.last||''}</b><br>
+        ${o.customer?.phone||''}<br>
+        ${o.mode==='lieferung'?`${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`:'Abholung'}
+        ${o.note?`<br>📝 <em>${o.note}</em>`:''}
+      </div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Artikel</div>
+      ${rows}
+      <div class="detail-total"><span>Zwischensumme</span><span>${fmt(o.subtotal)}</span></div>
+      ${o.deliveryFee>0?`<div class="detail-total"><span>Liefergebühr</span><span>${fmt(o.deliveryFee)}</span></div>`:''}
+      <div class="detail-total"><span>Servicegebühr</span><span>${fmt(o.serviceFee||0.99)}</span></div>
+      <div class="detail-total grand"><span>Gesamt</span><span>${fmt(o.total)}</span></div>
+    </div>
+    <div class="detail-sec">
+      <div class="detail-sec-title">Status</div>
+      <div class="mini-btns">
+        ${['confirmed','preparing','ready','delivered'].map(s=>`<div class="mini-btn${o.status===s?' active':''}" onclick="changeStatus('${o._id}','${s}')">${getDisplayStatus(s)}</div>`).join('')}
+      </div>
+      <div class="paid-row" onclick="togglePaidDetail('${o._id}',${o.paymentStatus==='paid'})">
+        <span style="color:var(--muted);font-size:.8rem">Bezahlt</span>
+        <span style="font-weight:700;color:${o.paymentStatus==='paid'?'var(--green)':'#ef5350'}">${o.paymentStatus==='paid'?'✅ Ja':'❌ Nein'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;padding:4px 0">
+        <span style="color:var(--muted)">Zahlungsart</span>
+        <span style="font-weight:700">${o.payment==='stripe'?'💳 Stripe':o.payment==='karte'?'💳 EC-Karte':'💵 Bar'}</span>
+      </div>
+    </div>
+    <div class="detail-btns">
+      ${next?`<button class="detail-btn primary" onclick="changeStatus('${o._id}','${next}')">➡️ ${nxt}</button>`:''}
+      <button class="detail-btn" onclick="printOrder({stopPropagation:()=>{}},'${o._id}')">🖨️</button>
+      <button class="detail-btn" onclick="showBonModal({stopPropagation:()=>{}},'${o._id}')">📄</button>
+      ${o.status!=='cancelled'?`<button class="detail-btn danger" onclick="doCancel({stopPropagation:()=>{}},'${o._id}',${o.orderNum})">✕ Storno</button>`:''}
+    </div>`;
+}
+
+async function changeStatus(id,status){ await api(`/admin/orders/${id}/status`,{method:'PATCH',body:JSON.stringify({status})}); await loadOrders(); selOrder=allOrders.find(o=>o._id===id); renderDetail(); }
+async function togglePaidDetail(id,wasPaid){ const s=wasPaid?'unpaid':'paid'; await api(`/admin/orders/${id}/payment`,{method:'PATCH',body:JSON.stringify({paymentStatus:s})}); await loadOrders(); selOrder=allOrders.find(o=>o._id===id); renderDetail(); }
+
+function renderStats(c){
+  c=c||document.getElementById('sideContent');
+  const counts={};
+  allOrders.filter(o=>o.status!=='cancelled').forEach(o=>(o.items||[]).forEach(i=>{counts[cleanName(i.name)]=(counts[cleanName(i.name)]||0)+i.qty;}));
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxI=top[0]?.[1]||1;
+  c.innerHTML=`<div class="detail-sec-title" style="margin-bottom:8px">Top Gerichte</div>`+
+    top.map(([n,v])=>`<div class="bar-row"><div class="bar-name" title="${n}">${n}</div><div class="bar-track"><div class="bar-fill" style="width:${(v/maxI*100).toFixed(0)}%"></div></div><span class="bar-val">${v}</span></div>`).join('');
+}
+
+function renderHistory(c){
+  c=c||document.getElementById('sideContent');
+  const byDay={};
+  allOrders.forEach(o=>{
+    const day=new Date(o.createdAt).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+    if(!byDay[day]) byDay[day]={orders:[],total:0};
+    byDay[day].orders.push(o);
+    if(o.status!=='cancelled') byDay[day].total+=(o.total||0);
+  });
+  c.innerHTML=Object.entries(byDay).map(([day,data])=>`
+    <div class="hist-day">
+      <div class="hist-day-hd"><span>${day}</span><span>${data.total.toFixed(2).replace('.',',')} €</span></div>
+      ${data.orders.map(o=>`<div class="hist-item" onclick="selectOrder('${o._id}');setSideTab('detail')">
+        <span class="hi-num">#${o.orderNum}</span>
+        <span class="hi-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+        <span class="hi-name">${o.customer?.first||''} ${o.customer?.last||''}</span>
+        <span class="hi-price">${fmt(o.total)}</span>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SOLD OUT
+// ═══════════════════════════════════════════════════════════════
+async function loadSoldOut(){
+  try{ const r=await api('/admin/availability'); const d=await r.json(); soldOutList=(d.items||[]).filter(i=>!i.available).map(i=>i.itemName); } catch(e){}
+}
+function renderSoldOut(c){
+  c=c||document.getElementById('sideContent');
+  const all=Object.values(POS_MENU).flat().map(i=>i.name);
+  c.innerHTML=`<div style="font-size:.72rem;color:var(--muted);margin-bottom:10px">🟢 = verfügbar · 🔴 = ausverkauft</div>`+
+    all.map(name=>{
+      const isOut=soldOutList.includes(name);
+      return `<div class="so-item"><span class="so-name">${name}</span><label class="so-toggle"><input type="checkbox" ${isOut?'':'checked'} onchange="toggleSoldOut('${name.replace(/'/g,"\\'")}',this)"><span class="so-slider"></span></label></div>`;
+    }).join('');
+}
+async function toggleSoldOut(name,cb){
+  const available=cb.checked;
+  try{
+    await api('/admin/availability',{method:'PATCH',body:JSON.stringify({itemName:name,available})});
+    if(!available) soldOutList.push(name);
+    else soldOutList=soldOutList.filter(n=>n!==name);
+    showToast(`${available?'✅ Verfügbar':'❌ Ausverkauft'}: ${name}`);
+  } catch(e){ cb.checked=!cb.checked; showToast('Fehler'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESTAURANT STATUS
+// ═══════════════════════════════════════════════════════════════
+function applyModeUI(mode,manual){
+  manualOverride=manual;
+  ['modeOnline','modeNeutral','modeGeschlossen'].forEach(id=>document.getElementById(id).className='mode-btn');
+  const map={online:'modeOnline',neutral:'modeNeutral',geschlossen:'modeGeschlossen'};
+  if(map[mode]) document.getElementById(map[mode]).className=`mode-btn active-${mode}`;
+  const b=document.getElementById('autobadge');
+  b.className=manual?'mode-auto-badge':'mode-auto-badge auto-on';
+}
+async function setMode(mode){ applyModeUI(mode,true); await api('/admin/status',{method:'PATCH',body:JSON.stringify({mode,manualOverride:true})}); showToast(`Modus: ${mode}`); }
+async function toggleAuto(){ const nm=!manualOverride; await api('/admin/status',{method:'PATCH',body:JSON.stringify({manualOverride:nm})}); await loadRestaurantStatus(); }
+async function loadRestaurantStatus(){ try{ const d=await(await api('/admin/status')).json(); applyModeUI(d.manualOverride?d.mode:(d.autoMode||'online'),d.manualOverride); }catch(e){} }
+
+function updateStripeBadge(){
+  const btn=document.getElementById('btnStripePanel');
+  if(!btn) return;
+  btn.innerHTML=stripeOrders.length>0?`💳 Stripe <span style="background:#e74c3c;color:#fff;border-radius:50%;padding:0 6px;font-size:.7rem">${stripeOrders.length}</span>`:'💳 Stripe';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PENDING MODAL
+// ═══════════════════════════════════════════════════════════════
+async function pollPending(){
+  try{
+    const r=await api('/admin/orders/pending'); const d=await r.json();
+    const pending=d.pending||[];
+    const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+    for(const o of pending){
+      if(new Date(o.createdAt)<todayStart) continue;
+      if(!knownIds.has(o._id)){
+        knownIds.add(o._id);
+        localStorage.setItem('parmaKnownIds',JSON.stringify([...knownIds]));
+        playAlarm(); showPendingModal(o); break;
+      }
+    }
+  }catch(e){}
+}
+function showPendingModal(order){
+  currentPending=order; selectedTime=null;
+  const isD=order.mode==='lieferung';
+  const addr=isD?`${order.customer?.street||''} ${order.customer?.house||''}, ${order.customer?.city||''}`:'Abholung im Lokal';
+  const items=(order.items||[]).map(i=>`<div class="il-item"><span>${i.qty}× ${cleanName(i.name)}</span><span>${fmt(i.price*i.qty)}</span></div>`).join('');
+  document.getElementById('pendingModalBody').innerHTML=`
+    <div class="pending-info">
+      <div class="pi-row"><span class="pi-label">Bestellung</span><span class="pi-val" style="color:var(--gold);font-weight:800">#${order.orderNum}</span></div>
+      <div class="pi-row"><span class="pi-label">Art</span><span class="pi-val">${isD?'🛵 Lieferung':'🏃 Abholung'}</span></div>
+      <div class="pi-row"><span class="pi-label">Kunde</span><span class="pi-val">${order.customer?.first||''} ${order.customer?.last||''}</span></div>
+      <div class="pi-row"><span class="pi-label">Telefon</span><span class="pi-val">${order.customer?.phone||'–'}</span></div>
+      <div class="pi-row"><span class="pi-label">Adresse</span><span class="pi-val">${addr}</span></div>
+      <div class="pi-row"><span class="pi-label">Zahlung</span><span class="pi-val">${order.paymentStatus==='paid'?'✅ Online bezahlt':'💵 Bei Übergabe'}</span></div>
+    </div>
+    <div class="items-list">${items}<div class="il-total"><span>Gesamt</span><span>${fmt(order.total)}</span></div></div>
+    <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;font-weight:600">⏱ Voraussichtliche Zeit:</div>
+    <div class="time-btns">
+      ${[20,30,45,60].map(m=>`<div class="time-btn" id="tbtn${m}" onclick="selectTime(${m})">${m} Min</div>`).join('')}
+    </div>
+    <button class="confirm-btn" id="confirmBtn" onclick="confirmOrder()" disabled>✅ Annehmen & E-Mail senden</button>
+    <button class="cancel-btn" onclick="toggleCancelReason()">❌ Ablehnen</button>
+    <textarea class="cancel-reason" id="cancelReasonTA" rows="2" placeholder="Stornierungsgrund…" style="display:none"></textarea>
+    <button class="cancel-btn" id="sendCancelBtn" style="display:none" onclick="cancelOrder()">Bestellung stornieren</button>`;
+  document.getElementById('pendingModal').classList.add('show');
+}
+function selectTime(m){ selectedTime=m; document.querySelectorAll('.time-btn').forEach(b=>b.classList.remove('selected')); document.getElementById('tbtn'+m)?.classList.add('selected'); document.getElementById('confirmBtn').disabled=false; }
+function toggleCancelReason(){ const ta=document.getElementById('cancelReasonTA'); const sc=document.getElementById('sendCancelBtn'); const v=ta.style.display==='none'; ta.style.display=v?'block':'none'; sc.style.display=v?'block':'none'; }
+async function confirmOrder(){
+  if(!currentPending||!selectedTime) return;
+  const btn=document.getElementById('confirmBtn'); btn.disabled=true; btn.textContent='⏳ Bestätige…';
+  await api(`/admin/orders/${currentPending._id}/confirm`,{method:'PATCH',body:JSON.stringify({estimatedMinutes:selectedTime})});
+  const o=currentPending; closePendingModal();
+  showToast(`✅ #${o.orderNum} bestätigt – ${selectedTime} Min.`);
+  smartPrint(o); await loadOrders();
+}
+async function cancelOrder(){
+  const reason=document.getElementById('cancelReasonTA')?.value||'';
+  const resp=await(await api(`/admin/orders/${currentPending._id}`,{method:'DELETE',body:JSON.stringify({cancelReason:reason})})).json();
+  const o=currentPending; closePendingModal();
+  showToast(`❌ #${o.orderNum} storniert${resp.refundStatus==='succeeded'?' · Refund':''}`);
+  await loadOrders();
+}
+function closePendingModal(){ document.getElementById('pendingModal').classList.remove('show'); currentPending=null; }
+function dismissAlert(){ document.getElementById('alertBanner').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════════
+// STRIPE MODAL
+// ═══════════════════════════════════════════════════════════════
+function openStripeModal(){
+  const listEl=document.getElementById('stripeModalList');
+  if(listEl){
+    if(!stripeOrders.length){ listEl.innerHTML='<div class="stripe-empty">✓ Keine ausstehenden Stripe-Zahlungen</div>'; }
+    else{
+      listEl.innerHTML=stripeOrders.map(o=>{
+        const isD=o.mode==='lieferung';
+        const addr=isD?`${o.customer?.street||''} ${o.customer?.house||''}, ${o.customer?.city||''}`.trim():'Abholung';
+        const itemRows=(o.items||[]).map(i=>{
+          const extras=(i.extraDetails||[]).filter(e=>e.name);
+          let h=`<div style="display:flex;justify-content:space-between;font-size:.8rem"><span>${i.qty}× ${cleanName(i.name)}</span><span>${fmt(i.price*i.qty)}</span></div>`;
+          extras.forEach(e=>{ h+=`<div style="font-size:.72rem;color:var(--muted);padding-left:14px">↳ ${e.name}</div>`; });
+          return h;
+        }).join('');
+        return `<div class="il-card">
+          <div style="background:rgba(200,138,0,.15);padding:8px 12px;display:flex;justify-content:space-between">
+            <b>#${o.orderNum} · ${o.customer?.first||''} ${o.customer?.last||''}</b>
+            <span style="font-size:.75rem;color:var(--muted)">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
+          </div>
+          <div style="padding:10px 12px;font-size:.8rem">
+            <div style="color:var(--muted);margin-bottom:6px">📍 ${addr}${o.customer?.phone?' · 📞 '+o.customer.phone:''}</div>
+            ${itemRows}
+            <div style="border-top:1px dashed var(--border);margin-top:8px;padding-top:6px;font-weight:bold;display:flex;justify-content:space-between">
+              <span>Gesamt</span><span>${fmt(o.total)}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+  document.getElementById('stripeModal').classList.add('show');
+}
+function closeStripeModal(){ document.getElementById('stripeModal').classList.remove('show'); }
+async function doRecoverStripe(){
+  const btn=document.getElementById('btnRecoverAction'); btn.disabled=true; btn.textContent='⏳ Prüfe…';
+  try{
+    const r=await api('/admin/recover-stripe-orders',{method:'POST'}); const d=await r.json();
+    showToast(d.recovered?.length?`✅ ${d.recovered.length} eingebucht`:'⚠️ Keine neuen Zahlungen');
+    await loadOrders(); closeStripeModal();
+  }catch(e){ showToast('❌ Fehler'); }
+  finally{ btn.disabled=false; btn.textContent='🔁 Bei Stripe prüfen & einbuchen'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POS
+// ═══════════════════════════════════════════════════════════════
+function openPOS(){
+  posCart=[]; posMode='lieferung'; posCategory='Pizza';
+  document.getElementById('posFirst').value=''; document.getElementById('posLast').value='';
+  document.getElementById('posPhone').value=''; document.getElementById('posStreet').value='';
+  document.getElementById('posHouse').value=''; document.getElementById('posCity').value='Hamm';
+  document.getElementById('posSearch').value='';
+  const cats=Object.keys(POS_MENU);
+  document.getElementById('posCatTabs').innerHTML=cats.map(c=>`<div class="pos-cat${c===posCategory?' active':''}" onclick="setPOSCat('${c}',this)">${c}</div>`).join('');
+  renderPOSItems(); renderPOSCart(); renderPOSTotals();
+  document.getElementById('posModal').classList.add('show');
+}
+function closePOS(){ document.getElementById('posModal').classList.remove('show'); }
+function setPOSMode(m){
+  posMode=m;
+  document.getElementById('posBtnLief').className='pos-mode-btn'+(m==='lieferung'?' active':'');
+  document.getElementById('posBtnAbh').className='pos-mode-btn'+(m==='abholung'?' active':'');
+  document.getElementById('posAddrFields').style.display=m==='lieferung'?'block':'none';
+  renderPOSTotals();
+}
+function setPOSCat(c,el){ posCategory=c; document.querySelectorAll('.pos-cat').forEach(x=>x.classList.remove('active')); el.classList.add('active'); renderPOSItems(); }
+function renderPOSItems(){
+  const q=document.getElementById('posSearch').value.toLowerCase();
+  let items=q?Object.values(POS_MENU).flat().filter(i=>i.name.toLowerCase().includes(q)||String(i.num).includes(q)):(POS_MENU[posCategory]||[]);
+  document.getElementById('posMenu').innerHTML=items.map(i=>`<div class="pos-item" onclick="addToCart('${i.num}','${i.name.replace(/'/g,"\\'")}',${i.price})"><span class="pos-item-num">${i.num}</span><span class="pos-item-name">${i.name}</span><span class="pos-item-price">${i.price.toFixed(2).replace('.',',')} €</span><button class="pos-add">+</button></div>`).join('');
+}
+function addToCart(num,name,price,note=''){
+  const idx=posCart.findIndex(i=>i.num===num&&i.note===note);
+  if(idx>=0) posCart[idx].qty++;
+  else posCart.push({num,name,price,qty:1,note});
+  renderPOSCart(); renderPOSTotals();
+}
+function renderPOSCart(){
+  const el=document.getElementById('posCartItems');
+  if(!posCart.length){el.innerHTML='<div class="pos-cart-empty">Leer</div>';return;}
+  el.innerHTML=posCart.map((i,idx)=>`<div class="pos-cart-item"><span class="pci-qty">${i.qty}×</span><span class="pci-name">${i.name}</span><span class="pci-price">${(i.price*i.qty).toFixed(2).replace('.',',')} €</span><button onclick="removeFromCart(${idx})">–</button></div>`).join('');
+}
+function removeFromCart(idx){ posCart[idx].qty--; if(posCart[idx].qty<=0) posCart.splice(idx,1); renderPOSCart(); renderPOSTotals(); }
+function renderPOSTotals(){
+  const sub=posCart.reduce((s,i)=>s+i.price*i.qty,0);
+  const city=document.getElementById('posCity')?.value||'Hamm';
+  const fee=posMode==='lieferung'?(DELIVERY_FEES[city]||0):0;
+  const total=sub+fee+SERVICE_FEE;
+  document.getElementById('posTotals').innerHTML=`<div class="pos-total-row"><span>Speisen</span><span>${sub.toFixed(2).replace('.',',')} €</span></div>${fee>0?`<div class="pos-total-row"><span>Liefergebühr</span><span>${fee.toFixed(2).replace('.',',')} €</span></div>`:''}<div class="pos-total-row"><span>Servicegebühr</span><span>${SERVICE_FEE.toFixed(2).replace('.',',')} €</span></div><div class="pos-total-row grand"><span>Gesamt</span><span>${total.toFixed(2).replace('.',',')} €</span></div>`;
+}
+async function submitPOS(){
+  if(!posCart.length){showToast('⚠️ Warenkorb leer');return;}
+  const first=document.getElementById('posFirst').value.trim();
+  const last=document.getElementById('posLast').value.trim();
+  if(!first||!last){showToast('⚠️ Name fehlt');return;}
+  const sub=posCart.reduce((s,i)=>s+i.price*i.qty,0);
+  const city=document.getElementById('posCity')?.value||'Hamm';
+  const fee=posMode==='lieferung'?(DELIVERY_FEES[city]||0):0;
+  const total=sub+fee+SERVICE_FEE;
+  const payload={
+    mode:posMode,source:'pos',
+    payment:document.getElementById('posPayment').value,
+    paymentStatus:'paid',
+    customer:{first,last,email:'',phone:document.getElementById('posPhone').value.trim(),
+              city:posMode==='lieferung'?city:'',
+              street:posMode==='lieferung'?document.getElementById('posStreet').value.trim():'',
+              house:posMode==='lieferung'?document.getElementById('posHouse').value.trim():''},
+    items:posCart.map(i=>({name:i.name,price:i.price,qty:i.qty,note:i.note||'',extraDetails:[]})),
+    subtotal:sub,deliveryFee:fee,serviceFee:SERVICE_FEE,total,prepTime:20,
+  };
+  const btn=document.getElementById('posSubmitBtn'); btn.disabled=true; btn.textContent='⏳ Speichere…';
+  try{
+    const r=await api('/orders',{method:'POST',body:JSON.stringify(payload)}); const d=await r.json();
+    closePOS(); showToast(`✅ Bestellung #${d.orderNum} gespeichert`);
+    await loadOrders();
+    const saved=allOrders.find(o=>o.orderNum===d.orderNum)||{...payload,orderNum:d.orderNum,createdAt:new Date().toISOString()};
+    smartPrint(saved);
+  }catch(e){ showToast('❌ Fehler'); btn.disabled=false; btn.textContent='✅ Speichern & Drucken'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DRUCK
+// ═══════════════════════════════════════════════════════════════
+const RAWBT_URL='http://127.0.0.1:19100';
+function getEposUrl(){ const ip=localStorage.getItem('epos_ip')||'192.168.2.174'; return `http://${ip}/cgi-bin/epos/service.cgi?devid=local_printer&timeout=10000`; }
+function xmlEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function eposPrint(order){
+  const isD=order.mode==='lieferung';
+  const time=new Date(order.createdAt).toLocaleString('de-DE');
+  const x=(t,attr='')=>`<text${attr}>${xmlEsc(t)}&#10;</text>`;
+  const div=()=>`<text>--------------------------------&#10;</text>`;
+  let body='';
+  body+=`<text align="center" dh="true" dw="true" em="true">Pizzeria Parma&#10;</text>`;
+  body+=`<text align="center">Bahnhofstr. 37 · 59065 Hamm&#10;</text>`;
+  body+=`<text align="center">(02381) 94 107 02&#10;</text>`;
+  body+=div();
+  body+=`<text align="center" dh="true" dw="true" em="true">#${order.orderNum}&#10;</text>`;
+  body+=`<text align="center">${xmlEsc(time)}&#10;</text>`;
+  body+=`<text align="center" em="true">${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}&#10;</text>`;
+  body+=div();
+  body+=x(`${order.customer?.first||''} ${order.customer?.last||''}`);
+  if(order.customer?.phone) body+=x(order.customer.phone);
+  if(isD){ body+=x(`${order.customer?.street||''} ${order.customer?.house||''}`); body+=x(order.customer?.city||''); }
+  body+=div();
+  for(const i of(order.items||[])){
+    const lbl=`${i.qty}x ${cleanName(i.name)}`.substring(0,24).padEnd(24);
+    const prc=i.price===0?'   GRATIS':`${(i.price*i.qty).toFixed(2)} EUR`;
+    body+=`<text em="true">${xmlEsc(lbl+prc.padStart(9))}&#10;</text>`;
+    (i.extraDetails||[]).forEach(e=>{ if(e.name) body+=x(`  ${e.name}`); });
+  }
+  body+=div();
+  const pad=v=>String(v).padStart(14);
+  body+=x(`Zwischensumme:  ${pad((order.subtotal||0).toFixed(2)+' EUR')}`);
+  if((order.deliveryFee||0)>0) body+=x(`Liefergebuehr:  ${pad(order.deliveryFee.toFixed(2)+' EUR')}`);
+  body+=x(`Servicegebuehr: ${pad((order.serviceFee||0.99).toFixed(2)+' EUR')}`);
+  body+=`<text em="true">GESAMT:         ${xmlEsc(pad((order.total||0).toFixed(2)+' EUR'))}&#10;</text>`;
+  body+=div();
+  const zahl=order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
+  body+=x(`Zahlung: ${zahl}`);
+  body+=x(order.paymentStatus==='paid'?'BEZAHLT':'!!! BITTE KASSIEREN !!!');
+  if(order.note) body+=`<text em="true">${xmlEsc('Anm.: '+order.note)}&#10;</text>`;
+  body+=`<feed line="3"/><cut type="feed"/>`;
+  const xml=`<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">${body}</epos-print></s:Body></s:Envelope>`;
+  try{ await fetch(getEposUrl(),{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:xml,signal:AbortSignal.timeout(6000)}); eposConnected=true; updatePrinterStatus(); return true; }
+  catch(e){ eposConnected=false; updatePrinterStatus(); return false; }
+}
+async function checkEpos(){
+  try{ await fetch(getEposUrl(),{method:'POST',headers:{'Content-Type':'text/xml;charset=utf-8','SOAPAction':'""'},body:`<?xml version="1.0" encoding="utf-8"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print"></epos-print></s:Body></s:Envelope>`,signal:AbortSignal.timeout(3000)}); eposConnected=true; }
+  catch(e){ eposConnected=false; }
+  updatePrinterStatus();
+}
+function buildBonText(order){
+  const isD=order.mode==='lieferung';
+  const sep='--------------------------------';
+  let txt='';
+  txt+='Pizzeria Parma\n';
+  txt+='Bahnhofstr. 37 · 59065 Hamm\n';
+  txt+='(02381) 94 107 02\n';
+  txt+=sep+'\n';
+  txt+=`BESTELLUNG #${order.orderNum}\n`;
+  txt+=new Date(order.createdAt).toLocaleString('de-DE')+'\n';
+  txt+=(isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***')+'\n';
+  txt+=sep+'\n';
+  txt+=`${order.customer?.first||''} ${order.customer?.last||''}\n`;
+  if(order.customer?.phone) txt+=order.customer.phone+'\n';
+  if(isD){ txt+=`${order.customer?.street||''} ${order.customer?.house||''}\n`; txt+=(order.customer?.city||'')+'\n'; }
+  txt+=sep+'\n';
+  for(const i of(order.items||[])){
+    const name=cleanName(i.name).slice(0,22);
+    const prc=i.price===0?'GRATIS':`${(i.price*i.qty).toFixed(2)} EUR`;
+    txt+=`${i.qty}x ${name.padEnd(22)} ${prc}\n`;
+    (i.extraDetails||[]).forEach(e=>{ if(e.name) txt+=`  ${e.name}\n`; });
+  }
+  txt+=sep+'\n';
+  txt+=`Zwischensumme:     ${(order.subtotal||0).toFixed(2)} EUR\n`;
+  if((order.deliveryFee||0)>0) txt+=`Liefergebuehr:     ${order.deliveryFee.toFixed(2)} EUR\n`;
+  txt+=`Servicegebuehr:    ${(order.serviceFee||0.99).toFixed(2)} EUR\n`;
+  txt+=sep+'\n';
+  txt+=`GESAMT:            ${(order.total||0).toFixed(2)} EUR\n`;
+  txt+=sep+'\n';
+  txt+=`Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}\n`;
+  txt+=(order.paymentStatus==='paid'?'BEZAHLT':'!!! BITTE KASSIEREN !!!')+'\n';
+  if(order.note) txt+=`Notiz: ${order.note}\n`;
+  txt+=sep+'\nVielen Dank!\n\n\n';
+  return txt;
+}
+async function rawbtPrint(order){
+  const txt=buildBonText(order);
+  try{ const res=await fetch('http://127.0.0.1:19100/rawbt',{method:'POST',body:new TextEncoder().encode(txt),headers:{'Content-Type':'application/octet-stream'},signal:AbortSignal.timeout(4000)}); if(res.ok||res.status<500){rawbtConnected=true;updatePrinterStatus();return true;} }catch(e){}
+  if(window.fully){ try{ window.fully.loadURL('rawbt:print?text='+encodeURIComponent(txt)); setTimeout(()=>window.fully.loadURL(window.location.href),2500); rawbtConnected=true;updatePrinterStatus();return true; }catch(e){} }
+  try{ const a=document.createElement('a'); a.href='rawbt:print?text='+encodeURIComponent(txt); a.style.display='none'; document.body.appendChild(a); a.click(); setTimeout(()=>{ try{document.body.removeChild(a);}catch(e){} },1000); rawbtConnected=true;updatePrinterStatus();return true; }catch(e){}
+  rawbtConnected=false; updatePrinterStatus(); return false;
+}
+async function smartPrint(order){ const ok=await eposPrint(order); if(ok)return; await rawbtPrint(order); }
+async function printOrder(e,id){ if(e&&e.stopPropagation)e.stopPropagation(); const o=allOrders.find(x=>x._id===id); if(o) await smartPrint(o); fetch(`${API_BASE}/admin/orders/${id}/print`,{method:'POST',headers:apiHeaders()}).catch(()=>{}); }
+async function checkRawbt(){
+  try{ await fetch(RAWBT_URL,{method:'POST',body:new Uint8Array([0]),signal:AbortSignal.timeout(2000)}); rawbtConnected=true; }
+  catch(e){ rawbtConnected=e.message?.includes('NetworkError')||e.name==='TypeError'?false:true; }
+  updatePrinterStatus();
+}
+function updatePrinterStatus(){
+  const el=document.getElementById('printerStatus');
+  if(!el) return;
+  if(eposConnected){el.textContent='🖨️ Epson OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else if(rawbtConnected){el.textContent='🖨️ RawBT OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else if(window.fully){el.textContent='🖨️ Fully OK';el.style.color='var(--green)';el.style.borderColor='var(--green)';}
+  else{el.textContent='🖨️ Getrennt';el.style.color='var(--red)';el.style.borderColor='var(--red)';}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BON HTML + MODAL
+// ═══════════════════════════════════════════════════════════════
+function buildBonHtml(order){
+  const isD=order.mode==='lieferung';
+  const rows=(order.items||[]).map(i=>{
+    const baseName=cleanName(i.name);
+    const prc=i.price===0?'GRATIS':(i.price*i.qty).toFixed(2).replace('.',',')+' €';
+    const extras=i.extraDetails||[];
+    const ln=!extras.length&&i.note?i.note:'';
+    let html=`<tr><td style="vertical-align:top;padding-right:4px">${i.qty}×</td><td style="vertical-align:top">${baseName}${ln?' ('+ln+')':''}</td><td style="text-align:right;vertical-align:top;white-space:nowrap">${prc}</td></tr>`;
+    extras.forEach(e=>{ if(e.name) html+=`<tr style="font-size:11px;color:#555"><td></td><td style="padding-left:10px" colspan="2">↳ ${e.name}</td></tr>`; });
+    return html;
+  }).join('');
+  return `<div style="font-family:monospace;font-size:12px;max-width:320px;margin:0 auto;padding:10px;background:white;color:black">
+  <h2 style="text-align:center;margin-bottom:4px">Pizzeria Parma</h2>
+  <p style="text-align:center;margin:2px 0">Bahnhofstr. 37 · 59065 Hamm</p>
+  <p style="text-align:center;margin:2px 0">(02381) 94 107 02</p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0">
+  <h3 style="text-align:center">BESTELLUNG #${order.orderNum}</h3>
+  <p style="text-align:center;margin:2px 0">${new Date(order.createdAt).toLocaleString('de-DE')}</p>
+  <p style="text-align:center;margin:2px 0"><strong>${isD?'*** LIEFERUNG ***':'*** ABHOLUNG ***'}</strong></p>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0">
+  <p style="text-align:center;font-size:15px;font-weight:bold;margin:4px 0">${order.customer?.first||''} ${order.customer?.last||''}</p>
+  <p style="text-align:center;margin:2px 0">${order.customer?.phone||''}</p>
+  ${order.customer?.street?`<p style="text-align:center;font-size:14px;font-weight:bold;margin:6px 0;padding:4px;border:2px solid #000">${order.customer.street} ${order.customer.house||''}<br>${order.customer.city||''}</p>`:''}
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0">
+  <table style="width:100%;border-collapse:collapse">${rows}</table>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0">
+  <table style="width:100%;border-collapse:collapse">
+    <tr><td>Zwischensumme</td><td style="text-align:right">${(order.subtotal||0).toFixed(2).replace('.',',')} €</td></tr>
+    ${order.deliveryFee>0?`<tr><td>Liefergebühr</td><td style="text-align:right">${order.deliveryFee.toFixed(2).replace('.',',')} €</td></tr>`:''}
+    <tr><td>Servicegebühr</td><td style="text-align:right">${(order.serviceFee||0.99).toFixed(2).replace('.',',')} €</td></tr>
+    <tr style="font-weight:bold;font-size:14px;border-top:1px solid #000"><td>GESAMT</td><td style="text-align:right">${(order.total||0).toFixed(2).replace('.',',')} €</td></tr>
+  </table>
+  <hr style="border:none;border-top:1px dashed #000;margin:8px 0">
+  <p style="text-align:center;margin:2px 0">Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
+  <p style="text-align:center;margin:2px 0">${order.paymentStatus==='paid'?'✅ BEZAHLT':'!!! BITTE KASSIEREN !!!'}</p>
+  <p style="text-align:center;margin:2px 0">Vielen Dank!</p>
+  ${order.note?`<hr style="border:none;border-top:1px dashed #000;margin:8px 0"><p style="font-weight:bold">📝 ${order.note}</p>`:''}
+  </div>`;
+}
+function showBonModal(e,id){
+  if(e&&e.stopPropagation)e.stopPropagation();
+  const o=allOrders.find(x=>x._id===id); if(!o)return;
+  bonModalOrder=o;
+  document.getElementById('bonContent').innerHTML=buildBonHtml(o);
+  document.getElementById('bonModal').style.display='flex';
+}
+function closeBonModal(){ document.getElementById('bonModal').style.display='none'; bonModalOrder=null; }
+function bonModalPrint(){ if(bonModalOrder) smartPrint(bonModalOrder); }
+function bonModalPDF(){
+  if(!bonModalOrder)return;
+  const w=window.open('','_blank','width=420,height=700');
+  w.document.write(`<!DOCTYPE html><html><head><title>Bon #${bonModalOrder.orderNum}</title><style>@page{size:80mm auto;margin:0}body{margin:0;padding:0}</style></head><body>${buildBonHtml(bonModalOrder)}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),400);
+}
+document.getElementById('bonModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBonModal();});
+
+// ═══════════════════════════════════════════════════════════════
+// TAGESABSCHLUSS
+// ═══════════════════════════════════════════════════════════════
+async function printDayReport(){
+  const dv=document.getElementById('reportDate').value||new Date().toISOString().slice(0,10);
+  const label=new Date(dv+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+  let dayOrders=[];
+  try{
+    const r=await fetch(`${API_BASE}/admin/orders?date=${dv}`,{headers:apiHeaders()});
+    const d=await r.json();
+    dayOrders=(d.orders||[]).filter(o=>o.status!=='cancelled');
+  }catch(e){
+    const from=new Date(dv+'T00:00:00'),to=new Date(dv+'T23:59:59');
+    dayOrders=allOrders.filter(o=>{const t=new Date(o.createdAt);return t>=from&&t<=to&&o.status!=='cancelled';});
+  }
+  const total=dayOrders.reduce((s,o)=>s+(o.total||0),0);
+  const nBar=dayOrders.filter(o=>o.payment==='bar').length;
+  const nCard=dayOrders.filter(o=>o.payment!=='bar').length;
+  const nDel=dayOrders.filter(o=>o.mode==='lieferung').length;
+  const nPick=dayOrders.filter(o=>o.mode==='abholung').length;
+  const w=window.open('','_blank','width=520,height=750');
+  w.document.write(`<!DOCTYPE html><html><head><title>Tagesabschluss ${label}</title><style>body{font-family:monospace;font-size:12px;max-width:400px;margin:0 auto;padding:16px}h2,h3{text-align:center}hr{border:none;border-top:1px dashed #000;margin:8px 0}table{width:100%;border-collapse:collapse}td,th{padding:3px 4px}.sum{font-weight:bold}</style></head><body>
+  <h2>Pizzeria Parma</h2><h3>Tagesabschluss</h3><p style="text-align:center;margin:0 0 6px">${label}</p><hr>
+  <table>
+    <tr><td>Bestellungen gesamt</td><td align="right"><b>${dayOrders.length}</b></td></tr>
+    <tr><td>&nbsp;&nbsp;Lieferung</td><td align="right">${nDel}</td></tr>
+    <tr><td>&nbsp;&nbsp;Abholung</td><td align="right">${nPick}</td></tr>
+    <tr><td>&nbsp;&nbsp;Barzahlung</td><td align="right">${nBar}</td></tr>
+    <tr><td>&nbsp;&nbsp;Karte/Online</td><td align="right">${nCard}</td></tr>
+  </table><hr>
+  <table>
+    <tr><th align="left">Nr</th><th align="left">Zeit</th><th align="left">Kunde</th><th align="left">Art</th><th align="right">Betrag</th></tr>
+    ${dayOrders.map(o=>`<tr><td>#${o.orderNum}</td><td>${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</td><td>${o.customer?.first||''} ${o.customer?.last||''}</td><td>${o.mode==='lieferung'?'Lief.':'Abh.'}</td><td align="right">${(o.total||0).toFixed(2).replace('.',',')} €</td></tr>`).join('')}
+  </table><hr>
+  <table><tr class="sum"><td>GESAMTUMSATZ</td><td align="right">${total.toFixed(2).replace('.',',')} €</td></tr></table><hr>
+  <p style="text-align:center;font-size:11px">Gedruckt: ${new Date().toLocaleString('de-DE')}</p>
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ALARM
+// ═══════════════════════════════════════════════════════════════
+function playAlarm(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[880,0],[1100,.2],[880,.4],[1100,.6]].forEach(([f,t])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);o.type='square';o.frequency.value=f;
+      g.gain.setValueAtTime(.3,ctx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.15);
+      o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.2);
+    });
+  }catch(e){}
+  let b=false;
+  const iv=setInterval(()=>{document.title=b?'🔴 NEUE BESTELLUNG!':'🍕 Pizzeria Parma';b=!b;},700);
+  setTimeout(()=>{clearInterval(iv);document.title='🍕 Pizzeria Parma Dashboard';},15000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+function showToast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),dur);
+}
+</script>
+</body>
+</html>

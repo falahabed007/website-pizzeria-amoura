@@ -1,0 +1,11 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: 🍕 Amoura
+    - generic [ref=e5]: Admin Dashboard · Pizzeria Amoura
+    - textbox "Passwort" [ref=e6]
+    - generic [ref=e7] [cursor=pointer]:
+      - checkbox "Passwort auf diesem Gerät merken" [ref=e8]
+      - text: Passwort auf diesem Gerät merken
+    - button "Einloggen" [ref=e9] [cursor=pointer]
+  - button "➕ Neue Bestellung" [ref=e10] [cursor=pointer]
+  - button "🧪 Test-Bestellung" [ref=e11] [cursor=pointer]
