@@ -1875,7 +1875,11 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       });
     }
     console.log(`📅 Monatsbericht ${monat} manuell versendet (${orders.length} Bestellungen)`);
-    res.json({ success: true, monat, orders: orders.length, rechnungNr });
+    res.json({
+      success: true, monat, orders: orders.length, rechnungNr,
+      monatsPdfBase64: monatsPdf.toString('base64'),
+      rechnungPdfBase64: monatRechnungPdf.toString('base64'),
+    });
   } catch(e) {
     console.error('Monatsbericht manuell Fehler:', e);
     res.status(500).json({ message: e.message });
