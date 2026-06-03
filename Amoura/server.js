@@ -1035,9 +1035,6 @@ function calcAutoMode() {
   // Wochentag berechnen (0=So, 1=Mo, ..., 6=Sa)
   const wd = new Date(year, mon - 1, day).getDay();
 
-  // Dienstag = Ruhetag
-  if (wd === 2) return 'geschlossen';
-
   // Samstag: 17:00–22:00
   if (wd === 6) {
     return (mins >= 17*60 && mins < 22*60) ? 'online' : 'geschlossen';
