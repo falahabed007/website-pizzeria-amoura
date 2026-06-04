@@ -853,6 +853,138 @@
 
     <div class="main-container">
 
+<style>
+/* ===== MITTAGSANGEBOTE ===== */
+.mittag-banner {
+  background: #fff8f0;
+  border: 2px solid #d4a76a;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 0 0 24px 0;
+  width: 100%;
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+}
+.mittag-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.mittag-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #8b1d1d;
+}
+.mittag-badge {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+.mittag-badge-active { background: #d4edda; color: #155724; }
+.mittag-badge-inactive { background: #e9ecef; color: #6c757d; }
+.mittag-subtitle { margin: 2px 0 14px 0; color: #666; font-size: 0.85rem; }
+.amcard-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.amcard {
+  background: white;
+  border: 1px solid #e0c9a6;
+  border-radius: 12px;
+  padding: 12px 14px;
+  flex: 1 1 120px;
+  max-width: 170px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.amcard-num { font-weight: bold; color: #8b1d1d; font-size: 0.9rem; }
+.amcard-price { font-size: 1.15rem; font-weight: bold; color: #333; margin: 2px 0 4px 0; }
+.amcard-desc { font-size: 0.75rem; color: #666; line-height: 1.4; }
+.menue-btn {
+  display: none;
+  background: #8b1d1d;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 4px;
+  margin-right: 3px;
+}
+.menue-btn.visible { display: inline-block; }
+.menue-btn:hover { background: #6d1616; }
+/* Menue Getränk Modal */
+.menue-drink-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.82);
+  z-index: 999999;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Arial', sans-serif;
+}
+.menue-drink-card {
+  background: white;
+  width: 90%;
+  max-width: 380px;
+  border-radius: 16px;
+  padding: 25px;
+  position: relative;
+}
+.menue-drink-option {
+  display: flex;
+  align-items: center;
+  padding: 11px 14px;
+  border: 1.5px solid #eee;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.menue-drink-option:hover { border-color: #8b1d1d; background: #fff7f7; }
+.menue-drink-option.selected { border-color: #8b1d1d; background: #fff0f0; }
+.menue-drink-option input[type="radio"] { margin-right: 10px; accent-color: #8b1d1d; width:16px; height:16px; }
+</style>
+
+<!-- Mittagsangebote Banner -->
+<div id="mittag-banner" class="mittag-banner">
+  <div class="mittag-banner-header">
+    <span class="mittag-title">🕐 Mittagsangebote</span>
+    <span id="mittag-status-badge" class="mittag-badge mittag-badge-inactive">Mo–Fr 11:30–14:00 Uhr</span>
+  </div>
+  <p class="mittag-subtitle">Täglich Mo–Fr von 11:30 bis 14:00 Uhr verfügbar</p>
+  <div class="amcard-grid">
+    <div class="amcard">
+      <div class="amcard-num">Menü 1</div>
+      <div class="amcard-price">10,00 €</div>
+      <div class="amcard-desc">Pizza 1–66 (28cm)<br>+ kl. Salat + 0,3l</div>
+    </div>
+    <div class="amcard">
+      <div class="amcard-num">Menü 2</div>
+      <div class="amcard-price">10,00 €</div>
+      <div class="amcard-desc">Nudelgerichte 80–144<br>+ Pizzabrötchen + 0,3l</div>
+    </div>
+    <div class="amcard">
+      <div class="amcard-num">Menü 3</div>
+      <div class="amcard-price">10,00 €</div>
+      <div class="amcard-desc">Salate 150–170<br>+ Pizzabrötchen + 0,3l</div>
+    </div>
+    <div class="amcard">
+      <div class="amcard-num">Menü 4</div>
+      <div class="amcard-price">12,00 €</div>
+      <div class="amcard-desc">Hähnchengeschnetzeltes 128–132<br>+ kl. Salat + 0,3l</div>
+    </div>
+    <div class="amcard">
+      <div class="amcard-num">Menü 5</div>
+      <div class="amcard-price">8,50 €</div>
+      <div class="amcard-desc">Pizza 1–66 (22cm)<br>+ kl. Salat + 0,3l</div>
+    </div>
+  </div>
+</div>
+
     <div class="search-no-results" id="searchNoResults">
       <i class="fas fa-search"></i>
       Kein Gericht gefunden. Versuche eine andere Suche.
@@ -2227,10 +2359,11 @@ function toggleMobileMenu() {
         <div style="font-weight:bold; font-size:14px; margin-bottom:5px;">Zahlungsmethode:</div>
         <select id="c-zahlung" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px; background: #fff; cursor:pointer;" onchange="togglePaymentLogos()">
             <option value="stripe">💳 Online bezahlen (Stripe)</option>
+            <option value="paypal">💙 PayPal</option>
             <option value="bar">Barzahlung bei Übergabe</option>
         </select>
 
-        <!-- Payment Logos (nur bei Stripe sichtbar) -->
+        <!-- Payment Logos (Stripe) -->
         <div id="paymentLogos" style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:16px;padding:8px 10px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
           <span style="display:inline-flex;align-items:center;justify-content:center;background:#1a1f71;color:#fff;font-size:.7rem;font-weight:900;font-family:Arial;border-radius:4px;padding:3px 7px;letter-spacing:.5px;">VISA</span>
           <svg width="34" height="22" viewBox="0 0 34 22" xmlns="http://www.w3.org/2000/svg" style="border-radius:4px;display:block;"><rect width="34" height="22" fill="#1a1a1a" rx="4"/><circle cx="13" cy="11" r="7" fill="#eb001b"/><circle cx="21" cy="11" r="7" fill="#f79e1b"/><path d="M17 5.2a7 7 0 0 1 0 11.6A7 7 0 0 1 17 5.2z" fill="#ff5f00"/></svg>
@@ -2239,6 +2372,12 @@ function toggleMobileMenu() {
           <span style="display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dadce0;font-size:.7rem;font-weight:500;font-family:Arial;border-radius:4px;padding:3px 7px;color:#3c4043;gap:1px;"><span style="color:#4285f4;font-weight:700;">G</span>Pay</span>
           <span style="display:inline-flex;align-items:center;justify-content:center;background:#ffb3c7;color:#000;font-size:.7rem;font-weight:700;font-family:Arial;border-radius:4px;padding:3px 7px;">Klarna</span>
           <span style="font-size:.65rem;color:#999;">& mehr</span>
+        </div>
+
+        <!-- Payment Logos (PayPal) -->
+        <div id="paymentLogosPaypal" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:#f0f8ff;border-radius:8px;border:1px solid #c5dff8;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="22" viewBox="0 0 124 33"><path fill="#009cde" d="M46.2 13.8c-.4 2.7-2.6 2.7-4.7 2.7h-1.2l.8-5.3h.7c1.4 0 2.8 0 3.5.8.4.5.5 1.2.4 1.8m-.9-7.4h-6.8l-3 19.3h4l.8-5.2h2.1c4.5 0 7.1-2.2 7.8-6.5.3-1.9 0-3.4-.9-4.4-.9-1-2.5-1.2-4-1.2"/><path fill="#003087" d="M14.2 13.8c-.4 2.7-2.6 2.7-4.7 2.7H8.3l.8-5.3H10c1.4 0 2.8 0 3.5.8.4.5.5 1.2.4 1.8m-.9-7.4H6.5l-3 19.3h4l.8-5.2h2.1c4.5 0 7.1-2.2 7.8-6.5.3-1.9 0-3.4-.9-4.4-.9-1-2.5-1.2-4-1.2"/><path fill="#003087" d="M28.3 19.4c-.4 2.2-2.2 3.7-4.4 3.7-1.1 0-2-.4-2.6-1.1-.5-.7-.7-1.7-.5-2.8.4-2.2 2.2-3.7 4.4-3.7 1.1 0 2 .4 2.6 1.1.5.8.7 1.8.5 2.8m5.4-7.3h-4l-.1.7c-.8-1.1-2.3-1.5-3.9-1.5-3.7 0-6.9 2.8-7.5 6.7-.3 2 .1 3.8 1.2 5.1 1 1.2 2.4 1.7 4.2 1.7 1.6 0 3.1-.5 4.2-1.5l-.1.7h4l2-12"/><path fill="#009cde" d="M60.4 19.4c-.4 2.2-2.2 3.7-4.4 3.7-1.1 0-2-.4-2.6-1.1-.5-.7-.7-1.7-.5-2.8.4-2.2 2.2-3.7 4.4-3.7 1.1 0 2 .4 2.6 1.1.5.8.7 1.8.5 2.8m5.4-7.3h-4l-.1.7c-.8-1.1-2.3-1.5-3.9-1.5-3.7 0-6.9 2.8-7.5 6.7-.3 2 .1 3.8 1.2 5.1 1 1.2 2.4 1.7 4.2 1.7 1.6 0 3.1-.5 4.2-1.5l-.1.7h4l2-12"/><path fill="#003087" d="M84.7 12.1h-4l-2.3 6-2.6-6h-4.2l4.6 9.8-2.6 4.3h4.2l6.9-14.1"/></svg>
+          <span style="font-size:.75rem;color:#003087;font-weight:600;">Sicher bezahlen mit PayPal</span>
         </div>
 
         <!-- ── GUTSCHEINCODE ── -->
@@ -2299,8 +2438,10 @@ function toggleMobileMenu() {
 function togglePaymentLogos() {
   var zahlung = document.getElementById('c-zahlung');
   var logos   = document.getElementById('paymentLogos');
-  if (!logos || !zahlung) return;
-  logos.style.display = zahlung.value === 'stripe' ? 'flex' : 'none';
+  var logospp = document.getElementById('paymentLogosPaypal');
+  if (!zahlung) return;
+  if (logos)   logos.style.display   = zahlung.value === 'stripe'  ? 'flex' : 'none';
+  if (logospp) logospp.style.display = zahlung.value === 'paypal'  ? 'flex' : 'none';
 }
 
 function updateBestellBtn() {
@@ -2557,22 +2698,21 @@ async function processOrder() {
         subtotal: summeWaren,
         fee: fee,
         total: finalTotal,
-        payment: zahlung === 'bar' ? 'bar' : 'stripe'
+        payment: zahlung === 'bar' ? 'bar' : zahlung
     };
 
-    if (zahlung === 'stripe') {
-        // Kein AmouraDB.addOrder() hier – create-stripe-checkout speichert die Bestellung selbst
-
+    // ── Hilfsfunktion für Online-Zahlungs-Redirect (Stripe & PayPal) ──
+    async function redirectToOnlinePayment(endpoint, btnLabel) {
         const btn = document.querySelector('[onclick="processOrder()"]');
-        if (btn) { btn.disabled = true; btn.textContent = '⏳ Weiterleitung zu Stripe...'; }
+        if (btn) { btn.disabled = true; btn.textContent = btnLabel; }
 
         try {
-            const stadtKey = currentSelection === 'delivery' ? document.getElementById('c-stadt').value : null;
-            const strasse  = currentSelection === 'delivery' ? document.getElementById('c-strasse').value.trim() : '';
-            const hausnr   = currentSelection === 'delivery' ? document.getElementById('c-hausnummer').value.trim() : '';
+            const stadtKey  = currentSelection === 'delivery' ? document.getElementById('c-stadt').value : null;
+            const strasse   = currentSelection === 'delivery' ? document.getElementById('c-strasse').value.trim() : '';
+            const hausnr    = currentSelection === 'delivery' ? document.getElementById('c-hausnummer').value.trim() : '';
             const cityLabel = stadtKey && AREA_CONFIG[stadtKey] ? AREA_CONFIG[stadtKey].label : '';
 
-            const response = await fetch(`${BACKEND_URL}/api/create-stripe-checkout`, {
+            const response = await fetch(`${BACKEND_URL}${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -2604,15 +2744,24 @@ async function processOrder() {
 
             const data = await response.json();
             if (data.url) {
-                window.location.href = data.url; // orderNum kommt via success_url vom Backend
+                window.location.href = data.url;
             } else {
-                alert('Fehler beim Erstellen der Zahlung: ' + (data.error || 'Unbekannter Fehler'));
-                if (btn) { btn.disabled = false; btn.textContent = 'Kostenpflichtig bestellen'; }
+                alert('Fehler beim Erstellen der Zahlung: ' + (data.error || data.message || 'Unbekannter Fehler'));
+                if (btn) { btn.disabled = false; btn.textContent = '✅ Kostenpflichtig bestellen'; }
             }
         } catch(err) {
             alert('Verbindung zum Zahlungsserver fehlgeschlagen. Bitte versuche es erneut.');
-            if (btn) { btn.disabled = false; btn.textContent = 'Kostenpflichtig bestellen'; }
+            if (btn) { btn.disabled = false; btn.textContent = '✅ Kostenpflichtig bestellen'; }
         }
+    }
+
+    if (zahlung === 'stripe') {
+        await redirectToOnlinePayment('/api/create-stripe-checkout', '⏳ Weiterleitung zu Stripe...');
+        return;
+    }
+
+    if (zahlung === 'paypal') {
+        await redirectToOnlinePayment('/api/create-paypal-order', '⏳ Weiterleitung zu PayPal...');
         return;
     }
 
@@ -2661,9 +2810,36 @@ function showDankeModal(orderId) {
 // Zahlung erfolgreich erkennen (Stripe & PayPal Rückleitung)
 window.addEventListener('load', async () => {
     const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('orderId');
-    const orderNum = params.get('order');
-    const sessionId = params.get('session_id');
+    const orderId    = params.get('orderId');
+    const orderNum   = params.get('order');
+    const sessionId  = params.get('session_id');
+    const ppCapture  = params.get('paypal_capture');
+    const ppToken    = params.get('token'); // PayPal Order ID
+
+    // PayPal-Rückleitung: Capture serverseitig durchführen
+    if (ppCapture === '1' && ppToken && orderNum) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        warenkorb = [];
+        renderWarenkorb();
+        try {
+            const capRes = await fetch(`${BACKEND_URL}/api/capture-paypal-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: ppToken })
+            });
+            const capData = await capRes.json();
+            if (capData.ok) {
+                showDankeModal('#' + (capData.orderNum || orderNum));
+            } else {
+                showDankeModal('#' + orderNum); // Fallback: zeige trotzdem Danke
+                console.warn('PayPal capture:', capData.message);
+            }
+        } catch(e) {
+            showDankeModal('#' + orderNum);
+            console.warn('PayPal capture Fehler:', e.message);
+        }
+        return;
+    }
 
     if (orderId || orderNum) {
         warenkorb = [];
@@ -2686,7 +2862,7 @@ window.addEventListener('load', async () => {
         return;
     }
 
-    // Stripe-Zahlung abgebrochen → Formular wieder freischalten
+    // Zahlung abgebrochen → Formular wieder freischalten
     if (params.get('payment') === 'cancelled') {
         window.history.replaceState({}, document.title, window.location.pathname);
         resetOrderButton();
@@ -3732,6 +3908,7 @@ LEGAL.datenschutz = {
        + "<h4 style='color:#8b1d1d;margin:16px 0 6px;font-size:.92rem'>3. Eingesetzte Dienstleister</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
        + "<li><strong>Stripe Payments Europe Ltd.</strong> (Dublin) &ndash; Zahlungsabwicklung, PCI-DSS Level&nbsp;1</li>"
+       + "<li><strong>PayPal (Europe) S.à r.l. et Cie, S.C.A.</strong> (Luxemburg) &ndash; Zahlungsabwicklung bei PayPal-Zahlung</li>"
        + "<li><strong>Resend Inc.</strong> (San Francisco) &ndash; E-Mail-Versand</li>"
        + "<li><strong>MongoDB Atlas</strong> &ndash; Datenbankhosting (Server EU/Frankfurt)</li>"
        + "<li><strong>Render Services Inc.</strong> &ndash; Webserver-Hosting (Server EU)</li>"
@@ -3765,7 +3942,7 @@ LEGAL.agb = {
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;5 Widerrufsrecht</h4>"
        + "<div style='background:#fff8f0;border-left:4px solid #8b1d1d;padding:12px 14px;border-radius:0 8px 8px 0;margin:8px 0'>"
        + "<strong>&#9888;&#65039; Kein Widerrufsrecht bei frisch zubereiteten Speisen</strong><br>"
-       + "Gem&auml;&szlig; &sect;&nbsp;312g Abs.&nbsp;2 Nr.&nbsp;2 BGB besteht kein Widerrufsrecht, da alle Speisen frisch zubereitet werden. Bei Stripe-Zahlung und Stornierung durch uns: automatische R&uuml;ckerstattung binnen 5&ndash;10 Werktagen."
+       + "Gem&auml;&szlig; &sect;&nbsp;312g Abs.&nbsp;2 Nr.&nbsp;2 BGB besteht kein Widerrufsrecht, da alle Speisen frisch zubereitet werden. Bei Online-Zahlung (Stripe oder PayPal) und Stornierung durch uns: automatische R&uuml;ckerstattung binnen 5&ndash;10 Werktagen."
        + "</div>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;6 Allergene &amp; Haftung</h4>"
        + "<p>Informationen zu Allergenen sind auf der Speisekarte vermerkt. Trotz gr&ouml;&szlig;ter Sorgfalt k&ouml;nnen Kreuzverunreinigungen nicht ausgeschlossen werden. Bei Allergien bitte telefonisch anfragen.</p>"
@@ -4526,6 +4703,161 @@ body.modal-open {
     };
   });
 })();
+</script>
+
+<!-- Mittagsmenü Getränk-Modal -->
+<div id="menueDrinkPopup" class="menue-drink-overlay" onclick="closeMenueDrink()">
+  <div class="menue-drink-card" onclick="event.stopPropagation()">
+    <span style="position:absolute;right:18px;top:14px;cursor:pointer;font-size:30px;color:#ccc;" onclick="closeMenueDrink()">&times;</span>
+    <h3 id="menueDrinkTitle" style="margin:0 0 4px 0;color:#8b1d1d;">Menü wählen</h3>
+    <p id="menueDrinkSubtitle" style="margin:0 0 16px 0;color:#666;font-size:0.85rem;"></p>
+    <p style="font-weight:bold;margin:0 0 10px 0;font-size:0.9rem;">Getränk wählen (0,3l):</p>
+    <div id="menueDrinkOptions"></div>
+    <div style="background:#1a1a1a;color:white;text-align:center;padding:14px;border-radius:12px;cursor:pointer;font-weight:bold;font-size:1rem;margin-top:14px;" onclick="confirmMenueOrder()">
+      Zum Warenkorb hinzufügen
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== MITTAGSANGEBOTE =====
+const MENUE_GETRAENKE = ['Coca Cola','Coca Cola light','Fanta','Sprite','Mineralwasser'];
+let _menueData = null;
+
+function isMittagszeit() {
+  const now = new Date();
+  const day = now.getDay();
+  const mins = now.getHours() * 60 + now.getMinutes();
+  if (day === 0 || day === 6) return false;
+  return mins >= 11 * 60 + 30 && mins < 14 * 60;
+}
+
+function updateMittagsStatus() {
+  const active = isMittagszeit();
+  const badge = document.getElementById('mittag-status-badge');
+  if (badge) {
+    badge.textContent = active ? '✓ Jetzt verfügbar' : 'Mo–Fr 11:30–14:00 Uhr';
+    badge.className = 'mittag-badge ' + (active ? 'mittag-badge-active' : 'mittag-badge-inactive');
+  }
+  document.querySelectorAll('.menue-btn').forEach(function(btn) {
+    active ? btn.classList.add('visible') : btn.classList.remove('visible');
+  });
+}
+
+function injectMenueButtons() {
+  document.querySelectorAll('.product-item').forEach(function(item) {
+    var h3 = item.querySelector('h3');
+    if (!h3) return;
+    var match = h3.textContent.match(/^(\d+)\s/);
+    if (!match) return;
+    var num = parseInt(match[1]);
+    var name = h3.textContent.trim();
+
+    var btnArea = document.createElement('div');
+    btnArea.style.cssText = 'margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;';
+
+    function makeBtn(label, menuNr, price, side, size) {
+      var btn = document.createElement('button');
+      btn.className = 'menue-btn';
+      btn.textContent = label;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openMenueFlow(menuNr, name, price, side, size);
+      });
+      return btn;
+    }
+
+    if (num >= 1 && num <= 66) {
+      btnArea.appendChild(makeBtn('Menü 1 – 10€', 1, 10.00, 'kl. Salat', 28));
+    }
+    if ((num >= 80 && num <= 127) || (num >= 133 && num <= 144)) {
+      btnArea.appendChild(makeBtn('Menü 2 – 10€', 2, 10.00, 'Pizzabrötchen', null));
+    }
+    if (num >= 128 && num <= 132) {
+      btnArea.appendChild(makeBtn('Menü 4 – 12€', 4, 12.00, 'kl. Salat', null));
+    }
+    if (num >= 150 && num <= 170) {
+      btnArea.appendChild(makeBtn('Menü 3 – 10€', 3, 10.00, 'Pizzabrötchen', null));
+    }
+    if (num >= 1 && num <= 66) {
+      btnArea.appendChild(makeBtn('Menü 5 – 8,50€', 5, 8.50, 'kl. Salat', 22));
+    }
+
+    if (btnArea.children.length > 0) {
+      var info = item.querySelector('.product-info');
+      if (info) info.appendChild(btnArea);
+    }
+  });
+}
+
+function openMenueFlow(menuNr, itemName, price, side, size) {
+  var sizeText = size ? ' (' + size + 'cm)' : '';
+  var displayName = 'Menü ' + menuNr + ' – ' + itemName + sizeText + ' + ' + side + ' + 0,3l';
+  _menueData = { menuNr: menuNr, displayName: displayName, price: price };
+
+  document.getElementById('menueDrinkTitle').textContent = 'Menü ' + menuNr + ' – Getränk wählen';
+  document.getElementById('menueDrinkSubtitle').textContent =
+    itemName + sizeText + ' + ' + side + ' + 0,3l Getränk | ' + price.toFixed(2).replace('.', ',') + ' €';
+
+  var html = '';
+  MENUE_GETRAENKE.forEach(function(g, i) {
+    html += '<div class="menue-drink-option" onclick="selectMenueDrink(' + i + ')">' +
+      '<input type="radio" name="menue-drink" id="md-' + i + '" value="' + g + '">' +
+      '<label for="md-' + i + '" style="cursor:pointer;flex:1;">' + g + '</label>' +
+      '</div>';
+  });
+  document.getElementById('menueDrinkOptions').innerHTML = html;
+
+  var firstOpt = document.querySelector('.menue-drink-option');
+  if (firstOpt) {
+    firstOpt.classList.add('selected');
+    firstOpt.querySelector('input').checked = true;
+  }
+  document.getElementById('menueDrinkPopup').style.display = 'flex';
+}
+
+function selectMenueDrink(index) {
+  document.querySelectorAll('.menue-drink-option').forEach(function(opt) {
+    opt.classList.remove('selected');
+  });
+  var opts = document.querySelectorAll('.menue-drink-option');
+  if (opts[index]) {
+    opts[index].classList.add('selected');
+    opts[index].querySelector('input').checked = true;
+  }
+}
+
+function closeMenueDrink() {
+  document.getElementById('menueDrinkPopup').style.display = 'none';
+  _menueData = null;
+}
+
+function confirmMenueOrder() {
+  if (!_menueData) return;
+  var checked = document.querySelector('input[name="menue-drink"]:checked');
+  var drink = checked ? checked.value : MENUE_GETRAENKE[0];
+  var name = _menueData.displayName.replace('0,3l', '0,3l ' + drink);
+  var preis = _menueData.price;
+
+  var existing = warenkorb.find(function(i) { return i.name === name && !i.isFree; });
+  if (existing) {
+    existing.qty = (existing.qty || 1) + 1;
+    existing.preis = preis * existing.qty;
+  } else {
+    warenkorb.push({ id: Date.now(), name: name, preis: preis, basePreis: preis, qty: 1, extraDetails: [], note: '' });
+  }
+
+  addFreePizzaIfNeeded();
+  renderWarenkorb();
+  document.getElementById('menueDrinkPopup').style.display = 'none';
+  _menueData = null;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  injectMenueButtons();
+  updateMittagsStatus();
+  setInterval(updateMittagsStatus, 60000);
+});
 </script>
 </body>
 </html>
