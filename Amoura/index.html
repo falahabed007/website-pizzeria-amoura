@@ -856,15 +856,25 @@
 <style>
 /* ===== MITTAGSANGEBOTE ===== */
 .mittag-banner {
-  background: #fff8f0;
-  border: 2px solid #d4a76a;
-  border-radius: 16px;
-  padding: 20px;
-  margin: 0 0 24px 0;
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 0 0 28px 0;
   width: 100%;
   box-sizing: border-box;
   grid-column: 1 / -1;
+  position: relative;
+  background: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900&q=80') center/cover no-repeat;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.22);
 }
+.mittag-overlay {
+  background: linear-gradient(to right, rgba(25,4,4,0.96) 0%, rgba(25,4,4,0.93) 55%, rgba(25,4,4,0.45) 80%, rgba(25,4,4,0.1) 100%);
+  padding: 24px 28px;
+  min-height: 215px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.mittag-content { max-width: 62%; }
 .mittag-banner-header {
   display: flex;
   align-items: center;
@@ -873,32 +883,34 @@
   margin-bottom: 4px;
 }
 .mittag-title {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: bold;
-  color: #8b1d1d;
+  color: #f5d89a;
+  letter-spacing: 0.4px;
 }
 .mittag-badge {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: bold;
 }
-.mittag-badge-active { background: #d4edda; color: #155724; }
-.mittag-badge-inactive { background: #e9ecef; color: #6c757d; }
-.mittag-subtitle { margin: 2px 0 14px 0; color: #666; font-size: 0.85rem; }
-.amcard-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.mittag-badge-active { background: #28a745; color: white; }
+.mittag-badge-inactive { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.82); }
+.mittag-subtitle { margin: 3px 0 14px 0; color: rgba(255,255,255,0.65); font-size: 0.82rem; }
+.amcard-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .amcard {
-  background: white;
-  border: 1px solid #e0c9a6;
-  border-radius: 12px;
-  padding: 12px 14px;
-  flex: 1 1 120px;
-  max-width: 170px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  background: rgba(255,255,255,0.11);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 10px;
+  padding: 9px 12px;
+  flex: 1 1 90px;
+  max-width: 140px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.amcard-num { font-weight: bold; color: #8b1d1d; font-size: 0.9rem; }
-.amcard-price { font-size: 1.15rem; font-weight: bold; color: #333; margin: 2px 0 4px 0; }
-.amcard-desc { font-size: 0.75rem; color: #666; line-height: 1.4; }
+.amcard-num { font-weight: bold; color: #f5d89a; font-size: 0.8rem; }
+.amcard-price { font-size: 1.05rem; font-weight: bold; color: white; margin: 1px 0 3px 0; }
+.amcard-desc { font-size: 0.68rem; color: rgba(255,255,255,0.75); line-height: 1.35; }
 .menue-btn {
   display: none;
   background: #8b1d1d;
@@ -914,6 +926,31 @@
 }
 .menue-btn.visible { display: inline-block; }
 .menue-btn:hover { background: #6d1616; }
+
+@media (max-width: 650px) {
+  .mittag-overlay {
+    background: rgba(22,4,4,0.91);
+    padding: 18px 16px;
+    min-height: auto;
+  }
+  .mittag-content { max-width: 100%; }
+  .mittag-title { font-size: 1.15rem; }
+  .amcard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .amcard { max-width: none; }
+  .amcard:first-child {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .amcard:first-child .amcard-price { font-size: 1.4rem; }
+  .amcard:first-child .amcard-num { font-size: 1rem; }
+}
+
 /* Menue Getränk Modal */
 .menue-drink-overlay {
   display: none;
@@ -951,36 +988,41 @@
 
 <!-- Mittagsangebote Banner -->
 <div id="mittag-banner" class="mittag-banner">
-  <div class="mittag-banner-header">
-    <span class="mittag-title">🕐 Mittagsangebote</span>
-    <span id="mittag-status-badge" class="mittag-badge mittag-badge-inactive">Mo–Fr 11:30–14:00 Uhr</span>
-  </div>
-  <p class="mittag-subtitle">Täglich Mo–Fr von 11:30 bis 14:00 Uhr verfügbar</p>
-  <div class="amcard-grid">
-    <div class="amcard">
-      <div class="amcard-num">Menü 1</div>
-      <div class="amcard-price">10,00 €</div>
-      <div class="amcard-desc">Pizza 1–66 (28cm)<br>+ kl. Salat + 0,3l</div>
-    </div>
-    <div class="amcard">
-      <div class="amcard-num">Menü 2</div>
-      <div class="amcard-price">10,00 €</div>
-      <div class="amcard-desc">Nudelgerichte 80–144<br>+ Pizzabrötchen + 0,3l</div>
-    </div>
-    <div class="amcard">
-      <div class="amcard-num">Menü 3</div>
-      <div class="amcard-price">10,00 €</div>
-      <div class="amcard-desc">Salate 150–170<br>+ Pizzabrötchen + 0,3l</div>
-    </div>
-    <div class="amcard">
-      <div class="amcard-num">Menü 4</div>
-      <div class="amcard-price">12,00 €</div>
-      <div class="amcard-desc">Hähnchengeschnetzeltes 128–132<br>+ kl. Salat + 0,3l</div>
-    </div>
-    <div class="amcard">
-      <div class="amcard-num">Menü 5</div>
-      <div class="amcard-price">8,50 €</div>
-      <div class="amcard-desc">Pizza 1–66 (22cm)<br>+ kl. Salat + 0,3l</div>
+  <div class="mittag-overlay">
+    <div class="mittag-content">
+      <div class="mittag-banner-header">
+        <span class="mittag-title">🕐 Mittagsangebote</span>
+        <span id="mittag-status-badge" class="mittag-badge mittag-badge-inactive">Mo–Fr 11:30–14:00 Uhr</span>
+      </div>
+      <p class="mittag-subtitle">Mo–Fr · 11:30–14:00 Uhr · Spare beim Mittagessen!<br>
+      <span style="font-size:0.78rem;opacity:0.85;">👆 Wähle einfach eine Speise aus der Karte — der Menü-Button erscheint direkt beim Gericht.</span></p>
+      <div class="amcard-grid">
+        <div class="amcard">
+          <div class="amcard-num">Menü 1</div>
+          <div class="amcard-price">10,00 €</div>
+          <div class="amcard-desc">Pizza 1–66 (28cm)<br>+ kl. Salat + 0,3l</div>
+        </div>
+        <div class="amcard">
+          <div class="amcard-num">Menü 2</div>
+          <div class="amcard-price">10,00 €</div>
+          <div class="amcard-desc">Nudelgerichte 80–144<br>+ Pizzabrötchen + 0,3l</div>
+        </div>
+        <div class="amcard">
+          <div class="amcard-num">Menü 3</div>
+          <div class="amcard-price">10,00 €</div>
+          <div class="amcard-desc">Salate 150–170<br>+ Pizzabrötchen + 0,3l</div>
+        </div>
+        <div class="amcard">
+          <div class="amcard-num">Menü 4</div>
+          <div class="amcard-price">12,00 €</div>
+          <div class="amcard-desc">Hähnchengeschnetzeltes 128–132<br>+ kl. Salat + 0,3l</div>
+        </div>
+        <div class="amcard">
+          <div class="amcard-num">Menü 5</div>
+          <div class="amcard-price">8,50 €</div>
+          <div class="amcard-desc">Pizza 1–66 (22cm)<br>+ kl. Salat + 0,3l</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
