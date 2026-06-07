@@ -2453,6 +2453,36 @@ function toggleMobileMenu() {
 
 
 <!-- DANKE MODAL -->
+<!-- ── Stempelkarte Werbe-Popup ── -->
+<div id="stampPromoModal" onclick="if(event.target===this)closeStampPromo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99998;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;">
+  <div style="background:#fff;border-radius:20px;max-width:380px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.35);position:relative;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#8b1d1d,#c0392b);padding:28px 24px 20px;text-align:center;color:#fff;">
+      <button onclick="closeStampPromo()" style="position:absolute;top:12px;right:14px;background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:50%;width:30px;height:30px;font-size:16px;cursor:pointer;line-height:1;">✕</button>
+      <div style="font-size:52px;margin-bottom:8px;">🍕</div>
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px;">Gratis-Pizza sichern!</div>
+      <div style="font-size:13px;opacity:.9;">Melde dich an und sammle Stempel</div>
+    </div>
+    <!-- Body -->
+    <div style="padding:22px 24px;">
+      <!-- Stempel-Vorschau -->
+      <div style="display:flex;justify-content:center;gap:12px;margin-bottom:18px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:22px;">🍕</div>
+        <div style="width:56px;height:56px;border-radius:50%;background:#8b1d1d;display:flex;align-items:center;justify-content:center;font-size:22px;">🍕</div>
+        <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#d4a76a,#c4923a);display:flex;align-items:center;justify-content:center;font-size:22px;">🎁</div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:#666;margin-bottom:18px;line-height:1.6;">
+        Bei jeder Bestellung einen Stempel sammeln.<br>
+        <strong style="color:#8b1d1d;">Nach 3 Bestellungen: Gratis-Margherita (groß)!</strong>
+      </div>
+      <a href="account.html" style="display:block;background:#8b1d1d;color:#fff;text-align:center;padding:13px;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:10px;">
+        Jetzt kostenlos anmelden →
+      </a>
+      <button onclick="closeStampPromo()" style="width:100%;background:transparent;border:none;color:#aaa;font-size:13px;cursor:pointer;padding:6px;">Nein danke</button>
+    </div>
+  </div>
+</div>
+
 <div id="dankeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
     <div style="background:white; border-radius:20px; padding:35px 30px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
         <div style="font-size:64px; margin-bottom:10px;">🍕</div>
@@ -4846,6 +4876,28 @@ body.modal-open {
       orig.apply(this, arguments);
       fillCheckout();
     };
+  });
+})();
+</script>
+
+<!-- Stempelkarte Promo -->
+<script>
+(function() {
+  function closeStampPromo() {
+    var m = document.getElementById('stampPromoModal');
+    if (m) m.style.display = 'none';
+    sessionStorage.setItem('stampPromoDismissed', '1');
+  }
+  window.closeStampPromo = closeStampPromo;
+
+  // Nur zeigen wenn: nicht eingeloggt, noch nicht weggeklickt diese Session
+  window.addEventListener('load', function() {
+    if (sessionStorage.getItem('stampPromoDismissed')) return;
+    if (localStorage.getItem('customerToken')) return; // eingeloggt → nicht zeigen
+    setTimeout(function() {
+      var m = document.getElementById('stampPromoModal');
+      if (m) m.style.display = 'flex';
+    }, 4000); // nach 4 Sekunden
   });
 })();
 </script>
