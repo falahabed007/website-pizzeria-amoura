@@ -3,6 +3,12 @@ MONGODB_URI=mongodb+srv://USER:PASS@cluster0.xxxxx.mongodb.net/pizzeria-amoura
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_CONNECT_ACCOUNT=acct_...   # Stripe Connect ID des Restaurants (optional)
+# PayPal (REST API v2)
+PAYPAL_CLIENT_ID=AxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxL
+PAYPAL_CLIENT_SECRET=ExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxA
+PAYPAL_WEBHOOK_ID=xxxxxxxxxxxxxxxxxxxx   # Webhook-ID aus PayPal Developer Dashboard
+PAYPAL_MODE=live                          # 'sandbox' zum Testen, 'live' für Produktion
+PAYPAL_MERCHANT_ID=xxxxxxxxxxxx          # PayPal Merchant ID des Restaurants (Commerce Platform, optional)
 RESEND_API_KEY=re_...
 EMAIL_FROM=bestellungen@pizzeria-amoura.de
 RESTAURANT_EMAIL=info@pizzeria-amoura.de

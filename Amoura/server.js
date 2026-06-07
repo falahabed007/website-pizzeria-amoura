@@ -46,7 +46,7 @@ app.use(cors({
 // Preflight für alle Routen
 app.options('*', cors());
 
-// ─── Stripe Webhook braucht raw body ─────────────────────────────
+// ─── Webhooks brauchen raw body (vor express.json) ───────────────
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
@@ -75,7 +75,7 @@ const orderSchema = new mongoose.Schema({
   mode:                 { type: String, enum: ['lieferung','abholung'], required: true },
   status:               { type: String, default: 'pending',
                           enum: ['awaiting_payment','pending','confirmed','preparing','ready','delivered','cancelled'] },
-  payment:              { type: String, enum: ['bar','stripe','karte'], required: true },
+  payment:              { type: String, enum: ['bar','stripe','karte','paypal'], required: true }, // paypal: Altbestellungen
   paymentStatus:        { type: String, default: 'unpaid', enum: ['unpaid','paid','pending','refunded'] },
   source:               { type: String, default: 'web', enum: ['web','pos'] },
   stripeSessionId:      String,
@@ -129,7 +129,8 @@ const userSchema = new mongoose.Schema({
     city:   String,
     zip:    String,
   }],
-  defaultAddress: { type: Number, default: 0 },
+  defaultAddress:  { type: Number, default: 0 },
+  stampsRedeemed:  { type: Number, default: 0 },
 }, { timestamps: true });
 const User = mongoose.model('User', userSchema);
 
@@ -281,6 +282,39 @@ app.post('/api/account/reorder/:orderId', customerAuth, async (req, res) => {
     });
   } catch {
     res.status(500).json({ message: 'Re-Order fehlgeschlagen' });
+  }
+});
+
+app.get('/api/account/stamps', customerAuth, async (req, res) => {
+  try {
+    const [validOrders, user] = await Promise.all([
+      Order.countDocuments({ userId: req.user.id, status: { $nin: ['cancelled', 'awaiting_payment'] } }),
+      User.findById(req.user.id).select('stampsRedeemed')
+    ]);
+    const redeemed       = user?.stampsRedeemed || 0;
+    const totalRewards   = Math.floor(validOrders / 3);
+    const rewardsAvail   = Math.max(0, totalRewards - redeemed);
+    const currentStamps  = validOrders % 3;
+    res.json({ stamps: currentStamps, rewardsAvailable: rewardsAvail, totalOrders: validOrders });
+  } catch {
+    res.status(500).json({ message: 'Stempelkarte konnte nicht geladen werden' });
+  }
+});
+
+app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
+  try {
+    const [validOrders, user] = await Promise.all([
+      Order.countDocuments({ userId: req.user.id, status: { $nin: ['cancelled', 'awaiting_payment'] } }),
+      User.findById(req.user.id).select('stampsRedeemed')
+    ]);
+    const redeemed     = user?.stampsRedeemed || 0;
+    const totalRewards = Math.floor(validOrders / 3);
+    const rewardsAvail = Math.max(0, totalRewards - redeemed);
+    if (rewardsAvail <= 0) return res.status(400).json({ message: 'Keine Gratis-Pizza verfügbar' });
+    await User.findByIdAndUpdate(req.user.id, { $inc: { stampsRedeemed: 1 } });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ message: 'Einlösen fehlgeschlagen' });
   }
 });
 
@@ -632,18 +666,35 @@ app.get('/api/admin/customers', auth, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
     const userIds = users.map(u => u._id);
-    const stats = await Order.aggregate([
-      { $match: { userId: { $in: userIds } } },
-      { $group: { _id: '$userId', count: { $sum: 1 }, total: { $sum: '$total' }, lastOrder: { $max: '$createdAt' } } }
+    const [stats, stampStats] = await Promise.all([
+      Order.aggregate([
+        { $match: { userId: { $in: userIds } } },
+        { $group: { _id: '$userId', count: { $sum: 1 }, total: { $sum: '$total' }, lastOrder: { $max: '$createdAt' } } }
+      ]),
+      Order.aggregate([
+        { $match: { userId: { $in: userIds }, status: { $nin: ['cancelled', 'awaiting_payment'] } } },
+        { $group: { _id: '$userId', validOrders: { $sum: 1 } } }
+      ])
     ]);
     const statsMap = {};
     stats.forEach(s => { statsMap[s._id.toString()] = s; });
-    const result = users.map(u => ({
-      ...u.toObject(),
-      orderCount: statsMap[u._id.toString()]?.count || 0,
-      orderTotal: statsMap[u._id.toString()]?.total || 0,
-      lastOrder:  statsMap[u._id.toString()]?.lastOrder || null,
-    }));
+    const stampMap = {};
+    stampStats.forEach(s => { stampMap[s._id.toString()] = s.validOrders; });
+    const result = users.map(u => {
+      const validOrders   = stampMap[u._id.toString()] || 0;
+      const redeemed      = u.stampsRedeemed || 0;
+      const totalRewards  = Math.floor(validOrders / 3);
+      const rewardsAvail  = Math.max(0, totalRewards - redeemed);
+      const currentStamps = validOrders % 3;
+      return {
+        ...u.toObject(),
+        orderCount:      statsMap[u._id.toString()]?.count || 0,
+        orderTotal:      statsMap[u._id.toString()]?.total || 0,
+        lastOrder:       statsMap[u._id.toString()]?.lastOrder || null,
+        stamps:          currentStamps,
+        rewardsAvailable: rewardsAvail,
+      };
+    });
     res.json(result);
   } catch(e) {
     res.status(500).json({ message: 'Fehler beim Laden der Kunden' });
@@ -760,10 +811,9 @@ app.delete('/api/admin/orders/:id', auth, async (req, res) => {
         const refund = await getStripe().refunds.create({ payment_intent: order.stripePaymentIntentId });
         refundStatus = refund.status;
         await Order.findByIdAndUpdate(order._id, { paymentStatus:'refunded' });
-        console.log(`💸 Refund #${order.orderNum}: ${refund.status}`);
-      } catch(e) { console.error('Refund Fehler:', e.message); refundStatus='failed'; }
+        console.log(`💸 Stripe-Refund #${order.orderNum}: ${refund.status}`);
+      } catch(e) { console.error('Stripe Refund Fehler:', e.message); refundStatus='failed'; }
     }
-
     await sendCancellationEmail(order, reason, refundStatus);
     res.json({ success:true, order, refundStatus });
   } catch(e) { res.status(500).json({ message:'Fehler' }); }
@@ -833,7 +883,7 @@ async function sendCouponRaffleEmail(order) {
 
   const firstName = (order.customer.first || 'Kunde');
   const email = order.customer.email;
-  const now = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const nowFormatted = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   const html = `<!DOCTYPE html>
 <html lang="de">
@@ -862,7 +912,7 @@ async function sendCouponRaffleEmail(order) {
     <div style="background:#f9f9f9;border-radius:10px;padding:16px 20px;margin-bottom:22px;">
       <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#333;">📋 Deine Teilnahme im Überblick</p>
       <table style="width:100%;font-size:13px;color:#555;border-collapse:collapse;">
-        <tr><td style="padding:4px 0;color:#888;">Teilnahmedatum</td><td style="text-align:right;font-weight:600;">${now}</td></tr>
+        <tr><td style="padding:4px 0;color:#888;">Teilnahmedatum</td><td style="text-align:right;font-weight:600;">${nowFormatted}</td></tr>
         <tr><td style="padding:4px 0;color:#888;">Bestellung</td><td style="text-align:right;font-weight:600;">#${order.orderNum}</td></tr>
         <tr><td style="padding:4px 0;color:#888;">Code</td><td style="text-align:right;font-weight:600;color:#ff4b8b;">ROLLNCONE</td></tr>
         <tr><td style="padding:4px 0;color:#888;">E-Mail</td><td style="text-align:right;font-weight:600;">${email}</td></tr>
@@ -935,7 +985,7 @@ async function sendConfirmationEmail(order, mins) {
             <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:15px;border-top:2px solid #8b1d1d;padding-top:8px;margin-top:6px"><span>Gesamt</span><span style="color:#8b1d1d">${(order.total||0).toFixed(2).replace('.',',')} €</span></div>
           </div>
           <p style="font-size:13px;color:#666;margin-top:14px">
-            Zahlung: ${order.payment==='stripe'?'💳 Online (Stripe)':order.payment==='karte'?'💳 EC-Karte':'💵 Barzahlung'} ·
+            Zahlung: ${order.payment==='stripe'?'💳 Online (Stripe)':order.payment==='paypal'?'💙 PayPal':order.payment==='karte'?'💳 EC-Karte':'💵 Barzahlung'} ·
             ${order.paymentStatus==='paid'?'✅ Bereits bezahlt':'💵 Bitte bereithalten'}
           </p>
           ${order.note?`<p style="background:#fff3ea;padding:10px;border-radius:6px;font-size:13px">📝 Anmerkung: ${order.note}</p>`:''}
@@ -974,7 +1024,7 @@ ${order.deliveryFee?`Liefergebühr:  ${order.deliveryFee.toFixed(2)} €`:''}
 Servicegebühr: ${(order.serviceFee||0.99).toFixed(2)} €
 GESAMT:        ${(order.total||0).toFixed(2)} €
 
-Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BAR'} – ${order.paymentStatus==='paid'?'✅ BEZAHLT':'❌ NOCH OFFEN'}
+Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='paypal'?'PAYPAL':order.payment==='karte'?'EC-KARTE':'BAR'} – ${order.paymentStatus==='paid'?'✅ BEZAHLT':'❌ NOCH OFFEN'}
 ${order.note?`Anmerkung: ${order.note}`:''}</pre>`
     });
   } catch(e) { console.error('Restaurant Mail:', e); }
@@ -982,7 +1032,8 @@ ${order.note?`Anmerkung: ${order.note}`:''}</pre>`
 
 async function sendCancellationEmail(order, reason, refundStatus) {
   if (!process.env.RESEND_API_KEY || !order.customer?.email) return;
-  const refundHtml = (order.payment==='stripe' && order.paymentStatus==='refunded')
+  const isOnlineRefund = ['stripe','paypal'].includes(order.payment) && order.paymentStatus === 'refunded';
+  const refundHtml = isOnlineRefund
     ? `<div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px;margin:14px 0">
         <strong style="color:#2e7d32">💸 Rückerstattung eingeleitet</strong><br>
         <span style="font-size:13px;color:#555">Der Betrag von ${(order.total||0).toFixed(2).replace('.',',')} € wird in 5–10 Werktagen zurückgebucht.</span>
@@ -1164,7 +1215,9 @@ function pdfKundenliste(doc, orders) {
     doc.y = sy + 20 + 10;
   }
   drawGroup('Barzahlung', '#8b1d1d', orders.filter(o => o.payment === 'bar'));
-  drawGroup('Online-Zahlung (Stripe)', '#276749', orders.filter(o => o.payment !== 'bar'));
+  drawGroup('Online-Zahlung (Stripe)', '#276749', orders.filter(o => o.payment === 'stripe'));
+  drawGroup('Online-Zahlung (PayPal)', '#003087', orders.filter(o => o.payment === 'paypal'));
+  drawGroup('EC-Karte', '#555555', orders.filter(o => o.payment === 'karte'));
 }
 
 function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
@@ -1258,11 +1311,12 @@ cron.schedule('0 22 * * *', async () => {
       return;
     }
 
-    const total      = orders.reduce((s,o) => s + (o.total||0), 0);
-    const totalBar   = orders.filter(o=>o.payment==='bar').reduce((s,o)=>s+(o.total||0),0);
-    const totalStripe= orders.filter(o=>o.payment==='stripe').reduce((s,o)=>s+(o.total||0),0);
-    const nLief      = orders.filter(o=>o.mode==='lieferung').length;
-    const nAbh       = orders.filter(o=>o.mode==='abholung').length;
+    const total       = orders.reduce((s,o) => s + (o.total||0), 0);
+    const totalBar    = orders.filter(o=>o.payment==='bar').reduce((s,o)=>s+(o.total||0),0);
+    const totalStripe = orders.filter(o=>o.payment==='stripe').reduce((s,o)=>s+(o.total||0),0);
+    const totalPayPal = orders.filter(o=>o.payment==='paypal').reduce((s,o)=>s+(o.total||0),0);
+    const nLief       = orders.filter(o=>o.mode==='lieferung').length;
+    const nAbh        = orders.filter(o=>o.mode==='abholung').length;
 
     const tagespdf = await generatePdf(doc => {
       const W = 495;
@@ -1283,6 +1337,7 @@ cron.schedule('0 22 * * *', async () => {
         ['davon Abholung', `${nAbh}`, false],
         ['Umsatz Barzahlung', fmt(totalBar), true],
         ['Umsatz Kreditkarte (Stripe)', fmt(totalStripe), false],
+        ['Umsatz PayPal', fmt(totalPayPal), true],
       ];
       sumRows.forEach(([label, val, shade]) => {
         const y = doc.y;
@@ -1363,6 +1418,7 @@ cron.schedule('0 22 * * *', async () => {
               <tr style="background:#f5f5f5"><td style="padding:8px">davon Abholung</td><td style="padding:8px;text-align:right">${nAbh}</td></tr>
               <tr><td style="padding:8px">Umsatz Barzahlung</td><td style="padding:8px;text-align:right">${totalBar.toFixed(2).replace('.',',')} €</td></tr>
               <tr style="background:#f5f5f5"><td style="padding:8px">Umsatz Kreditkarte (Stripe)</td><td style="padding:8px;text-align:right">${totalStripe.toFixed(2).replace('.',',')} €</td></tr>
+              <tr><td style="padding:8px">Umsatz PayPal</td><td style="padding:8px;text-align:right">${totalPayPal.toFixed(2).replace('.',',')} €</td></tr>
               <tr style="background:#8b1d1d"><td style="padding:10px;font-weight:bold;color:#fff;font-size:15px">Gesamtumsatz</td><td style="padding:10px;text-align:right;font-weight:bold;color:#fff;font-size:15px">${total.toFixed(2).replace('.',',')} €</td></tr>
             </table>
             <p style="font-size:12px;color:#888;margin-top:12px">Die vollständige Bestellliste mit Kundendaten finden Sie im beigefügten PDF.</p>
@@ -1493,10 +1549,10 @@ cron.schedule('0 22 * * 0', async () => {
     const berichtPdf = await generatePdf(doc => {
       pdfColorBox(doc, `Wochenbericht KW ${kw} / ${now.getFullYear()}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
       pdfKacheln(doc, [
-        ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
-        ['Davon Bar',           `${barOrders.length}`,                           '#2c5282'],
-        ['Davon Stripe',        `${orders.filter(o=>o.payment!=='bar').length}`, '#276749'],
-        ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
+        ['Bestellungen gesamt', `${orders.length}`,                                                   '#1a1a2e'],
+        ['Davon Bar',           `${barOrders.length}`,                                                '#2c5282'],
+        ['Davon Online',        `${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],
+        ['Brutto-Umsatz',       pdfFmt(brutto),                                                       '#744210'],
       ]);
       doc.moveDown(0.4);
       pdfHr(doc);
@@ -1621,7 +1677,7 @@ cron.schedule('0 22 * * *', async () => {
       pdfKacheln(doc, [
         ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
         ['Davon Bar',           `${barOrdersM.length}`,                          '#2c5282'],
-        ['Davon Stripe',        `${orders.filter(o=>o.payment!=='bar').length}`, '#276749'],
+        ['Davon Online',        `${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],
         ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
       ]);
       doc.moveDown(0.4);
@@ -1790,7 +1846,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
       pdfKacheln(doc, [
         ['Bestellungen gesamt',`${orders.length}`,'#1a1a2e'],['Davon Bar',`${barOrdersM.length}`,'#2c5282'],
-        ['Davon Stripe',`${orders.filter(o=>o.payment!=='bar').length}`,'#276749'],['Brutto-Umsatz',pdfFmt(brutto),'#744210'],
+        ['Davon Online',`${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],['Brutto-Umsatz',pdfFmt(brutto),'#744210'],
       ]);
       doc.moveDown(0.4); pdfHr(doc);
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG',PDF_M,doc.y); doc.y+=14;

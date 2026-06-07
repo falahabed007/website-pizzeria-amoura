@@ -367,7 +367,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         </div>
         <div style="display:flex;align-items:center;gap:6px;">
           <input type="date" id="reportDate" class="day-btn" style="padding:5px 8px;cursor:pointer;" title="Datum wählen" onchange="onDateChange()" oninput="onDateChange()">
-          <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Stripe-Einbuchung</button>
+          <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Offene Zahlungen</button>
           <button class="day-btn" onclick="openKundenModal()" style="white-space:nowrap;">👥 Kunden</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
         </div>
@@ -398,14 +398,14 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 <div class="modal-ov" id="stripeModal" onclick="if(event.target===this)closeStripeModal()">
   <div class="modal-box" style="max-width:500px;">
     <div class="modal-head" style="background:linear-gradient(135deg,#7a5200,#c88a00);">
-      <h2>💳 Stripe-Zahlungen ausstehend</h2>
+      <h2>💳 Offene Online-Zahlungen</h2>
       <button class="modal-close" onclick="closeStripeModal()">✕</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Diese Bestellungen warten noch auf Stripe-Zahlung. Sie erscheinen erst im Haupt-Dashboard wenn der Kunde wirklich bezahlt hat.</p>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Diese Bestellungen warten noch auf Zahlungsbestätigung (Stripe). Sie erscheinen erst im Haupt-Dashboard wenn der Kunde wirklich bezahlt hat.</p>
       <div id="stripeModalList"><div class="stripe-empty">Keine ausstehenden Zahlungen</div></div>
-      <div style="margin-top:16px;">
-        <button class="confirm-btn" onclick="doRecoverStripe()" id="btnRecoverAction" style="background:linear-gradient(135deg,#7a5200,#c88a00);">🔁 Bei Stripe prüfen & einbuchen</button>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="confirm-btn" onclick="doRecoverStripe()" id="btnRecoverAction" style="background:linear-gradient(135deg,#1a4731,#276749);flex:1;">🔁 Stripe prüfen & einbuchen</button>
       </div>
     </div>
   </div>
@@ -1175,7 +1175,9 @@ function showPendingModal(order) {
   const items = (order.items||[]).map(i=>
     `<div class="il-item"><span>${i.qty}× ${cleanName(i.name)}</span><span>${(i.price*i.qty).toFixed(2).replace('.',',')} €</span></div>`
   ).join('');
-  const bezahlt = order.paymentStatus==='paid'?'✅ Online bezahlt':'💵 Bei Übergabe';
+  const bezahlt = order.paymentStatus==='paid'
+    ? (order.payment==='paypal'?'💙 PayPal bezahlt':order.payment==='stripe'?'💳 Online bezahlt':'✅ Bezahlt')
+    : '💵 Bei Übergabe';
   document.getElementById('pendingModalBody').innerHTML = `
     <div class="pending-info">
       <div class="pi-row"><span class="pi-label">Bestellung</span><span class="pi-val" style="color:var(--gold);font-weight:700">#${order.orderNum}</span></div>
@@ -1320,10 +1322,12 @@ async function loadOrders() {
   }
 }
 
-function getDisplayStatus(s) {
+function getDisplayStatus(s, order) {
+  if (s === 'awaiting_payment') {
+    return order?.payment === 'paypal' ? '💙 PayPal ausstehend' : '💳 Stripe ausstehend';
+  }
   return {confirmed:'Neu',preparing:'In Zubereitung',ready:'Fertiggestellt',
-          delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend',
-          awaiting_payment:'💳 Stripe ausstehend'}[s]||s;
+          delivered:'Geliefert',cancelled:'Storniert',pending:'Ausstehend'}[s]||s;
 }
 function getStatusClass(s) {
   return {confirmed:'b-new',preparing:'b-prep',ready:'b-ready',
@@ -1379,9 +1383,9 @@ function renderOrders() {
       <div class="oc-top">
         <span class="oc-num">#${o.orderNum}</span>
         <span class="oc-time">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
-        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''} ${o.payment==='stripe'?'💳':o.payment==='karte'?'💳 EC':'💵'}</span>
+        <span class="oc-mode">${o.mode==='lieferung'?'🛵':'🏃'} ${o.source==='pos'?'📞':''} ${o.payment==='stripe'?'💳':o.payment==='paypal'?'💙 PP':o.payment==='karte'?'💳 EC':'💵'}</span>
         <div class="oc-badges">
-          <span class="badge ${getStatusClass(o.status)}">${getDisplayStatus(o.status)}</span>
+          <span class="badge ${getStatusClass(o.status)}">${getDisplayStatus(o.status, o)}</span>
           <span class="badge ${o.paymentStatus==='paid'?'b-paid':'b-unpaid'}" onclick="togglePaid(event,'${o._id}',${o.paymentStatus==='paid'})">${o.paymentStatus==='paid'?'✓ Bezahlt':'✗ Offen'}</span>
         </div>
       </div>
@@ -1434,7 +1438,7 @@ async function doCancel(e, id, num) {
     const r = await fetch(`${API_BASE}/admin/orders/${id}`,{method:'DELETE',headers:apiHeaders(),body:JSON.stringify({cancelReason:reason})});
     const d = await r.json();
     await loadOrders();
-    showToast(`❌ Bestellung #${num} storniert${d.refundStatus==='succeeded'?' · Stripe-Refund eingeleitet':''}`);
+    showToast(`❌ Bestellung #${num} storniert${d.refundStatus==='succeeded'?' · Refund eingeleitet':''}`);
   } catch(e) {}
 }
 
@@ -1505,7 +1509,7 @@ function renderDetail(c) {
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.8rem;">
         <span style="color:var(--muted)">Zahlungsart</span>
-        <span style="font-weight:700;">${o.payment==='stripe'?'💳 Kreditkarte (Stripe)':o.payment==='karte'?'💳 EC-Karte':'💵 Barzahlung'}</span>
+        <span style="font-weight:700;">${o.payment==='stripe'?'💳 Kreditkarte (Stripe)':o.payment==='paypal'?'💙 PayPal':o.payment==='karte'?'💳 EC-Karte':'💵 Barzahlung'}</span>
       </div>
     </div>
     <div class="detail-btns">
@@ -1972,7 +1976,7 @@ async function eposPrint(order) {
   body += `<text em="true">GESAMT:         ${xmlEsc(pad((order.total||0).toFixed(2)+' EUR'))}&#10;</text>`;
   body += div();
   // Zahlung
-  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
+  const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='paypal'?'PAYPAL':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
   body += x(`Zahlung: ${zahlung}`);
   body += x(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
   if (order.prepTime) body += x(`Wartezeit: ca. ${order.prepTime} Minuten`);
@@ -2110,7 +2114,7 @@ function buildBonText(order) {
   txt += sep + '\n';
   txt += `GESAMT:            ${(order.total||0).toFixed(2)} EUR\n`;
   txt += sep + '\n';
-  txt += `Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}\n`;
+  txt += `Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='paypal'?'PAYPAL':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}\n`;
   txt += (order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!') + '\n';
   if (order.note) txt += `Notiz: ${order.note}\n`;
   txt += sep + '\n';
@@ -2250,7 +2254,7 @@ function buildBonHtml(order) {
     <tr style="font-weight:bold;font-size:14px;border-top:1px solid #000;"><td>GESAMT</td><td style="text-align:right">${(order.total||0).toFixed(2).replace('.',',')} €</td></tr>
   </table>
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
-  <p style="text-align:center;margin:2px 0;">Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
+  <p style="text-align:center;margin:2px 0;">Zahlung: ${order.payment==='stripe'?'KREDITKARTE':order.payment==='paypal'?'PAYPAL':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG'}</p>
   <p style="text-align:center;margin:2px 0;">${order.paymentStatus==='paid'?'✅ BEZAHLT':'!!! BITTE KASSIEREN !!!'}</p>
   <hr style="border:none;border-top:1px dashed #000;margin:8px 0;">
   <p style="text-align:center;margin:2px 0;">Vielen Dank!</p>
@@ -2322,7 +2326,7 @@ function openStripeModal() {
   const listEl = document.getElementById('stripeModalList');
   if (listEl) {
     if (!stripeOrders.length) {
-      listEl.innerHTML = '<div class="stripe-empty">✓ Keine ausstehenden Stripe-Zahlungen</div>';
+      listEl.innerHTML = '<div class="stripe-empty">✓ Keine ausstehenden Online-Zahlungen</div>';
     } else {
       listEl.innerHTML = stripeOrders.map(o => {
         const isDelivery = o.mode === 'lieferung';
@@ -2343,11 +2347,15 @@ function openStripeModal() {
         }).join('');
         const deliveryFee = o.deliveryFee||0;
         const serviceFee  = o.serviceFee||0;
+        const payBadge = o.payment==='paypal'
+          ? `<span style="background:#003087;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:4px;">💙 PayPal</span>`
+          : `<span style="background:#635bff;color:#fff;font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:4px;">💳 Stripe</span>`;
         return `
         <div style="background:var(--bg3);border:1px solid #2a1f08;border-radius:10px;margin-bottom:10px;overflow:hidden;">
           <!-- Kopfzeile -->
           <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);">
             <span style="color:#f5a623;font-weight:700;font-size:.9rem;">#${o.orderNum}</span>
+            ${payBadge}
             <span style="font-size:.82rem;">${isDelivery?'🛵 Lieferung':'🏃 Abholung'}</span>
             <span style="flex:1;font-size:.82rem;">${o.customer?.first||''} ${o.customer?.last||''}</span>
             <span style="font-size:.74rem;color:var(--muted);">${new Date(o.createdAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>
@@ -2394,7 +2402,7 @@ async function doRecoverStripe() {
     showToast('❌ Fehler: ' + e.message);
   }
   btn.disabled = false;
-  btn.textContent = '🔁 Bei Stripe prüfen';
+  btn.textContent = '🔁 Stripe prüfen & einbuchen';
 }
 
 async function printDayReport() {
@@ -2423,7 +2431,7 @@ async function printDayReport() {
 
   const total   = dayOrders.reduce((s,o) => s + (o.total||0), 0);
   const nBar    = dayOrders.filter(o=>o.payment==='bar').length;
-  const nCard   = dayOrders.filter(o=>o.payment==='karte'||o.payment==='stripe').length;
+  const nCard   = dayOrders.filter(o=>['karte','stripe','paypal'].includes(o.payment)).length;
   const nDel    = dayOrders.filter(o=>o.mode==='lieferung').length;
   const nPick   = dayOrders.filter(o=>o.mode==='abholung').length;
 
@@ -2447,7 +2455,7 @@ async function printDayReport() {
     <tr><td>&nbsp;&nbsp;davon Lieferung</td><td align="right">${nDel}</td></tr>
     <tr><td>&nbsp;&nbsp;davon Abholung</td><td align="right">${nPick}</td></tr>
     <tr><td>&nbsp;&nbsp;Barzahlung</td><td align="right">${nBar}</td></tr>
-    <tr><td>&nbsp;&nbsp;Karte / Online</td><td align="right">${nCard}</td></tr>
+    <tr><td>&nbsp;&nbsp;Online / Karte</td><td align="right">${nCard}</td></tr>
   </table>
   <hr>
   <table>
@@ -2522,6 +2530,14 @@ async function openKundenModal() {
   }
 }
 
+function renderStampBadge(k) {
+  const stamps = k.stamps || 0;
+  const avail  = k.rewardsAvailable || 0;
+  if (avail > 0) return `<span style="background:#d4a76a;color:#3d1a08;border-radius:10px;padding:1px 7px;font-weight:700;">🎁 ${avail}× Prämie offen</span>`;
+  const icons = ['○','○','○'].map((_, i) => i < stamps ? '●' : '○').join(' ');
+  return `<span style="color:#8b1d1d;letter-spacing:2px;">${icons}</span> <span style="color:#aaa;">${stamps}/3</span>`;
+}
+
 function renderKundenListe() {
   document.getElementById('kundenStat').textContent = kundenCache.length + ' Kunden';
   document.getElementById('kundenList').innerHTML = kundenCache.map(k => `
@@ -2540,6 +2556,7 @@ function renderKundenListe() {
       <div style="text-align:right;">
         <div style="font-weight:700;color:var(--gold);font-size:.95rem;">${(k.orderTotal||0).toFixed(2).replace('.',',')} €</div>
         <div style="font-size:.75rem;color:var(--muted);">${k.orderCount} Bestellung${k.orderCount !== 1 ? 'en' : ''}</div>
+        <div style="font-size:.72rem;margin-top:3px;">${renderStampBadge(k)}</div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">→ Details</div>
       </div>
     </div>
@@ -2595,6 +2612,13 @@ function showKundenDetail(k) {
       <div><div style="color:var(--muted);font-size:.75rem;">Telefon</div><div style="font-weight:600;">${k.phone || '–'}</div></div>
       <div><div style="color:var(--muted);font-size:.75rem;">Registriert</div><div style="font-weight:600;">${new Date(k.createdAt).toLocaleDateString('de-DE')}</div></div>
       <div><div style="color:var(--muted);font-size:.75rem;">Gesamtumsatz</div><div style="font-weight:700;color:var(--gold);">${(k.orderTotal||0).toFixed(2).replace('.',',')} €</div></div>
+      <div style="grid-column:1/-1;">
+        <div style="color:var(--muted);font-size:.75rem;margin-bottom:4px;">Stempelkarte</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${[0,1,2].map(i => `<span style="width:32px;height:32px;border-radius:50%;border:2px solid ${i < (k.stamps||0) ? '#8b1d1d' : '#ddd'};background:${i < (k.stamps||0) ? '#8b1d1d' : '#fafafa'};display:inline-flex;align-items:center;justify-content:center;font-size:14px;">${i < (k.stamps||0) ? '🍕' : '○'}</span>`).join('')}
+          ${(k.rewardsAvailable||0) > 0 ? `<span style="background:#d4a76a;color:#3d1a08;border-radius:20px;padding:3px 10px;font-weight:700;font-size:.8rem;">🎁 ${k.rewardsAvailable} Gratis-Prämie${k.rewardsAvailable > 1 ? 'n' : ''} verfügbar</span>` : `<span style="font-size:.8rem;color:#888;">${k.stamps||0}/3 Stempel</span>`}
+        </div>
+      </div>
     </div>
     <div style="padding:12px 16px 4px;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Bestellungen (${k.orderCount})</div>
   `;
