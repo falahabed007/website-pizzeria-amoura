@@ -1151,23 +1151,23 @@
                 <div class="product-info"><h3>10 Pizza Cipolla</h3><p>mit Zwiebeln</p></div>
                 <div class="price">6,00 €</div>
             </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openPizza(this)" data-s28="2.5" style="cursor: pointer;">
                 <div class="product-info"><h3>11 Pizza Primavera</h3><p>Salami, Pilze</p></div>
                 <div class="price">6,50 €</div>
             </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openPizza(this)" data-s28="2.5" style="cursor: pointer;">
                 <div class="product-info"><h3>12 Pizza Hawaii</h3><p>Schinken, Ananas</p></div>
                 <div class="price">6,50 €</div>
             </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openPizza(this)" data-s28="2.5" style="cursor: pointer;">
                 <div class="product-info"><h3>13 Pizza Romana</h3><p>Schinken, Champignons</p></div>
                 <div class="price">6,50 €</div>
             </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openPizza(this)" data-s28="2.5" style="cursor: pointer;">
                 <div class="product-info"><h3>14 Pizza Tonno Cipolla</h3><p>Thunfisch, Zwiebeln</p></div>
                 <div class="price">6,50 €</div>
             </div>
-            <div class="product-item" onclick="openPizza(this)" style="cursor: pointer;">
+            <div class="product-item" onclick="openPizza(this)" data-s28="2.5" style="cursor: pointer;">
                 <div class="product-info"><h3>15 Pizza Vito</h3><p>Schinken, Salami</p></div>
                 <div class="price">6,50 €</div>
             </div>
@@ -2990,9 +2990,15 @@ function openPizza(element) {
     pizzaBasePrice = parseFloat(priceTxt.replace(/[€()]/g, '').replace(',', '.').trim());
     sizeSurcharge = 0;
 
-    document.getElementById('modalPizzaName').innerText = name; 
+    document.getElementById('modalPizzaName').innerText = name;
     document.getElementById('btn-22').classList.add('active');
     document.getElementById('btn-28').classList.remove('active');
+
+    // 28-cm-Aufschlag: pro Pizza über data-s28 überschreibbar, sonst Standard 2,00 €
+    const s28 = element.dataset.s28 ? parseFloat(element.dataset.s28) : 2.0;
+    const btn28 = document.getElementById('btn-28');
+    btn28.setAttribute('onclick', `selectSize(28, ${s28})`);
+    btn28.innerText = `28 cm (+ ${s28.toFixed(2).replace('.', ',')} €)`;
 
     let html = "";
     let lastPrice = 0;
