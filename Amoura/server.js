@@ -34,7 +34,7 @@ const allowedOrigins = [
 app.use(cors({
   origin: function(origin, callback) {
     // Kein Origin = Postman / server-to-server / lokale Datei → erlauben
-    if (!origin) return callback(null, true);
+    if (!origin || origin === 'null') return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, origin);
     console.warn('CORS blockiert:', origin);
     return callback(new Error('CORS nicht erlaubt für: ' + origin));
