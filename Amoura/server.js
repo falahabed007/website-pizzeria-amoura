@@ -523,10 +523,10 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
     });
 
     // Stripe Connect: Provision berechnen
-    // serviceFee(0,99€) + 5% vom subtotal + Stripe-Transaktionsgebühr (1,5% + 0,25€)
+    // serviceFee(0,99€) + Stripe-Transaktionsgebühr (1,5% + 0,25€)
     // stripeFee in appFee einrechnen → Gastro trägt Stripe-Gebühren, FlueVate behält vollen Anteil
     const stripeFee = Math.round((total * 0.015 + 0.25) * 100);
-    const appFee = Math.round((serviceFee + (subtotal * 0.05)) * 100) + stripeFee;
+    const appFee = Math.round(serviceFee * 100) + stripeFee;
 
     const sessionOpts = {
       line_items: lineItems,
@@ -855,8 +855,7 @@ app.get('/api/admin/finance', auth, async (req, res) => {
     const calc = list => {
       const brutto    = list.reduce((s,o)=>s+(o.total||0),0);
       const svcFees   = list.reduce((s,o)=>s+(o.serviceFee||0.99),0);
-      const provision = (brutto - svcFees) * 0.05;
-      return { count:list.length, brutto, svcFees, provision, auszahlung: brutto-svcFees-provision };
+      return { count:list.length, brutto, svcFees, auszahlung: brutto-svcFees };
     };
     res.json({
       today: calc(orders.filter(o=>new Date(o.createdAt)>=today)),
@@ -1139,7 +1138,6 @@ const PDF_W  = 495;
 const PDF_PW = 595;
 const PDF_FT = 810;
 const PDF_SV = 0.99;
-const PDF_PR = 0.05;
 const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
 
 function pdfColorBox(doc, title, sub, color = '#8b1d1d', h = 70) {
@@ -1243,14 +1241,12 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
   const th = doc.y;
   doc.rect(PDF_M, th, PDF_W, 16).fill('#1a1a2e');
   [['#', PDF_M+2, 34, 'left'], ['Datum', PDF_M+38, 40, 'left'], ['Kunde', PDF_M+80, 170, 'left'],
-   ['Umsatz', PDF_M+252, 64, 'right'], ['Gebühr', PDF_M+318, 60, 'right'], ['5% Prov', PDF_M+380, 58, 'right'], ['Gesamt', PDF_M+2, PDF_W-4, 'right']
+   ['Umsatz', PDF_M+252, 64, 'right'], ['Servicegebühr', PDF_M+318, 118, 'right'], ['Gesamt', PDF_M+2, PDF_W-4, 'right']
   ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#fff').text(h, x, th+4, { width:w, align:a }));
   doc.y = th + 16;
   barOrders.forEach((o, i) => {
     if (doc.y > PDF_FT - 20) { doc.addPage(); doc.y = PDF_M; }
     const sf   = o.serviceFee || PDF_SV;
-    const prov = (o.total - sf) * PDF_PR;
-    const ges  = sf + prov;
     const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
     const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 24);
     const ry = doc.y;
@@ -1260,9 +1256,8 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
       .text(date,            PDF_M+38, ry+4, { width:40 })
       .text(name,            PDF_M+80, ry+4, { width:168 })
       .text(pdfFmt(o.total), PDF_M+252, ry+4, { width:64,  align:'right' })
-      .text(pdfFmt(sf),      PDF_M+318, ry+4, { width:60,  align:'right' })
-      .text(pdfFmt(prov),    PDF_M+380, ry+4, { width:58,  align:'right' });
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(ges), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
+      .text(pdfFmt(sf),      PDF_M+318, ry+4, { width:118, align:'right' });
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(sf), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
     doc.y = ry + 16;
   });
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
@@ -1270,11 +1265,7 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
   doc.rect(PDF_M, s1y, PDF_W, 18).fill('#f0f4f8');
   doc.font('Helvetica').fontSize(9).fillColor('#333').text('Servicegebühren', PDF_M+8, s1y+5).text(`${barOrders.length} × ${pdfFmt(PDF_SV)}`, PDF_M+200, s1y+5, { width:140, align:'right' });
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#222').text(pdfFmt(barStats.barSvc), PDF_M+2, s1y+5, { width:PDF_W-4, align:'right' });
-  doc.y = s1y + 18;
-  const s2y = doc.y;
-  doc.font('Helvetica').fontSize(9).fillColor('#333').text('Systemprovision (5 %)', PDF_M+8, s2y+5).text(`5 % von ${pdfFmt(barStats.barNetto)}`, PDF_M+200, s2y+5, { width:140, align:'right' });
-  doc.font('Helvetica-Bold').fontSize(9).fillColor('#222').text(pdfFmt(barStats.barProv), PDF_M+2, s2y+5, { width:PDF_W-4, align:'right' });
-  doc.y = s2y + 18 + 4;
+  doc.y = s1y + 18 + 4;
   const gy = doc.y;
   doc.rect(PDF_M, gy, PDF_W, 30).fill('#1a1a2e');
   doc.font('Helvetica-Bold').fontSize(11).fillColor('#fff').text('RECHNUNGSBETRAG (netto)', PDF_M+10, gy+9, { width:PDF_W*0.6 });
@@ -1447,15 +1438,11 @@ cron.schedule('0 22 * * 0', async () => {
 
     const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
     const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
-    const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * PDF_PR;
-    const meinBetrag = svcFees + provision;
-    const auszahlung = brutto - meinBetrag;
+    const auszahlung = brutto - svcFees;
     const barOrders  = orders.filter(o => o.payment === 'bar');
     const barSvc     = barOrders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
     const barNetto   = barOrders.reduce((s,o) => s+(o.total||0), 0) - barSvc;
-    const barProv    = barNetto * PDF_PR;
-    const barBetrag  = barSvc + barProv;
+    const barBetrag  = barSvc;
 
     const rechnungNr = await getNextRechnungNum();
 
@@ -1516,22 +1503,13 @@ cron.schedule('0 22 * * 0', async () => {
       const sfY = doc.y - 32;
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, sfY, { width: W, align: 'right' });
       doc.moveDown(0.8);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#eee').lineWidth(0.5).stroke();
-      doc.moveDown(0.5);
-
-      // Row: Provision
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Systemprovision (5 % auf Speisenumsatz)', 50);
-      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`5 % von ${nettoBase.toFixed(2).replace('.',',')} € Speisenumsatz`);
-      const pvY = doc.y - 32;
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`, 50, pvY, { width: W, align: 'right' });
-      doc.moveDown(0.8);
       doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke();
       doc.moveDown(0.5);
 
       // Total
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a2e').text('RECHNUNGSBETRAG (netto)', 50);
       const totY = doc.y - 18;
-      doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`, 50, totY, { width: W, align: 'right' });
+      doc.text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, totY, { width: W, align: 'right' });
       doc.moveDown(1.5);
 
       // Note
@@ -1558,9 +1536,7 @@ cron.schedule('0 22 * * 0', async () => {
       pdfHr(doc);
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
       doc.y += 14;
-      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
-      pdfTableRow(doc, [[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,          PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision),  PDF_M+2, PDF_W-4, 'right']], true);
-      pdfTableRow(doc, [['Mein Gesamtbetrag',                                        PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
+      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false, true);
       doc.y += 4;
       const ay = doc.y;
       doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
@@ -1593,7 +1569,7 @@ cron.schedule('0 22 * * 0', async () => {
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
       <tr><td style="padding:8px">Gesamtumsatz (Brutto)</td><td style="padding:8px;text-align:right">${brutto.toFixed(2).replace('.',',')} €</td></tr>
-      <tr style="background:#f5f5f5"><td style="padding:8px">Einbehaltene Gebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${meinBetrag.toFixed(2).replace('.',',')} €</td></tr>
+      <tr style="background:#f5f5f5"><td style="padding:8px">Servicegebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${svcFees.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihr Auszahlungsbetrag</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${auszahlung.toFixed(2).replace('.',',')} €</td></tr>
     </table>
     <p style="font-size:11px;color:#aaa;margin-top:8px">Anbei der Wochenbericht mit Kundenliste${barOrders.length > 0 ? ' und Bar-Rechnung' : ''}.</p>
@@ -1610,7 +1586,7 @@ cron.schedule('0 22 * * 0', async () => {
         to: process.env.OWNER_EMAIL,
         subject: `🧾 ${rechnungNr} + Wochenbericht KW ${kw} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei die Rechnung <b>${rechnungNr}</b> sowie der Wochenbericht KW ${kw} / ${now.getFullYear()} für Pizzeria Amoura.</p>
-               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Dein Verdienst:</b> ${meinBetrag.toFixed(2).replace('.',',')} €</p>`,
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Dein Verdienst:</b> ${svcFees.toFixed(2).replace('.',',')} €</p>`,
         attachments: [
           { filename: `${rechnungNr}_ARF_Rechnung.pdf`, content: rechnungPdf.toString('base64') },
           { filename: `KW${kw}_${now.getFullYear()}_Amoura_Wochenbericht.pdf`, content: berichtPdf.toString('base64') },
@@ -1651,15 +1627,11 @@ cron.schedule('0 22 * * *', async () => {
 
     const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
     const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
-    const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * PDF_PR;
-    const meinBetrag = svcFees + provision;
-    const auszahlung = brutto - meinBetrag;
+    const auszahlung = brutto - svcFees;
     const barOrdersM = orders.filter(o => o.payment === 'bar');
     const barSvcM    = barOrdersM.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
     const barNettoM  = barOrdersM.reduce((s,o) => s+(o.total||0), 0) - barSvcM;
-    const barProvM   = barNettoM * PDF_PR;
-    const barBetragM = barSvcM + barProvM;
+    const barBetragM = barSvcM;
 
     // ── Wochenübersicht berechnen ─────────────────────────────────
     const weeksMap = {};
@@ -1684,9 +1656,7 @@ cron.schedule('0 22 * * *', async () => {
       pdfHr(doc);
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
       doc.y += 14;
-      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
-      pdfTableRow(doc, [[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,          PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision),  PDF_M+2, PDF_W-4, 'right']], true);
-      pdfTableRow(doc, [['Mein Gesamtbetrag',                                        PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
+      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false, true);
       doc.y += 4;
       const ay = doc.y;
       doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
@@ -1743,15 +1713,10 @@ cron.schedule('0 22 * * *', async () => {
       doc.font('Helvetica').fontSize(9).fillColor('#888').text(`${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen (${monat})`);
       const sfY = doc.y - 32;
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, sfY, { width:W, align:'right' });
-      doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#eee').lineWidth(0.5).stroke(); doc.moveDown(0.5);
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Systemprovision (5 % auf Speisenumsatz)', 50);
-      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`5 % von ${nettoBase.toFixed(2).replace('.',',')} € Speisenumsatz`);
-      const pvY = doc.y - 32;
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`, 50, pvY, { width:W, align:'right' });
       doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a2e').text('RECHNUNGSBETRAG (netto)', 50);
       const totY = doc.y - 18;
-      doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`, 50, totY, { width:W, align:'right' });
+      doc.text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, totY, { width:W, align:'right' });
       doc.moveDown(1.5);
       const noteY = doc.y;
       doc.rect(50, noteY, W, 26).fill('#fff8e1');
@@ -1774,7 +1739,7 @@ cron.schedule('0 22 * * *', async () => {
     <table style="width:100%;border-collapse:collapse;font-size:13px">
       <tr style="background:#f5f5f5"><td style="padding:8px">Bestellungen gesamt</td><td style="padding:8px;text-align:right"><b>${orders.length}</b></td></tr>
       <tr><td style="padding:8px">Gesamtumsatz (Brutto)</td><td style="padding:8px;text-align:right">${brutto.toFixed(2).replace('.',',')} €</td></tr>
-      <tr style="background:#f5f5f5"><td style="padding:8px">Einbehaltene Gebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${meinBetrag.toFixed(2).replace('.',',')} €</td></tr>
+      <tr style="background:#f5f5f5"><td style="padding:8px">Servicegebühren (A. R. Falah)</td><td style="padding:8px;text-align:right">− ${svcFees.toFixed(2).replace('.',',')} €</td></tr>
       <tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihr Auszahlungsbetrag</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${auszahlung.toFixed(2).replace('.',',')} €</td></tr>
     </table>
     <p style="font-size:11px;color:#aaa;margin-top:8px">Anbei der Monatsbericht mit Kundenliste${barOrdersM.length > 0 ? ' und Bar-Rechnung' : ''}.</p>
@@ -1791,7 +1756,7 @@ cron.schedule('0 22 * * *', async () => {
         to: process.env.OWNER_EMAIL,
         subject: `🧾 ${rechnungNr} + Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei Rechnung <b>${rechnungNr}</b> und Monatsbericht <b>${monat}</b> für Pizzeria Amoura.</p>
-               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Verdienst:</b> ${meinBetrag.toFixed(2).replace('.',',')} €${barOrdersM.length > 0 ? `<br><b>Bar-Rechnung:</b> ${barBetragM.toFixed(2).replace('.',',')} € (${barOrdersM.length} Barzahlungen)` : ''}</p>`,
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Verdienst:</b> ${svcFees.toFixed(2).replace('.',',')} €${barOrdersM.length > 0 ? `<br><b>Bar-Rechnung:</b> ${barBetragM.toFixed(2).replace('.',',')} € (${barOrdersM.length} Barzahlungen)` : ''}</p>`,
         attachments: [
           { filename: `${rechnungNr}_ARF_Monatsrechnung_${monat.replace(' ','_')}.pdf`, content: monatRechnungPdf.toString('base64') },
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`,              content: monatsPdf.toString('base64') },
@@ -1829,15 +1794,11 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
 
     const brutto     = orders.reduce((s,o) => s+(o.total||0), 0);
     const svcFees    = orders.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
-    const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * PDF_PR;
-    const meinBetrag = svcFees + provision;
-    const auszahlung = brutto - meinBetrag;
+    const auszahlung = brutto - svcFees;
     const barOrdersM = orders.filter(o => o.payment === 'bar');
     const barSvcM    = barOrdersM.reduce((s,o) => s+(o.serviceFee||PDF_SV), 0);
     const barNettoM  = barOrdersM.reduce((s,o) => s+(o.total||0), 0) - barSvcM;
-    const barProvM   = barNettoM * PDF_PR;
-    const barBetragM = barSvcM + barProvM;
+    const barBetragM = barSvcM;
     const weeksMap = {};
     orders.forEach(o => { const kw2=getWeekNum(new Date(o.createdAt)); if(!weeksMap[kw2])weeksMap[kw2]={n:0,brutto:0}; weeksMap[kw2].n++; weeksMap[kw2].brutto+=o.total||0; });
     const weekRows = Object.entries(weeksMap).sort((a,b)=>+a[0]-+b[0]);
@@ -1850,9 +1811,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       ]);
       doc.moveDown(0.4); pdfHr(doc);
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG',PDF_M,doc.y); doc.y+=14;
-      pdfTableRow(doc,[[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees),PDF_M+2,PDF_W-4,'right']],false);
-      pdfTableRow(doc,[[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(provision),PDF_M+2,PDF_W-4,'right']],true);
-      pdfTableRow(doc,[['Mein Gesamtbetrag',PDF_M+8,PDF_W-80,'left'],[pdfFmt(meinBetrag),PDF_M+2,PDF_W-4,'right']],false,true);
+      pdfTableRow(doc,[[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees),PDF_M+2,PDF_W-4,'right']],false,true);
       doc.y+=4;
       const ay=doc.y; doc.rect(PDF_M,ay,PDF_W,28).fill('#e8f5e9');
       doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura',PDF_M+10,ay+8,{width:PDF_W*0.65});
@@ -1893,13 +1852,9 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Servicegebühren Online-Bestellsystem',50);
       doc.font('Helvetica').fontSize(9).fillColor('#888').text(`${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen (${monat})`);
       const sfY=doc.y-32; doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`,50,sfY,{width:W,align:'right'});
-      doc.moveDown(0.8); doc.moveTo(50,doc.y).lineTo(545,doc.y).strokeColor('#eee').lineWidth(0.5).stroke(); doc.moveDown(0.5);
-      doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Systemprovision (5 % auf Speisenumsatz)',50);
-      doc.font('Helvetica').fontSize(9).fillColor('#888').text(`5 % von ${nettoBase.toFixed(2).replace('.',',')} € Speisenumsatz`);
-      const pvY=doc.y-32; doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`,50,pvY,{width:W,align:'right'});
       doc.moveDown(0.8); doc.moveTo(50,doc.y).lineTo(545,doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
       doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a2e').text('RECHNUNGSBETRAG (netto)',50);
-      const totY=doc.y-18; doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`,50,totY,{width:W,align:'right'});
+      const totY=doc.y-18; doc.text(`${svcFees.toFixed(2).replace('.',',')} €`,50,totY,{width:W,align:'right'});
       doc.moveDown(1.5);
       const noteY=doc.y; doc.rect(50,noteY,W,26).fill('#fff8e1');
       doc.fontSize(9).font('Helvetica').fillColor('#7a5c00').text('Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).',56,noteY+4);
@@ -1920,7 +1875,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `🧾 ${rechnungNr} + Monatsbericht ${monat} · Pizzeria Amoura`,
-        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Rechnung <b>${rechnungNr}</b> und Monatsbericht <b>${monat}</b>.<br><b>Verdienst:</b> ${meinBetrag.toFixed(2).replace('.',',')} €</p>`,
+        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Rechnung <b>${rechnungNr}</b> und Monatsbericht <b>${monat}</b>.<br><b>Verdienst:</b> ${svcFees.toFixed(2).replace('.',',')} €</p>`,
         attachments: [
           { filename: `${rechnungNr}_ARF_Monatsrechnung_${monat.replace(' ','_')}.pdf`, content: monatRechnungPdf.toString('base64') },
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
