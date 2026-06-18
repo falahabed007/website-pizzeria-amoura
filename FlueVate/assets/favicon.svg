@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="15" fill="#1F2A26"/>
+  <!-- Dampf-/Swirl-Motiv (wie im Logo über dem Schriftzug) -->
+  <path d="M40 13c3.2 0 3.2 3.2 6.4 3.2S49.6 13 52.8 13" fill="none" stroke="#71B49A" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M41 19c2.6 0 2.6 2.6 5.2 2.6s2.6-2.6 5.2-2.6" fill="none" stroke="#71B49A" stroke-width="2.4" stroke-linecap="round" opacity=".6"/>
+  <!-- Serif-F -->
+  <text x="32" y="50" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-weight="700" fill="#71B49A" text-anchor="middle">F</text>
+</svg>
