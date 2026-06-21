@@ -198,7 +198,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
 .items-list .il-item{display:flex;justify-content:space-between;font-size:.82rem;padding:3px 0;border-bottom:1px solid var(--border);}
 .items-list .il-item:last-child{border-bottom:none;}
 .items-list .il-total{display:flex;justify-content:space-between;font-weight:700;font-size:.9rem;padding-top:8px;margin-top:4px;border-top:1px solid var(--border);color:var(--gold);}
-.time-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.time-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
 .time-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 6px;font-size:.84rem;font-weight:700;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .15s;text-align:center;}
 .time-btn:hover{border-color:var(--green);color:var(--green);}
 .time-btn.selected{background:rgba(76,175,80,.15);border-color:var(--green);color:var(--green);}
@@ -827,12 +827,13 @@ const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025xyzABCDEFGHIJKLMN';
 const SERVICE_FEE     = 0.99;
 const DELIVERY_FEES   = { Beckum:2.50, Roland:3.00, Vellern:3.00 };
 
-let token       = sessionStorage.getItem('amouraToken') || '';
+let token       = localStorage.getItem('amouraToken') || '';
 let orders      = [];
 let allOrders   = [];
 let stripeOrders = [];
 let loadOrdersCtrl  = null; // AbortController für laufende Anfragen
 let dateChangeTimer = null;
+let alarmTimer = null, titleTimer = null, alarmCtx = null; // Dauer-Klingeln bei neuer Bestellung
 
 function onDateChange() {
   // Debounce: 300ms warten bis User fertig navigiert hat
@@ -1058,7 +1059,7 @@ async function doLogin() {
   // Lokales Passwort-Check
   if (pw === DASHBOARD_PW) {
     token = ADMIN_TOKEN_SEC;
-    sessionStorage.setItem('amouraToken', token);
+    localStorage.setItem('amouraToken', token);
     onSuccess(); showApp();
     return;
   }
@@ -1066,7 +1067,7 @@ async function doLogin() {
   try {
     const r = await fetch(API_BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     const d = await r.json();
-    if (d.token) { token=d.token; sessionStorage.setItem('amouraToken',token); onSuccess(); showApp(); }
+    if (d.token) { token=d.token; localStorage.setItem('amouraToken',token); onSuccess(); showApp(); }
     else document.getElementById('loginErr').style.display='block';
   } catch {
     document.getElementById('loginErr').style.display='block';
@@ -1087,7 +1088,7 @@ function showApp() {
   initDashboard();
 }
 function doLogout() {
-  sessionStorage.removeItem('amouraToken');
+  localStorage.removeItem('amouraToken');
   location.reload();
 }
 function apiHeaders() { return {'Content-Type':'application/json','Authorization':'Bearer '+token}; }
@@ -1137,7 +1138,7 @@ async function pollPending() {
       if (!knownIds.has(o._id)) {
         knownIds.add(o._id);
         localStorage.setItem('amouraKnownIds', JSON.stringify([...knownIds]));
-        playAlarm();
+        startAlarm();
         showPendingModal(o);
         break; // ein Modal auf einmal
       }
@@ -1145,9 +1146,12 @@ async function pollPending() {
   } catch(e) {}
 }
 
-function playAlarm() {
+// Spielt das Beep-Muster einmal (wiederverwendeter AudioContext)
+function ringOnce() {
   try {
-    const ctx = new(window.AudioContext||window.webkitAudioContext)();
+    if (!alarmCtx) alarmCtx = new(window.AudioContext||window.webkitAudioContext)();
+    if (alarmCtx.state === 'suspended') alarmCtx.resume();
+    const ctx = alarmCtx;
     function beep(freq, start, dur) {
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
@@ -1158,10 +1162,27 @@ function playAlarm() {
     }
     beep(880,0,.15); beep(1100,.2,.15); beep(880,.4,.15); beep(1100,.6,.25);
   } catch(e) {}
-  // Tab blinken
+}
+
+// Startet das Dauer-Klingeln (bis stopAlarm) + weckt das Tablet
+function startAlarm() {
+  // Fully Kiosk: Bildschirm an + App in den Vordergrund (auf Nicht-Fully ignoriert)
+  if (window.fully) {
+    try { fully.turnScreenOn(); fully.bringToForeground(); } catch(e) {}
+  }
+  if (alarmTimer) return; // läuft bereits – nicht stapeln
+  ringOnce();
+  alarmTimer = setInterval(ringOnce, 2000); // alle 2 s wiederholen
+  // Tab-Titel blinken (ohne Auto-Stop – endet erst mit stopAlarm)
   let b=false;
-  const iv=setInterval(()=>{document.title=b?'🔴 NEUE BESTELLUNG!':'🍕 Amoura Dashboard';b=!b;},700);
-  setTimeout(()=>{clearInterval(iv);document.title='🍕 Amoura Dashboard';},15000);
+  titleTimer = setInterval(()=>{document.title=b?'🔴 NEUE BESTELLUNG!':'🍕 Amoura Dashboard';b=!b;},700);
+}
+
+// Stoppt Klingeln + Blinken (bei Annehmen/Ablehnen)
+function stopAlarm() {
+  if (alarmTimer) { clearInterval(alarmTimer); alarmTimer=null; }
+  if (titleTimer) { clearInterval(titleTimer); titleTimer=null; }
+  document.title='🍕 Amoura Dashboard';
 }
 
 function showPendingModal(order) {
@@ -1194,7 +1215,7 @@ function showPendingModal(order) {
     </div>
     <div style="font-size:.8rem;color:var(--muted);margin-bottom:10px;font-weight:600;">⏱ Voraussichtliche Zeit wählen:</div>
     <div class="time-btns">
-      ${[20,30,45,60].map(m=>`<div class="time-btn" id="tbtn${m}" onclick="selectTime(${m})">${m} Min</div>`).join('')}
+      ${[10,15,20,30,45,60].map(m=>`<div class="time-btn" id="tbtn${m}" onclick="selectTime(${m})">${m} Min</div>`).join('')}
     </div>
     <button class="confirm-btn" id="confirmBtn" onclick="confirmOrder()" disabled>✅ Annehmen & E-Mail senden</button>
     <button class="cancel-btn" onclick="toggleCancelReason()">❌ Ablehnen / Stornieren</button>
@@ -1255,6 +1276,7 @@ async function cancelOrder() {
 }
 
 function closePendingModal() {
+  stopAlarm(); // Klingeln beenden (Bestellung wurde angenommen/abgelehnt)
   document.getElementById('pendingModal').classList.remove('show');
   currentPending=null; selectedTime=null;
 }
