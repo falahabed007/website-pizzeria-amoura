@@ -774,6 +774,21 @@ app.get('/api/admin/orders', auth, async (req, res) => {
       });
     }
 
+    const monthParam = req.query.month; // z.B. "2026-06"
+    if (monthParam) {
+      // ── Monats-Abfrage: alle Bestellungen des Monats (für Monatsabschluss-Druck) ──
+      const [y, m] = monthParam.split('-').map(Number);
+      const ny = m === 12 ? y + 1 : y;
+      const nm = m === 12 ? 1 : m + 1;
+      const from = new Date(`${monthParam}-01T00:00:00+02:00`);
+      const to   = new Date(`${ny}-${String(nm).padStart(2,'0')}-01T00:00:00+02:00`);
+      const orders = await Order.find({
+        status:    { $nin: ['pending', 'awaiting_payment'] },
+        createdAt: { $gte: from, $lt: to }
+      }).sort({ createdAt: 1 });
+      return res.json({ orders });
+    }
+
     // ── Normalfall: heutige + laufende Bestellungen ──
     const orders  = await Order.find({ status:{ $nin:['pending'] } }).sort({ createdAt:-1 }).limit(300);
     const pending = await Order.find({ status:'pending' }).sort({ createdAt:1 });
