@@ -822,8 +822,7 @@ function closeFamPopup(){document.getElementById('famPizzaPopup').style.display=
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
 const API_BASE        = 'https://website-pizzeria-amoura.onrender.com/api';
-const DASHBOARD_PW    = 'Amoura2025Admin!';
-const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025xyzABCDEFGHIJKLMN';
+// Kein Passwort/Token mehr im Client – Login & Token-Vergabe laufen serverseitig (JWT).
 const SERVICE_FEE     = 0.99;
 const DELIVERY_FEES   = { Beckum:2.50, Roland:3.00, Vellern:3.00 };
 
@@ -1064,23 +1063,20 @@ async function doLogin() {
   if (!pw) return;
   const remember = document.getElementById('rememberPw').checked;
   document.getElementById('loginErr').style.display='none';
-  const onSuccess = () => {
-    if (remember) localStorage.setItem('amouraSavedPw', pw);
-    else localStorage.removeItem('amouraSavedPw');
-  };
-  // Lokales Passwort-Check
-  if (pw === DASHBOARD_PW) {
-    token = ADMIN_TOKEN_SEC;
-    localStorage.setItem('amouraToken', token);
-    onSuccess(); showApp();
-    return;
-  }
-  // Backend-Login (nur wenn kein lokaler Match)
+  // Server-Login: Passwort wird serverseitig geprüft, der Server liefert ein zeitlich
+  // begrenztes JWT zurück (kein Passwort/Token mehr im Browser-Quelltext).
   try {
     const r = await fetch(API_BASE+'/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
     const d = await r.json();
-    if (d.token) { token=d.token; localStorage.setItem('amouraToken',token); onSuccess(); showApp(); }
-    else document.getElementById('loginErr').style.display='block';
+    if (r.ok && d.token) {
+      token = d.token;
+      localStorage.setItem('amouraToken', token);
+      if (remember) localStorage.setItem('amouraSavedPw', pw);
+      else localStorage.removeItem('amouraSavedPw');
+      showApp();
+    } else {
+      document.getElementById('loginErr').style.display='block';
+    }
   } catch {
     document.getElementById('loginErr').style.display='block';
   }
@@ -1143,6 +1139,9 @@ function startClock() {
 async function pollPending() {
   try {
     const r = await fetch(API_BASE+'/admin/orders/pending',{headers:apiHeaders()});
+    if (r.status === 401) { // Sitzung abgelaufen → zurück zum Login
+      localStorage.removeItem('amouraToken'); token = ''; location.reload(); return;
+    }
     const d = await r.json();
     const pending = d.pending || [];
     const todayStart = new Date(); todayStart.setHours(0,0,0,0);
