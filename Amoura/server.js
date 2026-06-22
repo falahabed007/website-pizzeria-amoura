@@ -50,6 +50,14 @@ app.options('*', cors());
 app.use('/api/stripe-webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
+// ─── Security-Header (ohne Extra-Dependency) ─────────────────────
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // ─── Statische HTML-Dateien (kein Cache) ─────────────────────────
 const path = require('path');
 app.use(express.static(path.join(__dirname), {
@@ -145,8 +153,14 @@ async function getNextOrderNum() {
 function auth(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ message: 'Nicht autorisiert' });
-  if (h.split(' ')[1] !== process.env.ADMIN_TOKEN_SECRET) return res.status(401).json({ message: 'Token ungültig' });
-  next();
+  try {
+    const decoded = jwt.verify(h.split(' ')[1], process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') return res.status(401).json({ message: 'Keine Admin-Rechte' });
+    req.admin = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ message: 'Token ungültig oder abgelaufen' });
+  }
 }
 
 // ─── Customer Auth (JWT) ──────────────────────────────────────────
@@ -701,10 +715,28 @@ app.get('/api/admin/customers', auth, async (req, res) => {
   }
 });
 
-app.post('/api/admin/login', (req, res) => {
-  req.body.password === process.env.ADMIN_PASSWORD
-    ? res.json({ token: process.env.ADMIN_TOKEN_SECRET })
-    : res.status(401).json({ message: 'Falsches Passwort' });
+// Einfacher In-Memory-Brute-Force-Schutz (ohne Extra-Dependency): max. 10 Versuche / 15 Min / IP
+const loginAttempts = new Map();
+function loginRateLimit(req, res, next) {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || 'unknown';
+  const now = Date.now(), WIN = 15 * 60 * 1000;
+  const rec = loginAttempts.get(ip);
+  if (rec && now - rec.first < WIN && rec.count >= 10) {
+    return res.status(429).json({ message: 'Zu viele Versuche. Bitte in 15 Minuten erneut versuchen.' });
+  }
+  if (!rec || now - rec.first >= WIN) loginAttempts.set(ip, { count: 1, first: now });
+  else rec.count++;
+  req._loginIp = ip;
+  next();
+}
+
+app.post('/api/admin/login', loginRateLimit, (req, res) => {
+  if (req.body.password === process.env.ADMIN_PASSWORD) {
+    loginAttempts.delete(req._loginIp); // erfolgreicher Login → Zähler zurücksetzen
+    const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '12h' });
+    return res.json({ token });
+  }
+  res.status(401).json({ message: 'Falsches Passwort' });
 });
 
 // ── Pending Bestellungen (für 5s Polling) ───────────────────────
