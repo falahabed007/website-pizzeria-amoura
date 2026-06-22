@@ -2500,14 +2500,11 @@ async function printMonthReport() {
     orders = (d.orders || []).filter(o => o.status !== 'cancelled');
   } catch(e) { showToast('⚠️ Konnte Monatsdaten nicht laden'); return; }
 
-  const SVC = 0.99, BASE = 150;
   const nBar    = orders.filter(o=>o.payment==='bar').length;
   const nOnline = orders.filter(o=>['stripe','paypal','karte'].includes(o.payment)).length;
-  const brutto  = orders.reduce((s,o)=>s+(o.total||0),0);
-  const svcFees = orders.reduce((s,o)=>s+(o.serviceFee||SVC),0);
-  const gesamtGeb  = svcFees + BASE;
-  const auszahlung = brutto - svcFees;
-  const fmt = v => v.toFixed(2).replace('.',',') + ' €';
+  const nDel    = orders.filter(o=>o.mode==='lieferung').length;
+  const nPick   = orders.filter(o=>o.mode==='abholung').length;
+  const total   = orders.reduce((s,o)=>s+(o.total||0),0);
 
   const w = window.open('','_blank','width=520,height=820');
   w.document.write(`<!DOCTYPE html><html><head><title>Monatsabschluss ${monatLabel}</title>
@@ -2526,19 +2523,10 @@ async function printMonthReport() {
   <hr>
   <table>
     <tr><td>Bestellungen gesamt</td><td align="right"><b>${orders.length}</b></td></tr>
-    <tr><td>&nbsp;&nbsp;davon Bar</td><td align="right">${nBar}</td></tr>
-    <tr><td>&nbsp;&nbsp;davon Online</td><td align="right">${nOnline}</td></tr>
-    <tr><td>Brutto-Umsatz</td><td align="right">${fmt(brutto)}</td></tr>
-  </table>
-  <hr>
-  <table>
-    <tr><td>Servicegebühren (${fmt(SVC)} × ${orders.length})</td><td align="right">${fmt(svcFees)}</td></tr>
-    <tr><td>Grundgebühr (monatlich)</td><td align="right">${fmt(BASE)}</td></tr>
-    <tr class="sum"><td>Gesamt FlueVate-Gebühren</td><td align="right">${fmt(gesamtGeb)}</td></tr>
-  </table>
-  <hr>
-  <table>
-    <tr class="sum"><td>Auszahlung an Pizzeria Amoura</td><td align="right">${fmt(auszahlung)}</td></tr>
+    <tr><td>&nbsp;&nbsp;davon Lieferung</td><td align="right">${nDel}</td></tr>
+    <tr><td>&nbsp;&nbsp;davon Abholung</td><td align="right">${nPick}</td></tr>
+    <tr><td>&nbsp;&nbsp;Barzahlung</td><td align="right">${nBar}</td></tr>
+    <tr><td>&nbsp;&nbsp;Online / Karte</td><td align="right">${nOnline}</td></tr>
   </table>
   <hr>
   <table>
@@ -2551,6 +2539,10 @@ async function printMonthReport() {
       <td>${o.mode==='lieferung'?'Lief.':'Abh.'}</td>
       <td align="right">${(o.total||0).toFixed(2).replace('.',',')} €</td>
     </tr>`).join('')}
+  </table>
+  <hr>
+  <table>
+    <tr class="sum"><td>GESAMTUMSATZ</td><td align="right">${total.toFixed(2).replace('.',',')} €</td></tr>
   </table>
   <hr>
   <p style="text-align:center;font-size:11px;">Gedruckt: ${new Date().toLocaleString('de-DE')}</p>
