@@ -1117,10 +1117,31 @@ function initDashboard() {
   setInterval(loadRestaurantStatus, 30000); // alle 30s Status-Badge aktualisieren
   // Datum-Picker auf heute setzen
   document.getElementById('reportDate').value = new Date().toISOString().slice(0,10);
+  dashToday = new Date().toISOString().slice(0,10);
+  setInterval(checkDayRollover, 30000); // Mitternachts-Wechsel erkennen (Tablet läuft 24/7)
   if(Notification&&Notification.permission==='default') Notification.requestPermission();
   checkEpos();
   checkRawbt();
   setInterval(() => { checkEpos(); checkRawbt(); }, 30000); // alle 30s prüfen
+}
+
+// Tablet läuft durch → bei Tageswechsel den Datums-Picker automatisch auf den neuen Tag
+// stellen (nur wenn der Nutzer auf "heute" stand, nicht wenn er einen alten Tag ansieht).
+let dashToday = new Date().toISOString().slice(0,10);
+function checkDayRollover() {
+  const nowDay = new Date().toISOString().slice(0,10);
+  if (nowDay === dashToday) return;
+  const rd = document.getElementById('reportDate');
+  if (rd && (!rd.value || rd.value === dashToday)) {
+    rd.value = nowDay;       // war auf "heute" → auf neuen Tag umstellen
+    dashToday = nowDay;
+    knownIds = new Set();    // neuer Tag → Bestellungen wieder als "neu" erkennen
+    localStorage.setItem('amouraKnownIds', '[]');
+    localStorage.setItem('amouraKnownIdsDate', new Date().toDateString());
+    loadOrders();
+  } else {
+    dashToday = nowDay;      // Nutzer sieht einen anderen Tag an → Auswahl nicht überschreiben
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
