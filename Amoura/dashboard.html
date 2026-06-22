@@ -371,6 +371,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
           <button class="day-btn" onclick="openStripeModal()" id="btnStripePanel" style="white-space:nowrap;">💳 Offene Zahlungen</button>
           <button class="day-btn" onclick="openKundenModal()" style="white-space:nowrap;">👥 Kunden</button>
           <button class="day-btn" onclick="printDayReport()" style="white-space:nowrap;">📊 Tagesabschluss</button>
+          <button class="day-btn" onclick="printMonthReport()" style="white-space:nowrap;">📅 Monatsabschluss</button>
         </div>
       </div>
 
@@ -1980,19 +1981,20 @@ async function eposPrint(order) {
   const isD = order.mode === 'lieferung';
   const time = new Date(order.createdAt).toLocaleString('de-DE');
 
-  const x = (t, attr='') => `<text${attr}>${xmlEsc(t)}&#10;</text>`;
-  const div = () => `<text>--------------------------------&#10;</text>`;
+  // 80-mm-Bon: volle Breite (42 Zeichen) + doppelte Höhe (dh) für gute Lesbarkeit
+  const x   = (t, attr='') => `<text dh="true"${attr}>${xmlEsc(t)}&#10;</text>`;
+  const div = () => `<text dh="true">------------------------------------------&#10;</text>`;
 
   let body = '';
   // Header
-  body += `<text align="center" em="true">PIZZERIA AMOURA&#10;</text>`;
-  body += `<text align="center">Oststrasse 48 - 59269 Beckum&#10;</text>`;
-  body += `<text align="center">02521 / 829 06 00&#10;</text>`;
+  body += x('PIZZERIA AMOURA',               ' align="center" em="true"');
+  body += x('Oststrasse 48 - 59269 Beckum',  ' align="center"');
+  body += x('02521 / 829 06 00',             ' align="center"');
   body += div();
   // Bestellnummer
-  body += `<text align="center" em="true">BESTELLUNG #${order.orderNum}&#10;</text>`;
-  body += `<text align="center">${xmlEsc(time)}&#10;</text>`;
-  body += `<text align="center" em="true">${isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***'}&#10;</text>`;
+  body += x(`BESTELLUNG #${order.orderNum}`,  ' align="center" em="true"');
+  body += x(time,                            ' align="center"');
+  body += x(isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***', ' align="center" em="true"');
   body += div();
   // Kunde
   body += x(`${order.customer?.first||''} ${order.customer?.last||''}`);
@@ -2002,11 +2004,11 @@ async function eposPrint(order) {
     body += x(order.customer?.city||'');
   }
   body += div();
-  // Artikel
+  // Artikel (Breite 42: Label 30 + Preis 12)
   for (const i of (order.items||[])) {
-    const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,24).padEnd(24);
-    const price = i.price===0 ? '   GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
-    body += `<text>${xmlEsc(label + price.padStart(9))}&#10;</text>`;
+    const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,30).padEnd(30);
+    const price = i.price===0 ? 'GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
+    body += x(label + price.padStart(12));
     const extras = i.extraDetails || [];
     if (extras.length) {
       extras.forEach(e => { if (e.name) body += x(`  ${e.name}`); });
@@ -2015,19 +2017,19 @@ async function eposPrint(order) {
     }
   }
   body += div();
-  // Preise
-  const pad = v => String(v).padStart(14);
+  // Preise (Label 16 + Wert rechtsbündig 26 = 42)
+  const pad = v => String(v).padStart(26);
   body += x(`Zwischensumme:  ${pad((order.subtotal||0).toFixed(2)+' EUR')}`);
   if ((order.deliveryFee||0)>0) body += x(`Liefergebuehr:  ${pad(order.deliveryFee.toFixed(2)+' EUR')}`);
   body += x(`Servicegebuehr: ${pad((order.serviceFee||0.99).toFixed(2)+' EUR')}`);
-  body += `<text em="true">GESAMT:         ${xmlEsc(pad((order.total||0).toFixed(2)+' EUR'))}&#10;</text>`;
+  body += x(`GESAMT:         ${pad((order.total||0).toFixed(2)+' EUR')}`, ' em="true"');
   body += div();
   // Zahlung
   const zahlung = order.payment==='stripe'?'KREDITKARTE':order.payment==='paypal'?'PAYPAL':order.payment==='karte'?'EC-KARTE':'BARZAHLUNG';
   body += x(`Zahlung: ${zahlung}`);
   body += x(order.paymentStatus==='paid' ? 'BEZAHLT' : '!!! BITTE KASSIEREN !!!');
   if (order.prepTime) body += x(`Wartezeit: ca. ${order.prepTime} Minuten`);
-  if (order.note) body += `<text em="true">${xmlEsc('Anm.: '+order.note)}&#10;</text>`;
+  if (order.note) body += x('Anm.: '+order.note, ' em="true"');
   body += `<feed line="3"/><cut type="feed"/>`;
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>`
@@ -2457,6 +2459,26 @@ async function doRecoverStripe() {
   }
   btn.disabled = false;
   btn.textContent = '🔁 Stripe prüfen & einbuchen';
+}
+
+// Monatsabschluss: ruft den Server-Endpoint auf (erzeugt offiziellen Monats-PDF + Mail)
+async function printMonthReport() {
+  if (!confirm('Monatsabschluss für den aktuellen Monat erstellen und per E-Mail versenden?')) return;
+  showToast('📅 Monatsbericht wird erstellt…');
+  try {
+    const r = await fetch(`${API_BASE}/admin/send-monthly`, { method:'POST', headers: apiHeaders() });
+    if (r.status === 401) { localStorage.removeItem('amouraToken'); token=''; location.reload(); return; }
+    const d = await r.json();
+    if (!r.ok) { showToast('⚠️ Fehler: ' + (d.message || 'unbekannt')); return; }
+    showToast(`📅 Monatsbericht ${d.monat || ''} versendet (${d.orders || 0} Bestellungen)`);
+    if (d.monatsPdfBase64) {
+      const bin = atob(d.monatsPdfBase64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+      window.open(url, '_blank');
+    }
+  } catch(e) { showToast('⚠️ Monatsabschluss fehlgeschlagen'); }
 }
 
 async function printDayReport() {

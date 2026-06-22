@@ -2700,6 +2700,16 @@ async function processOrder() {
         return;
     }
 
+    // Kundendaten lokal merken → beim nächsten Mal vorausgefüllt (nur im Browser des Kunden)
+    try {
+        localStorage.setItem('amouraGuestCustomer', JSON.stringify({
+            first: vorname, last: nachname, phone: telefon, email: email,
+            street: document.getElementById('c-strasse')?.value.trim() || '',
+            house:  document.getElementById('c-hausnummer')?.value.trim() || '',
+            city:   document.getElementById('c-stadt')?.value || ''
+        }));
+    } catch(e) {}
+
     let address = "";
     let fee = 0;
 
@@ -4675,32 +4685,51 @@ body.modal-open {
   }
 
   function fillCheckout() {
-    if (!_customer) return;
+    // Eingeloggter Kunde → aus Profil befüllen
+    if (_customer) {
+      var fn = document.getElementById('c-vorname');
+      var ln = document.getElementById('c-nachname');
+      var tel = document.getElementById('c-telefon');
+      var em = document.getElementById('c-email');
+      if (fn && !fn.value) fn.value = _customer.first || '';
+      if (ln && !ln.value) ln.value = _customer.last || '';
+      if (tel && !tel.value) tel.value = _customer.phone || '';
+      if (em && !em.value) em.value = _customer.email || '';
 
-    var fn = document.getElementById('c-vorname');
-    var ln = document.getElementById('c-nachname');
-    var tel = document.getElementById('c-telefon');
-    var em = document.getElementById('c-email');
-    if (fn && !fn.value) fn.value = _customer.first || '';
-    if (ln && !ln.value) ln.value = _customer.last || '';
-    if (tel && !tel.value) tel.value = _customer.phone || '';
-    if (em && !em.value) em.value = _customer.email || '';
+      // Default-Adresse befüllen
+      var addr = _customer.addresses && _customer.addresses[_customer.defaultAddress || 0];
+      if (addr) {
+        var st = document.getElementById('c-strasse');
+        var hn = document.getElementById('c-hausnummer');
+        if (st && !st.value) st.value = addr.street || '';
+        if (hn && !hn.value) hn.value = addr.house || '';
+      }
 
-    // Default-Adresse befüllen
-    var addr = _customer.addresses && _customer.addresses[_customer.defaultAddress || 0];
-    if (addr) {
-      var st = document.getElementById('c-strasse');
-      var hn = document.getElementById('c-hausnummer');
-      if (st && !st.value) st.value = addr.street || '';
-      if (hn && !hn.value) hn.value = addr.house || '';
+      // Banner anzeigen
+      var banner = document.getElementById('checkout-customer-banner');
+      if (banner) {
+        banner.textContent = '👤 Eingeloggt als ' + _customer.first + ' ' + _customer.last;
+        banner.style.display = 'block';
+      }
+      return;
     }
 
-    // Banner anzeigen
-    var banner = document.getElementById('checkout-customer-banner');
-    if (banner) {
-      banner.textContent = '👤 Eingeloggt als ' + _customer.first + ' ' + _customer.last;
-      banner.style.display = 'block';
-    }
+    // Gast → zuletzt verwendete Daten aus localStorage vorbefüllen (Komfort für Stammkunden)
+    try {
+      var g = JSON.parse(localStorage.getItem('amouraGuestCustomer') || 'null');
+      if (!g) return;
+      var gfn=document.getElementById('c-vorname'), gln=document.getElementById('c-nachname'),
+          gtel=document.getElementById('c-telefon'), gem=document.getElementById('c-email'),
+          gst=document.getElementById('c-strasse'), ghn=document.getElementById('c-hausnummer'),
+          gci=document.getElementById('c-stadt');
+      if (gfn && !gfn.value) gfn.value = g.first || '';
+      if (gln && !gln.value) gln.value = g.last || '';
+      if (gtel && !gtel.value) gtel.value = g.phone || '';
+      if (gem && !gem.value) gem.value = g.email || '';
+      if (gst && !gst.value) gst.value = g.street || '';
+      if (ghn && !ghn.value) ghn.value = g.house || '';
+      if (gci && g.city && !gci.value) gci.value = g.city;
+    } catch(e) {}
   }
 
   // openCheckoutModal patchen
