@@ -328,6 +328,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);colo
         <span class="mode-auto-badge" id="autobadge" onclick="toggleAuto()" title="Automatik nach Öffnungszeiten">🕐 Auto</span>
       </div>
       <span id="printerStatus" title="Drucker-Status" onclick="testEposDirect()" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;white-space:nowrap;">🖨️ Prüfe...</span>
+      <span id="soundTest" title="Benachrichtigungston testen" onclick="testSound()" style="font-size:.75rem;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);cursor:pointer;white-space:nowrap;">🔊 Ton testen</span>
       <button class="logout-btn" onclick="doLogout()">Abmelden</button>
     </div>
   </div>
@@ -832,7 +833,7 @@ let allOrders   = [];
 let stripeOrders = [];
 let loadOrdersCtrl  = null; // AbortController für laufende Anfragen
 let dateChangeTimer = null;
-let alarmTimer = null, titleTimer = null, alarmCtx = null; // Dauer-Klingeln bei neuer Bestellung
+let alarmTimer = null, titleTimer = null, alarmCtx = null, alarmCapTimer = null; // Dauer-Klingeln bei neuer Bestellung
 
 // Bildschirm dauerhaft anlassen (Tablet/Kiosk) – verhindert, dass der Browser bei Screen-Off
 // die Timer drosselt (sonst klingelt es nur einmal). Wake Lock wird beim Tab-Wechsel/Screen-Off
@@ -1188,13 +1189,25 @@ function startAlarm() {
   // Tab-Titel blinken (ohne Auto-Stop – endet erst mit stopAlarm)
   let b=false;
   titleTimer = setInterval(()=>{document.title=b?'🔴 NEUE BESTELLUNG!':'🍕 Amoura Dashboard';b=!b;},700);
+  // Sicherheits-Obergrenze: nach 5 Min automatisch stoppen (kein Endlos-Klingeln)
+  alarmCapTimer = setTimeout(stopAlarm, 5 * 60 * 1000);
 }
 
-// Stoppt Klingeln + Blinken (bei Annehmen/Ablehnen)
+// Ton einmal testen (prüft Autoplay/Lautstärke am Tablet)
+function testSound() { ringOnce(); }
+
+// Stoppt Klingeln + Blinken (bei Annehmen/Ablehnen oder nach 5-Min-Cap)
 function stopAlarm() {
   if (alarmTimer) { clearInterval(alarmTimer); alarmTimer=null; }
   if (titleTimer) { clearInterval(titleTimer); titleTimer=null; }
+  if (alarmCapTimer) { clearTimeout(alarmCapTimer); alarmCapTimer=null; }
   document.title='🍕 Amoura Dashboard';
+}
+
+// Ton einmal testen (prüft Autoplay/Lautstärke am Tablet)
+function testSound() {
+  ringOnce();
+  try { showToast('🔊 Testton abgespielt – falls nichts zu hören: Lautstärke / Fully-Autoplay prüfen'); } catch(e) {}
 }
 
 function showPendingModal(order) {
@@ -2223,9 +2236,16 @@ async function testEposDirect() {
 }
 
 async function smartPrint(order) {
-  const ok = await eposPrint(order);
-  if (ok) return;
-  await rawbtPrint(order);
+  // Epson zuerst (1 Wiederholung bei Netzwerkfehler), dann RawBT
+  for (let i = 0; i < 2; i++) { if (await eposPrint(order)) return; }
+  if (await rawbtPrint(order)) return;
+  // Kein Drucker erreichbar → sichtbar warnen und Bon zum manuellen Druck öffnen
+  try { showToast('⚠️ Bon konnte nicht automatisch gedruckt werden – bitte manuell drucken'); } catch(e) {}
+  try {
+    bonModalOrder = order;
+    document.getElementById('bonModalContent').innerHTML = buildBonHtml(order);
+    document.getElementById('bonModal').style.display = 'flex';
+  } catch(e) {}
 }
 
 function fullyPrint(order) {

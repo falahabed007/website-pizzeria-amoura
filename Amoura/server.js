@@ -1147,6 +1147,15 @@ cron.schedule('* * * * *', async () => {
   } catch(e) { console.error('Auto-Status Fehler:', e); }
 });
 
+// Cleanup: verwaiste „awaiting_payment"-Bestellungen (abgebrochene Stripe-Zahlung) nach 1 h entfernen
+cron.schedule('*/15 * * * *', async () => {
+  try {
+    const cutoff = new Date(Date.now() - 60 * 60 * 1000);
+    const r = await Order.deleteMany({ status: 'awaiting_payment', createdAt: { $lt: cutoff } });
+    if (r.deletedCount) console.log(`🧹 ${r.deletedCount} verwaiste awaiting_payment-Bestellungen entfernt`);
+  } catch(e) { console.error('Cleanup awaiting_payment Fehler:', e); }
+});
+
 // ═══════════════════════════════════════════════════════════════
 // WOCHENBERICHT + RECHNUNG (Cron – jeden Sonntag 23:59)
 // ═══════════════════════════════════════════════════════════════
