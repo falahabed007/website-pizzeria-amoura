@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Syntax-Check aller server.js
+        shell: bash
+        run: |
+          set -e
+          files=$(find . -name 'server.js' -not -path '*/node_modules/*')
+          echo "Gefundene Dateien:"; echo "$files"
+          for f in $files; do
+            echo "→ node --check $f"
+            node --check "$f"
+          done
+          echo "Alle server.js syntaktisch OK."

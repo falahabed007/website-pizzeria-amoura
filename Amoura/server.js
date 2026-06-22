@@ -26,6 +26,20 @@ function getResend() {
   return new Resend(key);
 }
 
+// Bei Cron-/System-Fehlern den Inhaber per Mail benachrichtigen (damit Fehlversand auffällt)
+async function notifyOwnerError(context, err) {
+  try {
+    if (!process.env.OWNER_EMAIL) return;
+    await getResend()?.emails.send({
+      from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
+      to: process.env.OWNER_EMAIL,
+      subject: `⚠️ Amoura-Systemfehler: ${context}`,
+      html: `<p style="font-family:Arial,sans-serif;color:#b00020">Fehler in „${context}".</p>
+             <pre style="font-family:monospace;font-size:12px;white-space:pre-wrap">${String((err && err.stack) || err)}</pre>`
+    });
+  } catch(_) { /* Alert darf selbst nie crashen */ }
+}
+
 // ─── CORS ────────────────────────────────────────────────────────
 const allowedOrigins = [
   'https://pizzeria-amoura.de',
@@ -488,6 +502,34 @@ app.post('/api/coupon-raffle', async (req, res) => {
 });
 
 // ── Neue Web-Bestellung (pending) ────────────────────────────────
+// ── Server-seitige Preis-Integrität (Zwischenlösung) ──────────────
+// total = subtotal + Liefergebühr + Servicegebühr (es gibt keinen Rabatt-Coupon im System).
+// Schließt Manipulation von Summen/Gebühren ab. Hinweis: der Abgleich der einzelnen
+// Artikelpreise gegen die Karte folgt mit der daten-getriebenen Speisekarte (eigenes Projekt).
+const SERVICE_FEE_FIXED  = 0.99;
+const DELIVERY_FEES_SRV  = { 'Beckum': 2.50, 'Roland': 3.00, 'Vellern': 3.00 };
+function validateWebOrderPricing(body) {
+  const items = Array.isArray(body.items) ? body.items : [];
+  if (!items.length) throw new Error('keine Artikel');
+  const round = n => Math.round(n * 100) / 100;
+  let subtotal = 0;
+  for (const i of items) {
+    const price = Number(i.price), qty = Number(i.qty);
+    if (!Number.isFinite(price) || price < 0)            throw new Error('ungültiger Preis');
+    if (!Number.isInteger(qty) || qty < 1 || qty > 50)   throw new Error('ungültige Menge');
+    subtotal += price * qty;
+  }
+  subtotal = round(subtotal);
+  const serviceFee = SERVICE_FEE_FIXED;
+  let deliveryFee = 0;
+  if (body.mode === 'lieferung') {
+    const city = ((body.customer && body.customer.city) || '').trim();
+    deliveryFee = DELIVERY_FEES_SRV[city] != null ? DELIVERY_FEES_SRV[city] : (Number(body.deliveryFee) || 0);
+  }
+  const total = round(subtotal + deliveryFee + serviceFee);
+  return { subtotal, deliveryFee, serviceFee, total };
+}
+
 app.post('/api/orders', async (req, res) => {
   try {
     // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
@@ -502,8 +544,15 @@ app.post('/api/orders', async (req, res) => {
 
     const orderNum = await getNextOrderNum();
     const isPOS    = req.body.source === 'pos';
+    // Web-Bestellungen: Summen/Gebühren serverseitig neu berechnen (POS = Admin, vertrauenswürdig)
+    let pricing = null;
+    if (!isPOS) {
+      try { pricing = validateWebOrderPricing(req.body); }
+      catch(e) { return res.status(400).json({ message: 'Bestelldaten ungültig: ' + e.message }); }
+    }
     const order    = new Order({
       ...req.body, orderNum, userId,
+      ...(pricing || {}),
       status: isPOS ? 'confirmed' : 'pending'
     });
     await order.save();
@@ -520,7 +569,12 @@ app.post('/api/orders', async (req, res) => {
 // ── Stripe Checkout ───────────────────────────────────────────────
 app.post('/api/create-stripe-checkout', async (req, res) => {
   try {
-    const { items, subtotal, deliveryFee, serviceFee, total, customer, mode, note } = req.body;
+    const { items, customer, mode, note } = req.body;
+    // Gebühren/Summen serverseitig neu berechnen (nicht dem Client vertrauen)
+    let pricing;
+    try { pricing = validateWebOrderPricing(req.body); }
+    catch(e) { return res.status(400).json({ message: 'Bestelldaten ungültig: ' + e.message }); }
+    const { subtotal, deliveryFee, serviceFee, total } = pricing;
     const orderNum = await getNextOrderNum();
 
     const lineItems = items.filter(i => i.price > 0).map(i => ({
@@ -1452,7 +1506,7 @@ cron.schedule('0 22 * * *', async () => {
       });
     }
     console.log(`📋 Tagesbericht versendet: ${orders.length} Bestellungen, ${total.toFixed(2)} €`);
-  } catch(e) { console.error('Tagesbericht Fehler:', e); }
+  } catch(e) { console.error('Tagesbericht Fehler:', e); notifyOwnerError('Tagesbericht', e); }
 });
 
 cron.schedule('0 22 * * 0', async () => {
@@ -1550,7 +1604,7 @@ cron.schedule('0 22 * * 0', async () => {
     }
 
     console.log(`📊 Wochenbericht KW ${kw} versendet`);
-  } catch(e) { console.error('Wochenbericht Fehler:', e); }
+  } catch(e) { console.error('Wochenbericht Fehler:', e); notifyOwnerError('Wochenbericht', e); }
 });
 
 function getWeekNum(d) {
@@ -1681,7 +1735,7 @@ cron.schedule('0 22 * * *', async () => {
       });
     }
     console.log(`📅 Monatsbericht ${monat} versendet`);
-  } catch(e) { console.error('Monatsbericht Fehler:', e); }
+  } catch(e) { console.error('Monatsbericht Fehler:', e); notifyOwnerError('Monatsbericht', e); }
 });
 
 // ── Monatsbericht manuell triggern ───────────────────────────────
