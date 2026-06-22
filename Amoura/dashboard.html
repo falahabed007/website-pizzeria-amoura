@@ -2462,23 +2462,80 @@ async function doRecoverStripe() {
 }
 
 // Monatsabschluss: ruft den Server-Endpoint auf (erzeugt offiziellen Monats-PDF + Mail)
+// Monatsabschluss: öffnet – wie der Tagesabschluss – ein druckbares HTML-Fenster
+// (PDF geht im Tablet-/Fully-WebView nicht). Die offizielle Monats-Mail läuft separat
+// über den Monatsend-Cron bzw. /api/admin/send-monthly.
 async function printMonthReport() {
-  if (!confirm('Monatsabschluss für den aktuellen Monat erstellen und per E-Mail versenden?')) return;
-  showToast('📅 Monatsbericht wird erstellt…');
+  const now = new Date();
+  const ym  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monatLabel = now.toLocaleDateString('de-DE', { month:'long', year:'numeric' });
+  showToast('⏳ Lade Monatsdaten…');
+
+  let orders = [];
   try {
-    const r = await fetch(`${API_BASE}/admin/send-monthly`, { method:'POST', headers: apiHeaders() });
+    const r = await fetch(`${API_BASE}/admin/orders?month=${ym}`, { headers: apiHeaders() });
     if (r.status === 401) { localStorage.removeItem('amouraToken'); token=''; location.reload(); return; }
     const d = await r.json();
-    if (!r.ok) { showToast('⚠️ Fehler: ' + (d.message || 'unbekannt')); return; }
-    showToast(`📅 Monatsbericht ${d.monat || ''} versendet (${d.orders || 0} Bestellungen)`);
-    if (d.monatsPdfBase64) {
-      const bin = atob(d.monatsPdfBase64);
-      const arr = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-      const url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
-      window.open(url, '_blank');
-    }
-  } catch(e) { showToast('⚠️ Monatsabschluss fehlgeschlagen'); }
+    orders = (d.orders || []).filter(o => o.status !== 'cancelled');
+  } catch(e) { showToast('⚠️ Konnte Monatsdaten nicht laden'); return; }
+
+  const SVC = 0.99, BASE = 150;
+  const nBar    = orders.filter(o=>o.payment==='bar').length;
+  const nOnline = orders.filter(o=>['stripe','paypal','karte'].includes(o.payment)).length;
+  const brutto  = orders.reduce((s,o)=>s+(o.total||0),0);
+  const svcFees = orders.reduce((s,o)=>s+(o.serviceFee||SVC),0);
+  const gesamtGeb  = svcFees + BASE;
+  const auszahlung = brutto - svcFees;
+  const fmt = v => v.toFixed(2).replace('.',',') + ' €';
+
+  const w = window.open('','_blank','width=520,height=820');
+  w.document.write(`<!DOCTYPE html><html><head><title>Monatsabschluss ${monatLabel}</title>
+  <style>
+    body{font-family:monospace;font-size:12px;max-width:400px;margin:0 auto;padding:16px;}
+    h2{text-align:center;margin-bottom:2px;}
+    h3{text-align:center;margin-top:0;}
+    hr{border:none;border-top:1px dashed #000;margin:8px 0;}
+    table{width:100%;border-collapse:collapse;}
+    td,th{padding:3px 4px;}
+    .sum{font-weight:bold;font-size:13px;}
+  </style></head><body>
+  <h2>PIZZERIA AMOURA</h2>
+  <h3>Monatsabschluss</h3>
+  <p style="text-align:center;margin:0 0 6px">${monatLabel}</p>
+  <hr>
+  <table>
+    <tr><td>Bestellungen gesamt</td><td align="right"><b>${orders.length}</b></td></tr>
+    <tr><td>&nbsp;&nbsp;davon Bar</td><td align="right">${nBar}</td></tr>
+    <tr><td>&nbsp;&nbsp;davon Online</td><td align="right">${nOnline}</td></tr>
+    <tr><td>Brutto-Umsatz</td><td align="right">${fmt(brutto)}</td></tr>
+  </table>
+  <hr>
+  <table>
+    <tr><td>Servicegebühren (${fmt(SVC)} × ${orders.length})</td><td align="right">${fmt(svcFees)}</td></tr>
+    <tr><td>Grundgebühr (monatlich)</td><td align="right">${fmt(BASE)}</td></tr>
+    <tr class="sum"><td>Gesamt FlueVate-Gebühren</td><td align="right">${fmt(gesamtGeb)}</td></tr>
+  </table>
+  <hr>
+  <table>
+    <tr class="sum"><td>Auszahlung an Pizzeria Amoura</td><td align="right">${fmt(auszahlung)}</td></tr>
+  </table>
+  <hr>
+  <table>
+    <tr><th align="left">Nr</th><th align="left">Datum</th><th align="left">Kunde</th><th align="left">Art</th><th align="right">Betrag</th></tr>
+    ${orders.map(o=>`
+    <tr>
+      <td>#${o.orderNum}</td>
+      <td>${new Date(o.createdAt).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})}</td>
+      <td>${o.customer?.first||''} ${o.customer?.last||''}</td>
+      <td>${o.mode==='lieferung'?'Lief.':'Abh.'}</td>
+      <td align="right">${(o.total||0).toFixed(2).replace('.',',')} €</td>
+    </tr>`).join('')}
+  </table>
+  <hr>
+  <p style="text-align:center;font-size:11px;">Gedruckt: ${new Date().toLocaleString('de-DE')}</p>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(), 500);
 }
 
 async function printDayReport() {
