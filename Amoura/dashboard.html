@@ -2002,9 +2002,10 @@ async function eposPrint(order) {
   const isD = order.mode === 'lieferung';
   const time = new Date(order.createdAt).toLocaleString('de-DE');
 
-  // 80-mm-Bon: volle Breite (42 Zeichen) + doppelte Höhe (dh) für gute Lesbarkeit
-  const x   = (t, attr='') => `<text dh="true"${attr}>${xmlEsc(t)}&#10;</text>`;
-  const div = () => `<text dh="true">------------------------------------------&#10;</text>`;
+  // 58-mm-Bon: 32 Zeichen Breite, normale (1x) Schrift – kompakt & gut lesbar.
+  // em (fett) nur sparsam (Kopf, Bestellnr., Lieferung/Abholung, GESAMT, Notiz).
+  const x   = (t, attr='') => `<text${attr}>${xmlEsc(t)}&#10;</text>`;
+  const div = () => `<text>--------------------------------&#10;</text>`;
 
   let body = '';
   // Header
@@ -2025,11 +2026,11 @@ async function eposPrint(order) {
     body += x(order.customer?.city||'');
   }
   body += div();
-  // Artikel (Breite 42: Label 30 + Preis 12)
+  // Artikel (Breite 32: Label 22 + Preis 10)
   for (const i of (order.items||[])) {
-    const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,30).padEnd(30);
+    const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,22).padEnd(22);
     const price = i.price===0 ? 'GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
-    body += x(label + price.padStart(12));
+    body += x(label + price.padStart(10));
     const extras = i.extraDetails || [];
     if (extras.length) {
       extras.forEach(e => { if (e.name) body += x(`  ${e.name}`); });
@@ -2038,8 +2039,8 @@ async function eposPrint(order) {
     }
   }
   body += div();
-  // Preise (Label 16 + Wert rechtsbündig 26 = 42)
-  const pad = v => String(v).padStart(26);
+  // Preise (Label 16 + Wert rechtsbündig 16 = 32)
+  const pad = v => String(v).padStart(16);
   body += x(`Zwischensumme:  ${pad((order.subtotal||0).toFixed(2)+' EUR')}`);
   if ((order.deliveryFee||0)>0) body += x(`Liefergebuehr:  ${pad(order.deliveryFee.toFixed(2)+' EUR')}`);
   body += x(`Servicegebuehr: ${pad((order.serviceFee||0.99).toFixed(2)+' EUR')}`);
