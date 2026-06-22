@@ -835,6 +835,18 @@ let loadOrdersCtrl  = null; // AbortController für laufende Anfragen
 let dateChangeTimer = null;
 let alarmTimer = null, titleTimer = null, alarmCtx = null; // Dauer-Klingeln bei neuer Bestellung
 
+// Bildschirm dauerhaft anlassen (Tablet/Kiosk) – verhindert, dass der Browser bei Screen-Off
+// die Timer drosselt (sonst klingelt es nur einmal). Wake Lock wird beim Tab-Wechsel/Screen-Off
+// automatisch freigegeben → bei visibilitychange erneut anfordern.
+let wakeLock = null;
+async function keepScreenOn() {
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }
+  catch(e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') keepScreenOn();
+});
+
 function onDateChange() {
   // Debounce: 300ms warten bis User fertig navigiert hat
   clearTimeout(dateChangeTimer);
@@ -1098,6 +1110,7 @@ function apiHeaders() { return {'Content-Type':'application/json','Authorization
 // ═══════════════════════════════════════════════════════════════
 function initDashboard() {
   startClock();
+  keepScreenOn(); // Tablet/Kiosk: Bildschirm dauerhaft an
   loadOrders();
   setInterval(()=>{ pollPending(); loadOrders(); }, 5000);
   pollPending();
