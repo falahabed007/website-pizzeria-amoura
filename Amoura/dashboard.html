@@ -1973,12 +1973,12 @@ async function eposPrint(order) {
 
   let body = '';
   // Header
-  body += `<text align="center" dh="true" dw="true" em="true">PIZZERIA AMOURA&#10;</text>`;
+  body += `<text align="center" em="true">PIZZERIA AMOURA&#10;</text>`;
   body += `<text align="center">Oststrasse 48 - 59269 Beckum&#10;</text>`;
   body += `<text align="center">02521 / 829 06 00&#10;</text>`;
   body += div();
   // Bestellnummer
-  body += `<text align="center" dh="true" dw="true" em="true">#${order.orderNum}&#10;</text>`;
+  body += `<text align="center" em="true">BESTELLUNG #${order.orderNum}&#10;</text>`;
   body += `<text align="center">${xmlEsc(time)}&#10;</text>`;
   body += `<text align="center" em="true">${isD ? '*** LIEFERUNG ***' : '*** ABHOLUNG ***'}&#10;</text>`;
   body += div();
@@ -1994,7 +1994,7 @@ async function eposPrint(order) {
   for (const i of (order.items||[])) {
     const label = `${i.qty}x ${cleanName(i.name)}`.substring(0,24).padEnd(24);
     const price = i.price===0 ? '   GRATIS' : `${(i.price*i.qty).toFixed(2)} EUR`;
-    body += `<text em="true">${xmlEsc(label + price.padStart(9))}&#10;</text>`;
+    body += `<text>${xmlEsc(label + price.padStart(9))}&#10;</text>`;
     const extras = i.extraDetails || [];
     if (extras.length) {
       extras.forEach(e => { if (e.name) body += x(`  ${e.name}`); });
