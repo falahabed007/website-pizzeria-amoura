@@ -19,6 +19,39 @@ function getStripe() {
   return Stripe(key);
 }
 
+// ─── PayPal (REST v2, lazy) ──────────────────────────────────────
+// Unabhängig von Stripe: eigene ENV-Keys, eigene Endpunkte.
+// PAYPAL_ENV=live → Produktion, sonst Sandbox.
+function paypalBase() {
+  return process.env.PAYPAL_ENV === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+}
+async function getPaypalAccessToken() {
+  const id = process.env.PAYPAL_CLIENT_ID, secret = process.env.PAYPAL_CLIENT_SECRET;
+  if (!id || !secret) throw new Error('PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET nicht gesetzt');
+  const auth = Buffer.from(`${id}:${secret}`).toString('base64');
+  const r = await fetch(`${paypalBase()}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=client_credentials'
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error('PayPal Auth: ' + (data.error_description || r.status));
+  return data.access_token;
+}
+async function paypalApi(path, method, token, body) {
+  const r = await fetch(`${paypalBase()}${path}`, {
+    method,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+  });
+  const text = await r.text();
+  const data = text ? JSON.parse(text) : {};
+  if (!r.ok) throw new Error(`PayPal API ${path}: ` + (data.message || data.error_description || r.status));
+  return data;
+}
+
 // Resend lazy – kein Crash beim Start wenn Key fehlt
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -80,6 +113,8 @@ const orderSchema = new mongoose.Schema({
   source:               { type: String, default: 'web', enum: ['web','pos'] },
   stripeSessionId:      String,
   stripePaymentIntentId:String,
+  paypalOrderId:        String,
+  paypalCaptureId:      String,
   prepTime:             Number,
   cancelReason:         { type: String, default: '' },
   customer: {
@@ -330,7 +365,7 @@ app.get('/api/config', (req, res) => res.json({
   whatsapp: process.env.WHATSAPP_NUMBER || '',
   serviceFee: 0.99,
   deliveryCities: {
-    'Beckum':  { min: 15.00, fee: 2.50 },
+    'Beckum':  { min: 20.00, fee: 2.50 },
     'Roland':  { min: 20.00, fee: 3.00 },
     'Vellern': { min: 20.00, fee: 3.00 },
   }
@@ -621,6 +656,123 @@ app.post('/api/verify-payment', async (req, res) => {
   }
 });
 
+// ── PayPal Checkout ───────────────────────────────────────────────
+app.post('/api/create-paypal-order', async (req, res) => {
+  try {
+    const { items, subtotal, deliveryFee, serviceFee, total, customer, mode, note } = req.body;
+    const orderNum = await getNextOrderNum();
+
+    const token = await getPaypalAccessToken();
+    const ppOrder = await paypalApi('/v2/checkout/orders', 'POST', token, {
+      intent: 'CAPTURE',
+      purchase_units: [{
+        reference_id: String(orderNum),
+        custom_id:    String(orderNum),
+        description:  `Pizzeria Amoura Bestellung #${orderNum}`,
+        amount: { currency_code: 'EUR', value: Number(total).toFixed(2) }
+      }],
+      application_context: {
+        brand_name:          'Pizzeria Amoura',
+        locale:              'de-DE',
+        user_action:         'PAY_NOW',
+        shipping_preference: 'NO_SHIPPING',
+        return_url: `https://pizzeria-amoura.de?order=${orderNum}&paypal=1`,
+        cancel_url: `https://pizzeria-amoura.de?payment=cancelled`,
+      }
+    });
+
+    const approve = (ppOrder.links || []).find(l => l.rel === 'approve' || l.rel === 'payer-action');
+
+    const order = new Order({
+      items, subtotal, deliveryFee, serviceFee, total,
+      customer, mode, note, orderNum,
+      coupon: req.body.coupon || null,
+      payment: 'paypal', paymentStatus: 'pending',
+      paypalOrderId: ppOrder.id, status: 'awaiting_payment'
+    });
+    await order.save();
+    res.json({ url: approve?.href, orderNum });
+  } catch(e) { console.error(e); res.status(500).json({ message: 'PayPal Fehler: '+e.message }); }
+});
+
+// ── PayPal Capture (nach Rückkehr / Fallback) ─────────────────────
+app.post('/api/paypal-capture', async (req, res) => {
+  try {
+    const paypalOrderId = req.body.paypalOrderId || req.body.token;
+    if (!paypalOrderId) return res.status(400).json({ ok: false, message: 'paypalOrderId fehlt' });
+
+    const order = await Order.findOne({ paypalOrderId });
+    if (!order) return res.status(404).json({ ok: false, message: 'Bestellung nicht gefunden' });
+
+    const token   = await getPaypalAccessToken();
+    const current = await paypalApi(`/v2/checkout/orders/${paypalOrderId}`, 'GET', token);
+
+    let captured;
+    if (current.status === 'COMPLETED') {
+      captured = current; // schon (z.B. per Webhook) eingezogen
+    } else if (current.status === 'APPROVED') {
+      captured = await paypalApi(`/v2/checkout/orders/${paypalOrderId}/capture`, 'POST', token, {});
+    } else {
+      return res.json({ ok: false, message: 'Noch nicht bezahlt' });
+    }
+
+    const captureId = captured?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    if (order.status === 'awaiting_payment') {
+      order.paymentStatus = 'paid';
+      order.status = 'pending';
+      if (captureId) order.paypalCaptureId = captureId;
+      await order.save();
+      console.log(`✅ PayPal-Zahlung verifiziert: #${order.orderNum}`);
+      await sendCouponRaffleEmail(order);
+    }
+    res.json({ ok: true, orderNum: order.orderNum });
+  } catch(e) {
+    console.error('paypal-capture Fehler:', e.message);
+    res.status(500).json({ ok: false, message: e.message });
+  }
+});
+
+// ── PayPal Webhook (Signatur per Verify-API → nutzt geparstes JSON) ─
+app.post('/api/paypal-webhook', async (req, res) => {
+  try {
+    const token  = await getPaypalAccessToken();
+    const verify = await paypalApi('/v1/notifications/verify-webhook-signature', 'POST', token, {
+      auth_algo:         req.headers['paypal-auth-algo'],
+      cert_url:          req.headers['paypal-cert-url'],
+      transmission_id:   req.headers['paypal-transmission-id'],
+      transmission_sig:  req.headers['paypal-transmission-sig'],
+      transmission_time: req.headers['paypal-transmission-time'],
+      webhook_id:        process.env.PAYPAL_WEBHOOK_ID,
+      webhook_event:     req.body
+    });
+    if (verify.verification_status !== 'SUCCESS') {
+      console.warn('PayPal Webhook: ungültige Signatur');
+      return res.status(400).send('invalid signature');
+    }
+
+    const event = req.body;
+    if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
+      const captureId = event.resource?.id;
+      const ppOrderId = event.resource?.supplementary_data?.related_ids?.order_id;
+      const order = ppOrderId
+        ? await Order.findOne({ paypalOrderId: ppOrderId })
+        : await Order.findOne({ paypalCaptureId: captureId });
+      if (order && order.status === 'awaiting_payment') {
+        order.paymentStatus = 'paid';
+        order.status = 'pending';
+        if (captureId) order.paypalCaptureId = captureId;
+        await order.save();
+        console.log(`💳 Bezahlt (PayPal): #${order.orderNum} → wartet auf Bestätigung`);
+        await sendCouponRaffleEmail(order);
+      }
+    }
+    res.json({ received: true });
+  } catch(e) {
+    console.error('paypal-webhook Fehler:', e.message);
+    res.status(500).send('error');
+  }
+});
+
 // ── Stripe-Bestellungen nachträglich einbuchen (Admin) ──────────
 app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
   try {
@@ -797,7 +949,7 @@ app.patch('/api/admin/orders/:id/payment', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ message:'Fehler' }); }
 });
 
-// ── STORNIEREN (mit Auto-Refund bei Stripe) ──────────────────────
+// ── STORNIEREN (mit Auto-Refund bei Stripe & PayPal) ─────────────
 app.delete('/api/admin/orders/:id', auth, async (req, res) => {
   try {
     const reason = req.body?.cancelReason || '';
@@ -813,6 +965,14 @@ app.delete('/api/admin/orders/:id', auth, async (req, res) => {
         await Order.findByIdAndUpdate(order._id, { paymentStatus:'refunded' });
         console.log(`💸 Stripe-Refund #${order.orderNum}: ${refund.status}`);
       } catch(e) { console.error('Stripe Refund Fehler:', e.message); refundStatus='failed'; }
+    } else if (order.payment === 'paypal' && order.paymentStatus === 'paid' && order.paypalCaptureId) {
+      try {
+        const token  = await getPaypalAccessToken();
+        const refund = await paypalApi(`/v2/payments/captures/${order.paypalCaptureId}/refund`, 'POST', token, {});
+        refundStatus = refund.status;
+        await Order.findByIdAndUpdate(order._id, { paymentStatus:'refunded' });
+        console.log(`💸 PayPal-Refund #${order.orderNum}: ${refund.status}`);
+      } catch(e) { console.error('PayPal Refund Fehler:', e.message); refundStatus='failed'; }
     }
     await sendCancellationEmail(order, reason, refundStatus);
     res.json({ success:true, order, refundStatus });
