@@ -951,9 +951,12 @@
       <div style="font-size: 13px; margin-top: 7px; opacity: 0.9;">Bei jeder Bestellung ab <strong>25 €</strong> · Pizzabrötchen mit Käse · automatisch im Warenkorb</div>
     </div>
     <script>
-        if (typeof isPromotionActive === 'function' && isPromotionActive()) {
-            document.getElementById('aktionsBanner').style.display = 'block';
-        }
+        // erst nach dem Laden ausführen — isPromotionActive() wird weiter unten definiert
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof isPromotionActive === 'function' && isPromotionActive()) {
+                document.getElementById('aktionsBanner').style.display = 'block';
+            }
+        });
     </script>
 
     <!-- ═══ STICKY KATEGORIE-NAVIGATION ═══ -->
