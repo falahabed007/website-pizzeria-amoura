@@ -1354,8 +1354,21 @@ const PDF_W  = 495;
 const PDF_PW = 595;
 const PDF_FT = 810;
 const PDF_SV = 0.99;
-const PDF_BASE = 150; // monatliche Grundgebühr (Fixmodell: 150 € + Servicegebühr/Bestellung)
+// Monatliche Grundgebühr (Fixmodell: Grundgebühr + Servicegebühr/Bestellung).
+// Standard 150 €; einzelne Monate können abweichen (YYYY-MM → Betrag).
+const GRUNDGEBUEHR_STD   = 150;
+const GRUNDGEBUEHR_MONAT = { '2026-06': 75 }; // Ausnahmen je Monat
+const grundgebuehrFor = d => GRUNDGEBUEHR_MONAT[
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+] ?? GRUNDGEBUEHR_STD;
 const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
+
+// Reserviert Platz für die nächste Zeile und bricht bei Bedarf sauber um,
+// damit eine Tabellenzeile nie über den Seitenrand zerrissen wird.
+function pdfEnsureSpace(doc, needed) {
+  if (doc.y + needed > doc.page.height - 40) { doc.addPage(); doc.y = PDF_M; return true; }
+  return false;
+}
 
 function pdfColorBox(doc, title, sub, color = '#8b1d1d', h = 70) {
   doc.rect(0, 0, PDF_PW, h).fill(color);
@@ -1395,38 +1408,44 @@ function pdfTableRow(doc, cells, shade, bold = false) {
 function pdfKundenliste(doc, orders) {
   function drawGroup(label, color, list) {
     if (!list.length) return;
+    // Gruppentitel + Kopf + erste Zeile zusammenhalten
+    pdfEnsureSpace(doc, 22 + 16 + 18);
     const gy = doc.y;
     doc.rect(PDF_M, gy, PDF_W, 22).fill(color);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text(label, PDF_M + 8, gy + 6, { width: PDF_W - 16 });
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text(label, PDF_M + 8, gy + 6, { width: PDF_W - 16, lineBreak:false });
     doc.y = gy + 22 + 2;
-    const hy = doc.y;
-    doc.rect(PDF_M, hy, PDF_W, 16).fill('#eaeef3');
-    [['#', PDF_M+2, 30, 'left'], ['Datum', PDF_M+34, 40, 'left'], ['Kunde', PDF_M+76, 190, 'left'],
-     ['Art', PDF_M+268, 80, 'left'], ['Betrag', PDF_M+2, PDF_W-4, 'right']
-    ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(8).fillColor('#444').text(h, x, hy+4, { width:w, align:a }));
-    doc.y = hy + 16 + 2;
+    const drawHead = () => {
+      const hy = doc.y;
+      doc.rect(PDF_M, hy, PDF_W, 16).fill('#eaeef3');
+      [['#', PDF_M+2, 30, 'left'], ['Datum', PDF_M+34, 40, 'left'], ['Kunde', PDF_M+76, 190, 'left'],
+       ['Art', PDF_M+268, 80, 'left'], ['Betrag', PDF_M+2, PDF_W-4, 'right']
+      ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(8).fillColor('#444').text(h, x, hy+4, { width:w, align:a, lineBreak:false }));
+      doc.y = hy + 16 + 2;
+    };
+    drawHead();
     let sub = 0;
     list.forEach((o, i) => {
-      if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
+      if (pdfEnsureSpace(doc, 18)) drawHead();
       const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
       const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 28);
       const modeStr = o.mode === 'lieferung' ? 'Lieferung' : 'Abholung';
       const ry = doc.y;
       if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 18).fill('#fafafa');
       doc.font('Helvetica').fontSize(9).fillColor('#222')
-        .text(`${o.orderNum}`, PDF_M+2,   ry+4, { width:30 })
-        .text(date,            PDF_M+34,  ry+4, { width:40 })
-        .text(name,            PDF_M+76,  ry+4, { width:188 })
-        .text(modeStr,         PDF_M+268, ry+4, { width:80 });
+        .text(`${o.orderNum}`, PDF_M+2,   ry+4, { width:30,  lineBreak:false })
+        .text(date,            PDF_M+34,  ry+4, { width:40,  lineBreak:false })
+        .text(name,            PDF_M+76,  ry+4, { width:188, lineBreak:false })
+        .text(modeStr,         PDF_M+268, ry+4, { width:80,  lineBreak:false });
       doc.font('Helvetica-Bold').fontSize(9).fillColor('#222')
-        .text(pdfFmt(o.total||0), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
+        .text(pdfFmt(o.total||0), PDF_M+2, ry+4, { width:PDF_W-4, align:'right', lineBreak:false });
       doc.y = ry + 18;
       sub += (o.total||0);
     });
+    pdfEnsureSpace(doc, 20);
     const sy = doc.y;
     doc.rect(PDF_M, sy, PDF_W, 20).fill(color + '28');
-    doc.font('Helvetica').fontSize(9).fillColor('#333').text(`Summe ${label}:`, PDF_M+8, sy+5);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor('#333').text(pdfFmt(sub), PDF_M+2, sy+5, { width:PDF_W-4, align:'right' });
+    doc.font('Helvetica').fontSize(9).fillColor('#333').text(`Summe ${label}:`, PDF_M+8, sy+5, { lineBreak:false });
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#333').text(pdfFmt(sub), PDF_M+2, sy+5, { width:PDF_W-4, align:'right', lineBreak:false });
     doc.y = sy + 20 + 10;
   }
   drawGroup('Barzahlung', '#8b1d1d', orders.filter(o => o.payment === 'bar'));
@@ -1455,28 +1474,32 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
   doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('ℹ  Interne Übersicht – keine Rechnung. Nur Barzahlungen; Stripe-Gebühren wurden bereits beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
   doc.y = hy + 16 + 6;
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
-  const th = doc.y;
-  doc.rect(PDF_M, th, PDF_W, 16).fill('#1a1a2e');
-  [['#', PDF_M+2, 34, 'left'], ['Datum', PDF_M+38, 40, 'left'], ['Kunde', PDF_M+80, 170, 'left'],
-   ['Umsatz', PDF_M+252, 64, 'right'], ['Servicegebühr', PDF_M+318, 118, 'right'], ['Gesamt', PDF_M+2, PDF_W-4, 'right']
-  ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#fff').text(h, x, th+4, { width:w, align:a }));
-  doc.y = th + 16;
+  const drawHead = () => {
+    const th = doc.y;
+    doc.rect(PDF_M, th, PDF_W, 16).fill('#1a1a2e');
+    [['#', PDF_M+2, 34, 'left'], ['Datum', PDF_M+38, 40, 'left'], ['Kunde', PDF_M+80, 170, 'left'],
+     ['Umsatz', PDF_M+252, 64, 'right'], ['Servicegebühr', PDF_M+318, 118, 'right'], ['Gesamt', PDF_M+2, PDF_W-4, 'right']
+    ].forEach(([h, x, w, a]) => doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#fff').text(h, x, th+4, { width:w, align:a, lineBreak:false }));
+    doc.y = th + 16;
+  };
+  drawHead();
   barOrders.forEach((o, i) => {
-    if (doc.y > PDF_FT - 20) { doc.addPage(); doc.y = PDF_M; }
+    if (pdfEnsureSpace(doc, 16)) drawHead();
     const sf   = o.serviceFee || PDF_SV;
     const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
     const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 24);
     const ry = doc.y;
     if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 16).fill('#f8f9fc');
     doc.font('Helvetica').fontSize(8.5).fillColor('#222')
-      .text(`${o.orderNum}`, PDF_M+2,  ry+4, { width:34 })
-      .text(date,            PDF_M+38, ry+4, { width:40 })
-      .text(name,            PDF_M+80, ry+4, { width:168 })
-      .text(pdfFmt(o.total), PDF_M+252, ry+4, { width:64,  align:'right' })
-      .text(pdfFmt(sf),      PDF_M+318, ry+4, { width:118, align:'right' });
-    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(sf), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
+      .text(`${o.orderNum}`, PDF_M+2,  ry+4, { width:34,  lineBreak:false })
+      .text(date,            PDF_M+38, ry+4, { width:40,  lineBreak:false })
+      .text(name,            PDF_M+80, ry+4, { width:168, lineBreak:false })
+      .text(pdfFmt(o.total), PDF_M+252, ry+4, { width:64,  align:'right', lineBreak:false })
+      .text(pdfFmt(sf),      PDF_M+318, ry+4, { width:118, align:'right', lineBreak:false });
+    doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(sf), PDF_M+2, ry+4, { width:PDF_W-4, align:'right', lineBreak:false });
     doc.y = ry + 16;
   });
+  pdfEnsureSpace(doc, 80); // Zusammenfassung zusammenhalten
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
   const s1y = doc.y;
   doc.rect(PDF_M, s1y, PDF_W, 18).fill('#f0f4f8');
@@ -1754,6 +1777,7 @@ cron.schedule('0 22 * * *', async () => {
   try {
     const mStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
     const mEnd   = new Date(now); mEnd.setHours(23,59,59,999);
+    const base   = grundgebuehrFor(mStart); // monatliche Grundgebühr (Standard 150 €, Ausnahmen je Monat)
     const monat  = now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     const datum  = now.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
     const vonBis = `${mStart.toLocaleDateString('de-DE')} – ${datum}`;
@@ -1795,8 +1819,8 @@ cron.schedule('0 22 * * *', async () => {
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
       doc.y += 14;
       pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen)`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false);
-      pdfTableRow(doc, [['Grundgebühr (monatlich)', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(PDF_BASE), PDF_M+2, PDF_W-4, 'right']], true);
-      pdfTableRow(doc, [['Gesamt FlueVate-Gebühren', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees + PDF_BASE), PDF_M+2, PDF_W-4, 'right']], false, true);
+      pdfTableRow(doc, [['Grundgebühr (monatlich)', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(base), PDF_M+2, PDF_W-4, 'right']], true);
+      pdfTableRow(doc, [['Gesamt FlueVate-Gebühren', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees + base), PDF_M+2, PDF_W-4, 'right']], false, true);
       doc.y += 4;
       const ay = doc.y;
       doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
@@ -1857,7 +1881,7 @@ cron.schedule('0 22 * * *', async () => {
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei der Monatsbericht <b>${monat}</b> für Pizzeria Amoura.</p>
-               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Grundgebühr:</b> ${PDF_BASE.toFixed(2).replace('.',',')} €<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €<br><b>Gesamt-Gebühren:</b> ${(svcFees + PDF_BASE).toFixed(2).replace('.',',')} €${barOrdersM.length > 0 ? `<br><b>davon Bar:</b> ${barBetragM.toFixed(2).replace('.',',')} € (${barOrdersM.length} Barzahlungen)` : ''}</p>
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Grundgebühr:</b> ${base.toFixed(2).replace('.',',')} €<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €<br><b>Gesamt-Gebühren:</b> ${(svcFees + base).toFixed(2).replace('.',',')} €${barOrdersM.length > 0 ? `<br><b>davon Bar:</b> ${barBetragM.toFixed(2).replace('.',',')} € (${barOrdersM.length} Barzahlungen)` : ''}</p>
                <p style="font-family:Arial,sans-serif;color:#999;font-size:12px">Die Gebühren-Rechnung wird separat über Lexware gestellt.</p>`,
         attachments: [
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
@@ -1883,6 +1907,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
     const now    = refDate;
     const mStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
     const mEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const base   = grundgebuehrFor(mStart); // monatliche Grundgebühr (Standard 150 €, Ausnahmen je Monat)
     const monat  = now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
     const datum  = mEnd.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
     const vonBis = `${mStart.toLocaleDateString('de-DE')} – ${datum}`;
@@ -1912,8 +1937,8 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       doc.moveDown(0.4); pdfHr(doc);
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG',PDF_M,doc.y); doc.y+=14;
       pdfTableRow(doc,[[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen)`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees),PDF_M+2,PDF_W-4,'right']],false);
-      pdfTableRow(doc,[['Grundgebühr (monatlich)',PDF_M+8,PDF_W-80,'left'],[pdfFmt(PDF_BASE),PDF_M+2,PDF_W-4,'right']],true);
-      pdfTableRow(doc,[['Gesamt FlueVate-Gebühren',PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees + PDF_BASE),PDF_M+2,PDF_W-4,'right']],false,true);
+      pdfTableRow(doc,[['Grundgebühr (monatlich)',PDF_M+8,PDF_W-80,'left'],[pdfFmt(base),PDF_M+2,PDF_W-4,'right']],true);
+      pdfTableRow(doc,[['Gesamt FlueVate-Gebühren',PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees + base),PDF_M+2,PDF_W-4,'right']],false,true);
       doc.y+=4;
       const ay=doc.y; doc.rect(PDF_M,ay,PDF_W,28).fill('#e8f5e9');
       doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura',PDF_M+10,ay+8,{width:PDF_W*0.65});
@@ -1942,7 +1967,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
-        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Monatsbericht <b>${monat}</b>.<br><b>Grundgebühr:</b> ${PDF_BASE.toFixed(2).replace('.',',')} €<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €<br><b>Gesamt-Gebühren:</b> ${(svcFees + PDF_BASE).toFixed(2).replace('.',',')} €</p>
+        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Monatsbericht <b>${monat}</b>.<br><b>Grundgebühr:</b> ${base.toFixed(2).replace('.',',')} €<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €<br><b>Gesamt-Gebühren:</b> ${(svcFees + base).toFixed(2).replace('.',',')} €</p>
                <p style="font-family:Arial,sans-serif;color:#999;font-size:12px">Die Gebühren-Rechnung wird separat über Lexware gestellt.</p>`,
         attachments: [
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
