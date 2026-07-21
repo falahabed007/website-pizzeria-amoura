@@ -451,16 +451,11 @@
 </div>
 
 <script>
-  // ── API-URL aus config laden ──────────────────────────────────
-  let API = '';
-  (async () => {
-    try {
-      const cfg = await fetch('/api/health');
-      // Gleicher Origin wie das Frontend → relativer Pfad reicht
-      API = '';
-    } catch {}
-    init();
-  })();
+  // ── API-URL ───────────────────────────────────────────────────
+  // Das Frontend läuft auf GitHub Pages (pizzeria-amoura.de), das Backend
+  // getrennt auf Render. Deshalb absolute Backend-URL (wie in dashboard.html).
+  const API = 'https://website-pizzeria-amoura.onrender.com';
+  init();
 
   // ── Token-Management ─────────────────────────────────────────
   const getToken  = () => localStorage.getItem('customerToken');
