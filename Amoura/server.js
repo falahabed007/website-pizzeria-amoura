@@ -137,6 +137,9 @@ const orderSchema = new mongoose.Schema({
   note:        String,
   coupon:      String,
   userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  // Online-Zahlung: Stempel-Prämie erst bei Zahlungseingang verbuchen (genau einmal)
+  stampRewardPending:  { type: Boolean, default: false },
+  stampRewardConsumed: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
@@ -360,7 +363,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'stamps-pricing-2026-07-21'
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'stamps-paid-consume-2026-07-21'
 }));
 
 app.get('/api/config', (req, res) => res.json({
@@ -580,6 +583,22 @@ async function getStampInfo(userId) {
   };
 }
 
+// Stempel-Prämie einer Online-Bestellung genau EINMAL verbuchen (bei Zahlungseingang).
+// Atomarer Guard verhindert Doppel-Verbuchung (Webhook + verify-payment).
+async function consumeStampRewardOnce(order) {
+  if (!order || !order.userId || !order.stampRewardPending) return;
+  const won = await Order.findOneAndUpdate(
+    { _id: order._id, stampRewardPending: true, stampRewardConsumed: { $ne: true } },
+    { $set: { stampRewardConsumed: true } }
+  );
+  if (!won) return; // ein anderer Aufruf hat bereits verbucht
+  // Nur verbuchen, wenn der Kunde tatsächlich (noch) eine Prämie offen hat
+  const info = await getStampInfo(order.userId);
+  if (info.rewardsAvailable > 0) {
+    await User.findByIdAndUpdate(order.userId, { $inc: { stampsRedeemed: 1 } });
+  }
+}
+
 app.post('/api/orders', async (req, res) => {
   try {
     // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
@@ -657,7 +676,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
       const info = await getStampInfo(userId);
       if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
-      await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
+      // Verbuchung erst bei Zahlungseingang (siehe consumeStampRewardOnce)
     }
 
     const { paidSubtotal: subtotal, deliveryFee, serviceFee, total } = pricing;
@@ -713,7 +732,8 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'stripe', paymentStatus: 'pending',
-      stripeSessionId: session.id, status: 'awaiting_payment'
+      stripeSessionId: session.id, status: 'awaiting_payment',
+      stampRewardPending: !!free.hasStampReward
     });
     await order.save();
     res.json({ url: session.url, orderNum });
@@ -737,6 +757,7 @@ app.post('/api/stripe-webhook', async (req, res) => {
       await order.save();
       console.log(`💳 Bezahlt: #${order.orderNum} → wartet auf Bestätigung`);
       await sendCouponRaffleEmail(order);
+      await consumeStampRewardOnce(order);
     }
   }
   if (event.type === 'checkout.session.expired') {
@@ -766,6 +787,7 @@ app.post('/api/verify-payment', async (req, res) => {
       await order.save();
       console.log(`✅ Zahlung verifiziert (Fallback): #${order.orderNum}`);
       await sendCouponRaffleEmail(order);
+      await consumeStampRewardOnce(order);
     }
 
     res.json({ ok: true, orderNum: order.orderNum });
@@ -798,7 +820,7 @@ app.post('/api/create-paypal-order', async (req, res) => {
       if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
       const info = await getStampInfo(userId);
       if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
-      await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
+      // Verbuchung erst bei Zahlungseingang (siehe consumeStampRewardOnce)
     }
 
     const { paidSubtotal: subtotal, deliveryFee, serviceFee, total } = pricing;
@@ -830,7 +852,8 @@ app.post('/api/create-paypal-order', async (req, res) => {
       customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'paypal', paymentStatus: 'pending',
-      paypalOrderId: ppOrder.id, status: 'awaiting_payment'
+      paypalOrderId: ppOrder.id, status: 'awaiting_payment',
+      stampRewardPending: !!free.hasStampReward
     });
     await order.save();
     res.json({ url: approve?.href, orderNum });
@@ -866,6 +889,7 @@ app.post('/api/paypal-capture', async (req, res) => {
       await order.save();
       console.log(`✅ PayPal-Zahlung verifiziert: #${order.orderNum}`);
       await sendCouponRaffleEmail(order);
+      await consumeStampRewardOnce(order);
     }
     res.json({ ok: true, orderNum: order.orderNum });
   } catch(e) {
@@ -906,6 +930,7 @@ app.post('/api/paypal-webhook', async (req, res) => {
         await order.save();
         console.log(`💳 Bezahlt (PayPal): #${order.orderNum} → wartet auf Bestätigung`);
         await sendCouponRaffleEmail(order);
+        await consumeStampRewardOnce(order);
       }
     }
     res.json({ received: true });
@@ -930,6 +955,7 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
           await order.save();
           recovered.push(order.orderNum);
           console.log(`🔁 Nachträglich eingebucht: #${order.orderNum}`);
+          await consumeStampRewardOnce(order);
         }
       } catch(e) {
         console.warn(`Stripe-Abfrage für #${order.orderNum} fehlgeschlagen:`, e.message);
