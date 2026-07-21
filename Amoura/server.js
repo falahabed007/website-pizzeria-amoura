@@ -336,31 +336,19 @@ app.post('/api/account/reorder/:orderId', customerAuth, async (req, res) => {
 
 app.get('/api/account/stamps', customerAuth, async (req, res) => {
   try {
-    const [validOrders, user] = await Promise.all([
-      Order.countDocuments({ userId: req.user.id, status: { $nin: ['cancelled', 'awaiting_payment'] } }),
-      User.findById(req.user.id).select('stampsRedeemed')
-    ]);
-    const redeemed       = user?.stampsRedeemed || 0;
-    const totalRewards   = Math.floor(validOrders / 3);
-    const rewardsAvail   = Math.max(0, totalRewards - redeemed);
-    const currentStamps  = validOrders % 3;
-    res.json({ stamps: currentStamps, rewardsAvailable: rewardsAvail, totalOrders: validOrders });
+    const info = await getStampInfo(req.user.id);
+    res.json({ stamps: info.stamps, rewardsAvailable: info.rewardsAvailable, totalOrders: info.totalOrders });
   } catch {
     res.status(500).json({ message: 'Stempelkarte konnte nicht geladen werden' });
   }
 });
 
+// Einlösen = nur Berechtigung prüfen. Die tatsächliche Verbuchung (stampsRedeemed++)
+// erfolgt serverseitig erst beim Aufgeben der Bestellung, die die Gratis-Margherita enthält.
 app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
   try {
-    const [validOrders, user] = await Promise.all([
-      Order.countDocuments({ userId: req.user.id, status: { $nin: ['cancelled', 'awaiting_payment'] } }),
-      User.findById(req.user.id).select('stampsRedeemed')
-    ]);
-    const redeemed     = user?.stampsRedeemed || 0;
-    const totalRewards = Math.floor(validOrders / 3);
-    const rewardsAvail = Math.max(0, totalRewards - redeemed);
-    if (rewardsAvail <= 0) return res.status(400).json({ message: 'Keine Gratis-Pizza verfügbar' });
-    await User.findByIdAndUpdate(req.user.id, { $inc: { stampsRedeemed: 1 } });
+    const info = await getStampInfo(req.user.id);
+    if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Pizza verfügbar' });
     res.json({ success: true });
   } catch {
     res.status(500).json({ message: 'Einlösen fehlgeschlagen' });
@@ -372,7 +360,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date()
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'stamps-pricing-2026-07-21'
 }));
 
 app.get('/api/config', (req, res) => res.json({
@@ -523,6 +511,75 @@ app.post('/api/coupon-raffle', async (req, res) => {
 });
 
 // ── Neue Web-Bestellung (pending) ────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// PREIS-INTEGRITÄT & GRATIS-REGELN (serverseitig, Zwischenlösung)
+// Einzelpreise normaler Artikel werden (noch) vom Client übernommen;
+// Summen werden serverseitig nachgerechnet und Gratis-Artikel erzwungen.
+// ═══════════════════════════════════════════════════════════════
+const round2 = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+const AMOURA_SERVICE_FEE = 0.99;
+
+// Namens-Marker der Gratis-Artikel – müssen mit dem Frontend übereinstimmen
+const STAMP_REWARD_NAME = 'Pizza Margherita (groß) 🎁';
+const PROMO_FREE_NAME   = 'Pizzabrötchen mit Käse (GRATIS)';
+
+// Aktions-Zeitfenster muss mit isPromotionActive() im Frontend übereinstimmen
+function serverPromotionActive() {
+  const now = new Date();
+  return now >= new Date('2026-07-01T00:00:00+02:00')
+      && now <= new Date('2026-07-31T23:59:59+02:00');
+}
+
+// Zwischensumme (nur bezahlte Artikel) + Gesamt serverseitig nachrechnen
+function validateOrderPricing(body) {
+  const items = Array.isArray(body.items) ? body.items : [];
+  let paidSubtotal = 0;
+  for (const i of items) {
+    const price = Number(i.price), qty = Number(i.qty);
+    if (!Number.isFinite(price) || price < 0) throw new Error('Ungültiger Artikelpreis');
+    if (!Number.isFinite(qty)   || qty   < 1) throw new Error('Ungültige Menge');
+    paidSubtotal += price * qty;
+  }
+  paidSubtotal    = round2(paidSubtotal);
+  const deliveryFee = Math.max(0, Number(body.deliveryFee) || 0);
+  const serviceFee  = AMOURA_SERVICE_FEE;
+  const total       = round2(paidSubtotal + deliveryFee + serviceFee);
+  return { paidSubtotal, deliveryFee, serviceFee, total };
+}
+
+// Gratis-Artikel klassifizieren & Basisregeln prüfen (ohne DB).
+// Wirft bei ungültiger Gratis-Gabe; sonst { hasStampReward, hasPromo }.
+function classifyFreebies(items, paidSubtotal) {
+  const free = (items || []).filter(i => Number(i.price) === 0 && (Number(i.qty) || 1) >= 1);
+  let hasStampReward = false, hasPromo = false;
+  for (const f of free) {
+    if (f.name === STAMP_REWARD_NAME || f.note === 'Gratis-Prämie (Stempelkarte)') hasStampReward = true;
+    else if (f.name === PROMO_FREE_NAME) hasPromo = true;
+    else throw new Error('Ungültiger Gratis-Artikel');
+  }
+  // Kein Stapeln: höchstens EINE Gratis-Gabe pro Bestellung
+  if (free.length > 1) throw new Error('Nur eine Gratis-Gabe pro Bestellung möglich');
+  if (hasPromo && !(serverPromotionActive() && paidSubtotal >= 25)) {
+    throw new Error('Aktion nicht erfüllt (mind. 25 € Bestellwert während der Aktion)');
+  }
+  return { hasStampReward, hasPromo };
+}
+
+// Stempel-Stand eines Kunden ermitteln
+async function getStampInfo(userId) {
+  const [validOrders, user] = await Promise.all([
+    Order.countDocuments({ userId, status: { $nin: ['cancelled', 'awaiting_payment'] } }),
+    User.findById(userId).select('stampsRedeemed')
+  ]);
+  const redeemed     = user?.stampsRedeemed || 0;
+  const totalRewards = Math.floor(validOrders / 3);
+  return {
+    totalOrders:      validOrders,
+    stamps:           validOrders % 3,
+    rewardsAvailable: Math.max(0, totalRewards - redeemed)
+  };
+}
+
 app.post('/api/orders', async (req, res) => {
   try {
     // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
@@ -535,10 +592,30 @@ app.post('/api/orders', async (req, res) => {
       } catch {} // Gastbestellung – kein Fehler
     }
 
+    const isPOS = req.body.source === 'pos';
+
+    // Kunden-Webbestellungen serverseitig absichern (POS/Personal bleibt unangetastet)
+    let pricing = null;
+    if (!isPOS) {
+      let free;
+      try {
+        pricing = validateOrderPricing(req.body);
+        free    = classifyFreebies(req.body.items, pricing.paidSubtotal);
+      } catch (e) { return res.status(400).json({ message: e.message }); }
+
+      // Stempel-Prämie: nur eingeloggt & berechtigt – und hier verbuchen
+      if (free.hasStampReward) {
+        if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
+        const info = await getStampInfo(userId);
+        if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
+        await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
+      }
+    }
+
     const orderNum = await getNextOrderNum();
-    const isPOS    = req.body.source === 'pos';
     const order    = new Order({
       ...req.body, orderNum, userId,
+      ...(pricing ? { subtotal: pricing.paidSubtotal, deliveryFee: pricing.deliveryFee, serviceFee: pricing.serviceFee, total: pricing.total } : {}),
       status: isPOS ? 'confirmed' : 'pending'
     });
     await order.save();
@@ -548,14 +625,42 @@ app.post('/api/orders', async (req, res) => {
       await triggerPrint(order);
     }
     await sendCouponRaffleEmail(order);
-    res.status(201).json({ orderNum: order.orderNum, order });
+
+    // Stempel-Stand für eingeloggte Kunden mitliefern (für Hinweis im Danke-Fenster)
+    let stamp = null;
+    if (userId) { try { stamp = await getStampInfo(userId); } catch {} }
+    res.status(201).json({ orderNum: order.orderNum, order, stamp });
   } catch(e) { console.error(e); res.status(500).json({ message: 'Fehler beim Speichern' }); }
 });
 
 // ── Stripe Checkout ───────────────────────────────────────────────
 app.post('/api/create-stripe-checkout', async (req, res) => {
   try {
-    const { items, subtotal, deliveryFee, serviceFee, total, customer, mode, note } = req.body;
+    const { items, customer, mode, note } = req.body;
+
+    // userId aus Kunden-JWT (falls eingeloggt) – für Kontoverknüpfung & Stempel
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try { userId = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET).id; } catch {}
+    }
+
+    // Preis-Integrität + Gratis-Regeln serverseitig
+    let pricing, free;
+    try {
+      pricing = validateOrderPricing(req.body);
+      free    = classifyFreebies(items, pricing.paidSubtotal);
+    } catch (e) { return res.status(400).json({ message: e.message }); }
+
+    // Stempel-Prämie: nur eingeloggt & berechtigt – hier verbuchen
+    if (free.hasStampReward) {
+      if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
+      const info = await getStampInfo(userId);
+      if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
+      await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
+    }
+
+    const { paidSubtotal: subtotal, deliveryFee, serviceFee, total } = pricing;
     const orderNum = await getNextOrderNum();
 
     const lineItems = items.filter(i => i.price > 0).map(i => ({
@@ -605,7 +710,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
 
     const order = new Order({
       items, subtotal, deliveryFee, serviceFee, total,
-      customer, mode, note, orderNum,
+      customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'stripe', paymentStatus: 'pending',
       stripeSessionId: session.id, status: 'awaiting_payment'
@@ -673,7 +778,30 @@ app.post('/api/verify-payment', async (req, res) => {
 // ── PayPal Checkout ───────────────────────────────────────────────
 app.post('/api/create-paypal-order', async (req, res) => {
   try {
-    const { items, subtotal, deliveryFee, serviceFee, total, customer, mode, note } = req.body;
+    const { items, customer, mode, note } = req.body;
+
+    // userId aus Kunden-JWT (falls eingeloggt)
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try { userId = jwt.verify(authHeader.split(' ')[1], process.env.JWT_SECRET).id; } catch {}
+    }
+
+    // Preis-Integrität + Gratis-Regeln serverseitig
+    let pricing, free;
+    try {
+      pricing = validateOrderPricing(req.body);
+      free    = classifyFreebies(items, pricing.paidSubtotal);
+    } catch (e) { return res.status(400).json({ message: e.message }); }
+
+    if (free.hasStampReward) {
+      if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
+      const info = await getStampInfo(userId);
+      if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
+      await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
+    }
+
+    const { paidSubtotal: subtotal, deliveryFee, serviceFee, total } = pricing;
     const orderNum = await getNextOrderNum();
 
     const token = await getPaypalAccessToken();
@@ -699,7 +827,7 @@ app.post('/api/create-paypal-order', async (req, res) => {
 
     const order = new Order({
       items, subtotal, deliveryFee, serviceFee, total,
-      customer, mode, note, orderNum,
+      customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'paypal', paymentStatus: 'pending',
       paypalOrderId: ppOrder.id, status: 'awaiting_payment'
