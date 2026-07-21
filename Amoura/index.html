@@ -2117,15 +2117,19 @@ function showPromotionBanner() {
 }
 
 function addFreePizzaIfNeeded() {
-  if (!isPromotionActive()) return;
-  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : b.preis), 0);
-  const hasFreeItem = warenkorb.some(item => item.isFree);
-  if (summe >= 25 && !hasFreeItem) {
-    warenkorb.push({ id: Date.now(), name: 'Pizzabrötchen mit Käse (GRATIS)', preis: 0, isFree: true });
-  } else if (summe < 25 && hasFreeItem) {
-    // Warenkorb wieder unter 25€ → Gratis-Pizzabrötchen entfernen
-    const idx = warenkorb.findIndex(item => item.isFree);
-    if (idx !== -1) warenkorb.splice(idx, 1);
+  // Warenwert ohne Gratis-Artikel
+  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : (b.preis || 0)), 0);
+  // Aktions-Gratisgabe = ein Gratis-Artikel, der NICHT die Stempel-Prämie ist
+  const idxPromo = warenkorb.findIndex(item => item.isFree && !item.stampReward);
+  // Stempel-Belohnung im Warenkorb? → Aktion NICHT zusätzlich gewähren (kein Stapeln)
+  const hasStampReward = warenkorb.some(item => item.stampReward);
+  const eligible = isPromotionActive() && summe >= 25 && !hasStampReward;
+
+  if (eligible && idxPromo === -1) {
+    warenkorb.push({ id: Date.now(), name: 'Pizzabrötchen mit Käse (GRATIS)', preis: 0, basePreis: 0, isFree: true });
+  } else if (!eligible && idxPromo !== -1) {
+    // nicht (mehr) berechtigt (unter 25€, keine Aktion, oder Stempel-Prämie aktiv) → Gratisgabe entfernen
+    warenkorb.splice(idxPromo, 1);
   }
 }
 
@@ -4908,12 +4912,13 @@ body.modal-open {
         if (btn) { btn.disabled = false; btn.textContent = '🎁 Gratis-Pizza einlösen'; }
         return;
       }
-      // Gratis Margherita (groß) in den Warenkorb
-      var pizzaItem = { name: 'Pizza Margherita (groß) 🎁', price: 0, qty: 1, note: 'Gratis-Prämie (Stempelkarte)' };
+      // Gratis Margherita (groß) in den Warenkorb – gleiches Schema wie normale Artikel
+      var pizzaItem = { id: Date.now(), name: 'Pizza Margherita (groß) 🎁', preis: 0, basePreis: 0, qty: 1, isFree: true, stampReward: true, note: 'Gratis-Prämie (Stempelkarte)' };
       if (typeof warenkorb !== 'undefined' && Array.isArray(warenkorb)) {
         warenkorb.push(pizzaItem);
-        if (typeof updateCart === 'function') updateCart();
-        else if (typeof renderWarenkorb === 'function') renderWarenkorb();
+        // Stempel-Prämie und Aktion nicht stapeln: ggf. Aktions-Gratisgabe entfernen
+        if (typeof addFreePizzaIfNeeded === 'function') addFreePizzaIfNeeded();
+        if (typeof renderWarenkorb === 'function') renderWarenkorb();
       }
       closeStampPopup();
       // kurzes Feedback-Banner
