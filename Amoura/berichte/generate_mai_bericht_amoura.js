@@ -42,6 +42,17 @@ const PDF_FT = 810;
 const PDF_SV = 0.99;
 const PDF_PR = 0.05;
 const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
+// DSGVO-Datenminimierung: nur Vorname + erster Buchstabe des Nachnamens (z. B. "Nadien F.")
+const pdfMaskName = o => {
+  const f = (o.customer?.first || '').trim();
+  const l = (o.customer?.last  || '').trim();
+  return (l ? `${f} ${l.charAt(0)}.` : f).trim() || '–';
+};
+// Testbestellungen aus Berichten ausschließen: Kundenname enthält "Test" ODER Servicegebühr = Schema-Default 0,50 €
+const isTestOrder = o => {
+  const name = `${o.customer?.first || ''} ${o.customer?.last || ''}`;
+  return /\btest\b/i.test(name) || o.serviceFee === 0.5;
+};
 
 function generatePdf(buildFn) {
   return new Promise((resolve, reject) => {
@@ -106,7 +117,7 @@ function pdfKundenliste(doc, orders) {
     list.forEach((o, i) => {
       if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
       const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
-      const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
+      const name = pdfMaskName(o);
       const modeStr = o.mode === 'lieferung' ? 'Lieferung' : 'Abholung';
       sub += o.total || 0;
       const ry = doc.y;
@@ -130,24 +141,24 @@ function pdfKundenliste(doc, orders) {
   drawGroup('Abholungen',   '#276749', orders.filter(o => o.mode === 'abholung'));
 }
 
-function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
+function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
   if (!barOrders.length) return;
   doc.addPage(); doc.y = PDF_M;
   doc.rect(0, 0, PDF_PW, 50).fill('#1a1a2e');
-  doc.font('Helvetica-Bold').fontSize(16).fillColor('#fff').text('Bar-Rechnung', PDF_M, 14);
+  doc.font('Helvetica-Bold').fontSize(16).fillColor('#fff').text('Bar-Zahlungen – Übersicht', PDF_M, 14);
   doc.font('Helvetica').fontSize(9).fillColor('rgba(255,255,255,0.7)').text(`FlueVate Online-Bestellsystem  ·  ${zeitraum}`, PDF_M, 33);
   doc.y = 62;
   const addrY = doc.y;
-  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Rechnungssteller:', PDF_M, addrY);
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Anbieter:', PDF_M, addrY);
   doc.font('Helvetica').fontSize(9).fillColor('#444').text('Abed Rachman Falah · FlueVate', PDF_M, addrY+12).text('Zur Goldbrede 30, 59269 Beckum', PDF_M, addrY+22);
-  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Rechnungsempfänger:', PDF_M+270, addrY);
+  doc.font('Helvetica-Bold').fontSize(9).fillColor('#1a1a2e').text('Restaurant:', PDF_M+270, addrY);
   doc.font('Helvetica').fontSize(9).fillColor('#444').text('Pizzeria Amoura', PDF_M+270, addrY+12).text('Oststraße 48, 59269 Beckum', PDF_M+270, addrY+22);
   doc.y = addrY + 38;
-  doc.font('Helvetica').fontSize(8.5).fillColor('#888').text(`Zeitraum: ${zeitraum}  ·  Rg.-Nr.: ${rgnr}`, PDF_M, doc.y);
+  doc.font('Helvetica').fontSize(8.5).fillColor('#888').text(`Zeitraum: ${zeitraum}`, PDF_M, doc.y);
   doc.y += 12;
   const hy = doc.y;
   doc.rect(PDF_M, hy, PDF_W, 16).fill('#fef9e7');
-  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('ℹ  Nur Barzahlungen – Stripe-Gebühren wurden bereits automatisch beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
+  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('ℹ  Interne Übersicht – keine Rechnung. Nur Barzahlungen; Stripe-Gebühren wurden bereits beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
   doc.y = hy + 16 + 6;
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
   const th = doc.y;
@@ -162,7 +173,7 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
     const prov = (o.total - sf) * PDF_PR;
     const ges  = sf + prov;
     const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
-    const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
+    const name = pdfMaskName(o);
     const ry = doc.y;
     if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 16).fill('#f8f9fc');
     doc.font('Helvetica').fontSize(8.5).fillColor('#222')
@@ -178,7 +189,7 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
   const s1y = doc.y;
   doc.rect(PDF_M, s1y, PDF_W, 18).fill('#f0f4f8');
-  doc.font('Helvetica').fontSize(9).fillColor('#333').text('Servicegebühren', PDF_M+8, s1y+5).text(`${barOrders.length} × ${pdfFmt(PDF_SV)}`, PDF_M+200, s1y+5, { width:140, align:'right' });
+  doc.font('Helvetica').fontSize(9).fillColor('#333').text('Servicegebühren', PDF_M+8, s1y+5).text(`${barOrders.length} Bestellungen`, PDF_M+200, s1y+5, { width:140, align:'right' });
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#222').text(pdfFmt(barStats.barSvc), PDF_M+2, s1y+5, { width:PDF_W-4, align:'right' });
   doc.y = s1y + 18;
   const s2y = doc.y;
@@ -187,12 +198,12 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum, rgnr) {
   doc.y = s2y + 18 + 4;
   const gy = doc.y;
   doc.rect(PDF_M, gy, PDF_W, 30).fill('#1a1a2e');
-  doc.font('Helvetica-Bold').fontSize(11).fillColor('#fff').text('RECHNUNGSBETRAG (netto)', PDF_M+10, gy+9, { width:PDF_W*0.6 });
+  doc.font('Helvetica-Bold').fontSize(11).fillColor('#fff').text('Summe Gebühren (Bar)', PDF_M+10, gy+9, { width:PDF_W*0.6 });
   doc.font('Helvetica-Bold').fontSize(13).fillColor('#ffd700').text(pdfFmt(barStats.barBetrag), PDF_M+2, gy+8, { width:PDF_W-4, align:'right' });
   doc.y = gy + 30 + 8;
   const uy = doc.y;
   doc.rect(PDF_M, uy, PDF_W, 14).fill('#fef9e7');
-  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('Gemäß § 19 UStG wird keine Umsatzsteuer ausgewiesen (Kleinunternehmerregelung).', PDF_M+6, uy+3, { width:PDF_W-12 });
+  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('Grundlage für die separate Gebühren-Rechnung – dieses Dokument ist keine Rechnung.', PDF_M+6, uy+3, { width:PDF_W-12 });
   doc.y = uy + 14;
 }
 
@@ -224,10 +235,10 @@ async function main() {
 
   console.log(`📅 Lade Bestellungen für ${monat} (${vonBis})…`);
 
-  const orders = await Order.find({
+  const orders = (await Order.find({
     status: { $in: ['confirmed','preparing','ready','delivered'] },
     createdAt: { $gte: mStart, $lte: mEnd }
-  }).sort({ createdAt: 1 });
+  }).sort({ createdAt: 1 })).filter(o => !isTestOrder(o));
 
   console.log(`📦 ${orders.length} Bestellungen gefunden`);
 
@@ -270,7 +281,7 @@ async function main() {
     pdfHr(doc);
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
     doc.y += 14;
-    pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
+    pdfTableRow(doc, [[`Servicegebühren  (${orders.length} Bestellungen)`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees),    PDF_M+2, PDF_W-4, 'right']], false);
     pdfTableRow(doc, [[`Systemprovision  (5 % auf ${pdfFmt(nettoBase)})`,          PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision),  PDF_M+2, PDF_W-4, 'right']], true);
     pdfTableRow(doc, [['Mein Gesamtbetrag',                                        PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
     doc.y += 4;
@@ -284,9 +295,9 @@ async function main() {
     doc.y += 14;
     weekRows.forEach(([kw2, d], i) => {
       pdfTableRow(doc, [
-        [`KW ${kw2}`,           PDF_M+8, 70,       'left'],
-        [`${d.n} Bestellungen`, PDF_M+8, PDF_W-80, 'left'],
-        [pdfFmt(d.brutto),      PDF_M+2, PDF_W-4,  'right'],
+        [`KW ${kw2}`,           PDF_M+8,  70,        'left'],
+        [`${d.n} Bestellungen`, PDF_M+90, PDF_W-170, 'left'],
+        [pdfFmt(d.brutto),      PDF_M+2,  PDF_W-4,   'right'],
       ], i % 2 === 1);
     });
     doc.y += 8;
@@ -295,68 +306,22 @@ async function main() {
     doc.y += 12;
     pdfKundenliste(doc, orders);
     if (barOrdersM.length > 0) {
-      pdfBarRechnung(doc, barOrdersM, { barSvc:barSvcM, barNetto:barNettoM, barProv:barProvM, barBetrag:barBetragM }, vonBis, `${rechnungNr}-BAR`);
+      pdfBarRechnung(doc, barOrdersM, { barSvc:barSvcM, barNetto:barNettoM, barProv:barProvM, barBetrag:barBetragM }, vonBis);
     }
     doc.font('Helvetica').fontSize(7).fillColor('#bbb')
       .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, 820, { width: PDF_W, align: 'center' });
   });
 
-  // ── PDF 2: FlueVate Rechnung ──────────────────────────────────
-  console.log('📄 Generiere Rechnung PDF…');
-  const monatRechnungPdf = await generatePdf(doc => {
-    const W = 495;
-    doc.rect(0, 0, 595, 70).fill('#1a1a2e');
-    doc.fontSize(22).font('Helvetica-Bold').fillColor('#fff').text('Abed Rachman Falah', 50, 20);
-    doc.fontSize(10).font('Helvetica').fillColor('rgba(255,255,255,0.7)').text('Online-Bestellsystem · Monatsabrechnung', 50, 46);
-    doc.moveDown(3).fontSize(16).font('Helvetica-Bold').fillColor('#1a1a2e').text(`RECHNUNG ${rechnungNr}`);
-    doc.fontSize(10).font('Helvetica').fillColor('#666').text(`${monat}  ·  ${vonBis}`);
-    doc.moveDown(1.5);
-    const addrY = doc.y;
-    doc.fontSize(8).fillColor('#999').text('RECHNUNGSSTELLER', 50, addrY);
-    doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Abed Rachman Falah', 50, addrY+14);
-    doc.fontSize(10).font('Helvetica').fillColor('#555').text('Zur Goldbrede 30', 50, addrY+30).text('59269 Beckum', 50, addrY+44);
-    if (process.env.STEUERNUMMER) doc.text(`St.-Nr.: ${process.env.STEUERNUMMER}`, 50, addrY+58);
-    doc.fontSize(8).fillColor('#999').text('RECHNUNGSEMPFÄNGER', 310, addrY);
-    doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Pizzeria Amoura', 310, addrY+14);
-    doc.fontSize(10).font('Helvetica').fillColor('#555').text('Oststraße 48', 310, addrY+30).text('59269 Beckum', 310, addrY+44);
-    doc.y = addrY + 80;
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(1).stroke(); doc.moveDown(0.8);
-    doc.fontSize(9).fillColor('#555').text(`Rechnungsnummer: ${rechnungNr}`, 50, doc.y, { continued:true }).text(`Datum: ${datum}`, { align:'right' });
-    doc.text(`Leistungszeitraum: ${vonBis}`, 50); doc.moveDown(1);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
-    doc.fontSize(11).font('Helvetica-Bold').fillColor('#222').text('Leistung', 50, doc.y).text('Betrag', 50, doc.y-14, { width:W, align:'right' });
-    doc.moveDown(0.5); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke(); doc.moveDown(0.5);
-    doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Servicegebühren Online-Bestellsystem', 50);
-    doc.font('Helvetica').fontSize(9).fillColor('#888').text(`${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen (${monat})`);
-    const sfY = doc.y - 32;
-    doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${svcFees.toFixed(2).replace('.',',')} €`, 50, sfY, { width:W, align:'right' });
-    doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#eee').lineWidth(0.5).stroke(); doc.moveDown(0.5);
-    doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text('Systemprovision (5 % auf Speisenumsatz)', 50);
-    doc.font('Helvetica').fontSize(9).fillColor('#888').text(`5 % von ${nettoBase.toFixed(2).replace('.',',')} € Speisenumsatz`);
-    const pvY = doc.y - 32;
-    doc.font('Helvetica-Bold').fontSize(11).fillColor('#222').text(`${provision.toFixed(2).replace('.',',')} €`, 50, pvY, { width:W, align:'right' });
-    doc.moveDown(0.8); doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#222').lineWidth(1.5).stroke(); doc.moveDown(0.5);
-    doc.font('Helvetica-Bold').fontSize(14).fillColor('#1a1a2e').text('RECHNUNGSBETRAG (netto)', 50);
-    const totY = doc.y - 18;
-    doc.text(`${meinBetrag.toFixed(2).replace('.',',')} €`, 50, totY, { width:W, align:'right' });
-    doc.moveDown(1.5);
-    const noteY = doc.y;
-    doc.rect(50, noteY, W, 26).fill('#fff8e1');
-    doc.fontSize(9).font('Helvetica').fillColor('#7a5c00').text('Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).', 56, noteY+4);
-    doc.fontSize(8).fillColor('#aaa').text(`Abed Rachman Falah · ${rechnungNr} · ${monat}`, 50, 780, { width:W, align:'center' });
-  });
+  // PDF 2 (FlueVate-Rechnung) wird nicht mehr erzeugt – die Rechnung wird separat in Lexware geschrieben.
 
   // ── Speichern ─────────────────────────────────────────────────
-  const outDir = path.join(__dirname, 'PDFs');
+  const outDir = path.join(__dirname, '..', 'PDFs'); // Berichte weiterhin ins Repo-Root/PDFs
   const file1  = path.join(outDir, `Mai_2026_Amoura_Monatsbericht.pdf`);
-  const file2  = path.join(outDir, `${rechnungNr}_ARF_Monatsrechnung_Mai_2026.pdf`);
 
   fs.writeFileSync(file1, monatsPdf);
-  fs.writeFileSync(file2, monatRechnungPdf);
 
   console.log(`\n✅ Fertig!`);
   console.log(`   📄 ${file1}`);
-  console.log(`   📄 ${file2}`);
 
   await mongoose.disconnect();
 }

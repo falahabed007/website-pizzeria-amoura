@@ -915,15 +915,23 @@ const MENU = [
     id:'getraenke', label:'Getränke', icon:'🥤',
     items:[
       {num:'G1', name:'Cola 0,33L',      price:2.00,desc:'Cola / Cola Light'},
+      {num:'G2', name:'Cola 0,5L',       price:2.00,desc:'Cola / Cola Light'},
       {num:'G3', name:'Cola 1,0L',       price:3.00,desc:'Cola / Cola Light'},
       {num:'G4', name:'Fanta 0,33L',     price:2.00,desc:'Fanta Orange'},
+      {num:'G5', name:'Fanta 0,5L',      price:2.00,desc:'Fanta Orange'},
       {num:'G6', name:'Fanta 1,0L',      price:3.00,desc:'Fanta Orange'},
       {num:'G7', name:'Sprite 0,33L',    price:2.00,desc:'Sprite'},
-      {num:'G9', name:'Mezzo Mix 0,33L', price:2.00,desc:'Mezzo Mix'},
-      {num:'G11',name:'Uludag 0,33L',    price:2.00,desc:'Uludag Mineralwasser'},
-      {num:'G13',name:'Ice Tea 0,25L',   price:1.50,desc:'Eistee'},
-      {num:'G14',name:'Ayran 0,5L',      price:1.80,desc:'Türkischer Joghurtdrink'},
-      {num:'G15',name:'Wasser',          price:1.50,desc:'Mineralwasser'},
+      {num:'G8', name:'Sprite 0,5L',     price:2.00,desc:'Sprite'},
+      {num:'G9', name:'Sprite 1,0L',     price:3.00,desc:'Sprite'},
+      {num:'G10',name:'Mezzo Mix 0,33L', price:2.00,desc:'Mezzo Mix'},
+      {num:'G11',name:'Mezzo Mix 0,5L',  price:2.00,desc:'Mezzo Mix'},
+      {num:'G12',name:'Mezzo Mix 1,0L',  price:3.00,desc:'Mezzo Mix'},
+      {num:'G13',name:'Uludag 0,33L',    price:2.00,desc:'Uludag Mineralwasser'},
+      {num:'G14',name:'Uludag 0,5L',     price:2.00,desc:'Uludag Mineralwasser'},
+      {num:'G15',name:'Uludag 1,0L',     price:3.00,desc:'Uludag Mineralwasser'},
+      {num:'G16',name:'Ice Tea 0,25L',   price:1.50,desc:'Eistee'},
+      {num:'G17',name:'Ayran 0,5L',      price:1.80,desc:'Türkischer Joghurtdrink'},
+      {num:'G18',name:'Wasser',          price:1.50,desc:'Mineralwasser'},
     ]
   }
 ];
@@ -1341,6 +1349,14 @@ function renderPaymentStep() {
         <div class="payment-opt${checkoutData.payment==='karte'?' selected':''}" onclick="checkoutData.payment='karte';renderPaymentStep()">💳 EC-Karte</div>
         <div class="payment-opt${checkoutData.payment==='stripe'?' selected':''}" onclick="checkoutData.payment='stripe';renderPaymentStep()">🔒 Online zahlen</div>
       </div>
+      ${checkoutData.payment==='stripe'?`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <span style="background:#1a1f71;color:#fff;font-size:10px;font-weight:bold;padding:3px 7px;border-radius:4px;letter-spacing:1px">VISA</span>
+        <span style="display:inline-flex;align-items:center"><span style="background:#eb001b;width:17px;height:17px;border-radius:50%;display:inline-block"></span><span style="background:#f79e1b;width:17px;height:17px;border-radius:50%;display:inline-block;margin-left:-7px"></span></span>
+        <span style="background:#007bc1;color:#fff;font-size:9px;font-weight:bold;padding:3px 6px;border-radius:4px">AMEX</span>
+        <span style="background:#000;color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px"> Pay</span>
+        <span style="background:#fff;border:1px solid #ddd;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;color:#5f6368">G Pay</span>
+        <span style="background:#ffb3c7;color:#000;font-size:10px;font-weight:bold;padding:3px 8px;border-radius:4px">Klarna</span>
+      </div>`:''}
     </div>
     <div class="checkout-section">
       <label class="checkbox-row"><input type="checkbox" id="cbAgb"> Ich akzeptiere die <a href="#" onclick="openLegal('agb');return false">AGB</a> *</label>

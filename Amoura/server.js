@@ -95,9 +95,16 @@ app.use(express.static(path.join(__dirname), {
 }));
 
 // ─── MongoDB ─────────────────────────────────────────────────────
+if (!process.env.MONGODB_URI) {
+  console.error('❌ MONGODB_URI nicht gesetzt – Datenbankfunktionen sind deaktiviert.');
+}
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB verbunden'))
-  .catch(err => console.error('❌ MongoDB:', err));
+  .catch(err => console.error('❌ MongoDB Erstverbindung fehlgeschlagen:', err.message));
+// Dauerhafte Zustandswechsel sichtbar loggen (kein stiller Ausfall)
+mongoose.connection.on('disconnected', () => console.error('❌ MongoDB getrennt – Reconnect läuft …'));
+mongoose.connection.on('reconnected',  () => console.log('✅ MongoDB wieder verbunden'));
+mongoose.connection.on('error',        err => console.error('❌ MongoDB Fehler:', err.message));
 
 // ═══════════════════════════════════════════════════════════════
 // SCHEMAS
@@ -357,9 +364,14 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // PUBLIC ROUTES
 // ═══════════════════════════════════════════════════════════════
 
-app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date()
-}));
+app.get('/api/health', (req, res) => {
+  const dbUp = mongoose.connection.readyState === 1; // 1 = connected
+  res.status(dbUp ? 200 : 503).json({
+    status: dbUp ? 'ok' : 'degraded',
+    db: dbUp ? 'connected' : 'disconnected',
+    restaurant: 'Pizzeria Amoura', time: new Date()
+  });
+});
 
 app.get('/api/config', (req, res) => res.json({
   whatsapp: process.env.WHATSAPP_NUMBER || '',
@@ -1828,9 +1840,9 @@ cron.schedule('0 22 * * *', async () => {
       doc.y += 14;
       weekRows.forEach(([kw2, d], i) => {
         pdfTableRow(doc, [
-          [`KW ${kw2}`,           PDF_M+8, 70,       'left'],
-          [`${d.n} Bestellungen`, PDF_M+8, PDF_W-80, 'left'],
-          [pdfFmt(d.brutto),      PDF_M+2, PDF_W-4,  'right'],
+          [`KW ${kw2}`,           PDF_M+8,  70,        'left'],
+          [`${d.n} Bestellungen`, PDF_M+90, PDF_W-170, 'left'],
+          [pdfFmt(d.brutto),      PDF_M+2,  PDF_W-4,   'right'],
         ], i % 2 === 1);
       });
       doc.y += 8;
@@ -1978,7 +1990,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung),PDF_M+2,ay+8,{width:PDF_W-4,align:'right'});
       doc.y=ay+28+16; pdfHr(doc,'#bbb');
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('WOCHENÜBERSICHT',PDF_M,doc.y); doc.y+=14;
-      weekRows.forEach(([kw2,d],i)=>{ pdfTableRow(doc,[[`KW ${kw2}`,PDF_M+8,70,'left'],[`${d.n} Bestellungen`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(d.brutto),PDF_M+2,PDF_W-4,'right']],i%2===1); });
+      weekRows.forEach(([kw2,d],i)=>{ pdfTableRow(doc,[[`KW ${kw2}`,PDF_M+8,70,'left'],[`${d.n} Bestellungen`,PDF_M+90,PDF_W-170,'left'],[pdfFmt(d.brutto),PDF_M+2,PDF_W-4,'right']],i%2===1); });
       doc.y+=8; pdfHr(doc,'#bbb');
       doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE',PDF_M,doc.y); doc.y+=12;
       pdfKundenliste(doc,orders);
@@ -2055,4 +2067,86 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
 });
 
 // ─── Start ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// HISTORIE & AUSWERTUNG  (für die Fluevate-Kasse-App)
+// ═══════════════════════════════════════════════════════════════
+// GET /api/admin/history?from=YYYY-MM-DD&to=YYYY-MM-DD
+//
+// Liefert Kennzahlen, Tageswerte UND die Bestellungen eines Zeitraums in einer Antwort.
+// /api/admin/finance kennt nur "heute" und "diese Woche" – für Monatsumsatz und
+// Bestellhistorie reicht das nicht.
+//
+// Zeitzone: die Tagesgrenzen richten sich nach Europe/Berlin, nicht nach UTC. Sonst
+// landen Bestellungen zwischen 22:00 und 24:00 im falschen Tag.
+app.get('/api/admin/history', auth, async (req, res) => {
+  try {
+    const isDate = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
+    const berlinDay = d => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
+
+    const from = isDate(req.query.from) ? req.query.from : berlinDay(new Date());
+    const to   = isDate(req.query.to)   ? req.query.to   : from;
+    if (to < from) return res.status(400).json({ message: 'Zeitraum ist verdreht' });
+
+    // Grosszuegiges UTC-Fenster laden und danach exakt nach Berliner Tagen filtern –
+    // das ist auch bei der Sommerzeitumstellung korrekt.
+    const padFrom = new Date(from + 'T00:00:00Z'); padFrom.setUTCDate(padFrom.getUTCDate() - 1);
+    const padTo   = new Date(to   + 'T23:59:59Z'); padTo.setUTCDate(padTo.getUTCDate() + 1);
+
+    const raw = await Order.find({
+      status:    { $nin: ['awaiting_payment'] },
+      createdAt: { $gte: padFrom, $lte: padTo }
+    }).sort({ createdAt: -1 }).limit(3000);
+
+    const all = raw.filter(o => {
+      const k = berlinDay(o.createdAt);
+      return k >= from && k <= to;
+    });
+
+    // Stornierte Bestellungen zaehlen nicht zum Umsatz, aber sehr wohl zur Statistik.
+    const valid = all.filter(o => o.status !== 'cancelled');
+    const r2  = n => Math.round((n + Number.EPSILON) * 100) / 100;
+    const sum = pick => valid.reduce((s, o) => s + (pick(o) || 0), 0);
+
+    const brutto  = sum(o => o.total);
+    const svcFees = sum(o => o.serviceFee);
+
+    const byPayment = {};
+    valid.forEach(o => {
+      const k = o.payment || 'unbekannt';
+      byPayment[k] = (byPayment[k] || 0) + 1;
+    });
+
+    const days = {};
+    valid.forEach(o => {
+      const k = berlinDay(o.createdAt);
+      if (!days[k]) days[k] = { date: k, count: 0, brutto: 0 };
+      days[k].count  += 1;
+      days[k].brutto += (o.total || 0);
+    });
+
+    res.json({
+      from, to,
+      stats: {
+        count:        valid.length,
+        brutto:       r2(brutto),
+        svcFees:      r2(svcFees),
+        deliveryFees: r2(sum(o => o.deliveryFee)),
+        auszahlung:   r2(brutto - svcFees),
+        cancelled:    all.length - valid.length,
+        unpaid:       valid.filter(o => o.paymentStatus !== 'paid').length,
+        byPayment
+      },
+      byDay: Object.values(days)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(d => ({ date: d.date, count: d.count, brutto: r2(d.brutto) })),
+      // Begrenzt, damit die Antwort auf einem Kassengeraet handhabbar bleibt.
+      orders: all.slice(0, 500)
+    });
+  } catch (e) {
+    console.error('history:', e);
+    res.status(500).json({ message: 'Fehler' });
+  }
+});
+
+
 app.listen(PORT, () => console.log(`🍕 Pizzeria Amoura Backend · Port ${PORT}`));

@@ -25,7 +25,9 @@
 2. **Create a cluster** → Free Tier wählen (M0)
 3. **Database Access** → Add New User:
    - Username + Passwort vergeben → merken!
-4. **Network Access** → Add IP Address → **Allow Access from Anywhere** (0.0.0.0/0)
+4. **Network Access** → Add IP Address → **NUR die feste Render-Ausgangs-IP** des Backend-Service eintragen
+   (Render → Service → *Connect/Outbound* → Static Outbound IPs). **NICHT** „Allow Access from Anywhere" (0.0.0.0/0) —
+   das öffnet den Cluster fürs gesamte Internet. Für lokale Tests zusätzlich die eigene IP temporär erlauben und danach entfernen.
 5. **Connect** → Drivers → Node.js → Connection String kopieren:
    ```
    mongodb+srv://USERNAME:PASSWORT@cluster0.xxxxx.mongodb.net/pizzeria-amoura
@@ -158,7 +160,7 @@ const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025...'; // gleich wie ADMIN_TOKEN_SE
 | Problem | Lösung |
 |---|---|
 | Backend startet nicht | `MONGODB_URI` prüfen – Datenbankname `/pizzeria-amoura` am Ende |
-| MongoDB Verbindung fehlgeschlagen | Network Access in Atlas: `0.0.0.0/0` erlauben |
+| MongoDB Verbindung fehlgeschlagen | Network Access in Atlas: **feste Render-Ausgangs-IP** eintragen (NICHT `0.0.0.0/0`) · Passwort im `MONGODB_URI` korrekt? |
 | Login fehlschlägt | `ADMIN_TOKEN_SECRET` in Render = `ADMIN_TOKEN_SEC` im Dashboard (exakt gleich!) |
 | Stripe Webhook Fehler | URL: `.../api/stripe-webhook` · Event `checkout.session.completed` aktiv? |
 | E-Mails kommen nicht | Domain bei Resend verifiziert? · `EMAIL_FROM` muss verifizierte Domain nutzen |

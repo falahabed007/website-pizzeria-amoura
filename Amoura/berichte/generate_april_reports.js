@@ -502,7 +502,7 @@ async function makeMonatsbericht({ monat, von, bis, orders, wochen, jahr = '2026
 // MAIN
 // ─────────────────────────────────────────────────────────────────────────────
 (async () => {
-  const OUT = path.join(__dirname, 'PDFs');
+  const OUT = path.join(__dirname, '..', 'PDFs'); // Berichte weiterhin ins Repo-Root/PDFs
 
   // Monatsbericht April
   console.log('📅 Monatsbericht April 2026...');

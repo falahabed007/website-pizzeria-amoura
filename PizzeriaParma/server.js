@@ -98,11 +98,6 @@ async function getNextOrderNum() {
   const c = await Counter.findByIdAndUpdate('orderNum', { $inc: { seq: 1 } }, { new: true, upsert: true });
   return c.seq + 1000;
 }
-async function getNextRechnungNum() {
-  const c = await Counter.findByIdAndUpdate('rechnungNum', { $inc: { seq: 1 } }, { new: true, upsert: true });
-  return `RE-${new Date().getFullYear()}-${String(c.seq).padStart(4,'0')}`;
-}
-
 function authMiddleware(req, res, next) {
   const h = req.headers.authorization;
   if (!h || !h.startsWith('Bearer ')) return res.status(401).json({ message: 'Nicht autorisiert' });
@@ -115,98 +110,192 @@ const cleanName = n => n.replace(/[A-Z0-9](,[A-Z0-9])+$/g, '').trimEnd();
 // ═══════════════════════════════════════════════════════════════
 // PDF HELPERS
 // ═══════════════════════════════════════════════════════════════
-const PDF_M  = 50;
-const PDF_W  = 495;
-const PDF_PW = 595;
-const PDF_FT = 810;
-const PDF_SV = 0.99;
-const PDF_PR = 0.05;
+// In E-Mail-Templates weiterverwendet:
 const PRIMARY_COLOR = '#C41230';
-const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
 
-function generatePdf(buildFn) {
-  return new Promise((resolve, reject) => {
-    const doc    = new PDFDocument({ margin: 50, size: 'A4' });
-    const chunks = [];
-    doc.on('data', c => chunks.push(c));
-    doc.on('end',  () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-    buildFn(doc);
-    doc.end();
-  });
-}
 function getWeekNum(d) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
   return Math.ceil((((date - new Date(Date.UTC(date.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
 }
-function pdfColorBox(doc, title, sub, color = PRIMARY_COLOR, h = 70) {
-  doc.rect(0, 0, PDF_PW, h).fill(color);
-  doc.font('Helvetica-Bold').fontSize(20).fillColor('#fff').text(title, PDF_M, 18);
-  if (sub) doc.font('Helvetica').fontSize(9).fillColor('rgba(255,255,255,0.75)').text(sub, PDF_M, 44);
-  doc.y = h + 14;
+
+// ── FlueVate-Berichts-Design-System ───────────────────────────────
+const FLUEVATE = { name: 'FlueVate', inhaber: 'Abed Rachman Falah', strasse: 'Zur Goldbrede 30', ort: '59269 Beckum' };
+const REPORT   = { dark:'#1a1a1a', boxGray:'#595959', sumGray:'#cfcfcf', zebra:'#f4f4f4', rule:'#dddddd', text:'#222222', muted:'#888888' };
+const RESTAURANT_NAME    = () => process.env.RESTAURANT_NAME    || 'Pizzeria Parma';
+const RESTAURANT_ADRESSE = () => process.env.RESTAURANT_ADRESSE || 'Bahnhofstr. 37, 59065 Hamm';
+
+const eur = n => (Number(n) || 0).toFixed(2).replace('.', ',') + ' €';
+
+// Kennzahlen – datengetrieben, identisch zur Finance-calc
+function reportTotals(orders) {
+  const brutto    = orders.reduce((s, o) => s + (o.total || 0), 0);
+  const svcFees   = orders.reduce((s, o) => s + (o.serviceFee || 0.99), 0);
+  const nBar      = orders.filter(o => o.payment === 'bar').length;
+  const nStripe   = orders.filter(o => o.payment === 'stripe' || o.payment === 'karte').length;
+  return { count: orders.length, brutto, svcFees, nBar, nStripe };
 }
-function pdfHr(doc, color = '#ddd', lw = 0.5) {
-  doc.moveTo(PDF_M, doc.y).lineTo(PDF_M + PDF_W, doc.y).strokeColor(color).lineWidth(lw).stroke();
-  doc.y += 6;
-}
-function pdfKacheln(doc, items) {
-  const kW = Math.floor((PDF_W - (items.length - 1) * 8) / items.length);
-  items.forEach(([label, val, color], i) => {
-    const x = PDF_M + i * (kW + 8);
-    doc.rect(x, doc.y, kW, 52).fill(color);
-    doc.font('Helvetica').fontSize(8).fillColor('rgba(255,255,255,0.75)').text(label, x + 8, doc.y + 8, { width: kW - 16 });
-    doc.font('Helvetica-Bold').fontSize(15).fillColor('#fff').text(val, x + 8, doc.y + 22, { width: kW - 16 });
+
+// Wie generatePdf, aber mit bufferPages + Footer-Zeile auf allen Seiten.
+function generateReportPdf(footerLabel, buildFn) {
+  return new Promise((resolve, reject) => {
+    const doc    = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
+    const chunks = [];
+    doc.on('data', c => chunks.push(c));
+    doc.on('end',  () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    buildFn(doc);
+    const range = doc.bufferedPageRange();
+    const txt = `${FLUEVATE.name} · ${FLUEVATE.inhaber} · ${FLUEVATE.strasse} · ${FLUEVATE.ort} · ${footerLabel}`;
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(range.start + i);
+      const bottom = doc.page.margins.bottom;
+      doc.page.margins.bottom = 0; // im unteren Rand schreiben, sonst fügt PDFKit leere Seiten ein
+      doc.fillColor(REPORT.muted).font('Helvetica').fontSize(7)
+         .text(txt, 50, doc.page.height - 35, { width: doc.page.width - 100, align: 'center', lineBreak: false });
+      doc.page.margins.bottom = bottom;
+    }
+    doc.end();
   });
-  doc.y += 62;
 }
-function pdfTableRow(doc, cells, shade, bold = false) {
-  const top = doc.y;
-  if (shade) doc.rect(PDF_M, top, PDF_W, 20).fill('#f5f7fa');
-  doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(9).fillColor('#222');
-  cells.forEach(([text, x, w, align]) => doc.text(text, x, top + 5, { width: w, align }));
-  doc.y = top + 20;
+
+const CW = doc => doc.page.width - 100; // Inhaltsbreite (Margin 50 links/rechts)
+function ensureSpace(doc, needed) { if (doc.y + needed > doc.page.height - 60) doc.addPage(); }
+
+// Dunkles Vollbreiten-Header-Band mit Titel + Untertitel
+function drawHeaderBand(doc, title, subtitle) {
+  doc.save().rect(0, 0, doc.page.width, 96).fill(REPORT.dark).restore();
+  doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(26).text(title, 50, 28);
+  doc.fillColor('#cfcfcf').font('Helvetica').fontSize(10).text(subtitle, 50, 66);
+  doc.fillColor(REPORT.text); doc.y = 120;
 }
-function pdfKundenliste(doc, orders) {
-  [
-    { label: 'Barzahlung', color: PRIMARY_COLOR,  list: orders.filter(o => o.payment === 'bar') },
-    { label: 'Stripe',     color: '#276749',       list: orders.filter(o => o.payment !== 'bar') },
-  ].forEach(({ label, color, list }) => {
-    if (!list.length) return;
-    const gy = doc.y; if (gy > PDF_FT - 60) { doc.addPage(); doc.y = PDF_M; }
-    doc.rect(PDF_M, gy, PDF_W, 22).fill(color);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text(`${label} (${list.length})`, PDF_M + 8, gy + 6, { width: PDF_W - 16 });
-    doc.y = gy + 22;
-    const hy = doc.y;
-    doc.rect(PDF_M, hy, PDF_W, 16).fill('#eaeef3');
-    [['#', PDF_M+2, 30, 'left'], ['Datum', PDF_M+34, 40, 'left'], ['Kunde', PDF_M+76, 190, 'left'],
-     ['Art', PDF_M+268, 80, 'left'], ['Betrag', PDF_M+2, PDF_W-4, 'right']
-    ].forEach(([t, x, w, a]) => doc.font('Helvetica-Bold').fontSize(8).fillColor('#444').text(t, x, hy+4, { width:w, align:a }));
-    doc.y = hy + 16;
-    let sub = 0;
-    list.forEach((o, i) => {
-      if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
-      const ry   = doc.y;
-      const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim() || '–';
-      const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' });
-      const ms   = o.mode === 'lieferung' ? 'Lieferung' : 'Abholung';
-      sub += o.total || 0;
-      if (i % 2 === 0) doc.rect(PDF_M, ry, PDF_W, 18).fill('#fafafa');
-      doc.font('Helvetica').fontSize(8.5).fillColor('#222')
-        .text(`${o.orderNum}`, PDF_M+2,   ry+4, { width:30 })
-        .text(date,            PDF_M+34,  ry+4, { width:40 })
-        .text(name,            PDF_M+76,  ry+4, { width:188 })
-        .text(ms,              PDF_M+268, ry+4, { width:80 });
-      doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e')
-        .text(pdfFmt(o.total||0), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
-      doc.y = ry + 18;
+
+// 4 KPI-Kacheln (erste schwarz, Rest grau): boxes = [{ value, label }]
+function drawKpiBoxes(doc, boxes) {
+  const x0 = 50, top = doc.y, gap = 12, w = CW(doc), bw = (w - gap * 3) / 4, bh = 56;
+  boxes.slice(0, 4).forEach((b, i) => {
+    const x = x0 + i * (bw + gap);
+    doc.save().rect(x, top, bw, bh).fill(i === 0 ? REPORT.dark : REPORT.boxGray).restore();
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(17).text(String(b.value), x + 12, top + 11, { width: bw - 24 });
+    if (b.label) doc.font('Helvetica').fontSize(8).fillColor('#dddddd').text(b.label, x + 12, top + 38, { width: bw - 24 });
+  });
+  doc.fillColor(REPORT.text); doc.y = top + bh + 24;
+}
+
+// Section-Titel: uppercase + dünne Trennlinie
+function drawSectionTitle(doc, text) {
+  doc.moveDown(0.3);
+  const y = doc.y;
+  doc.fillColor(REPORT.text).font('Helvetica-Bold').fontSize(11).text(text.toUpperCase(), 50, y);
+  doc.moveTo(50, doc.y + 3).lineTo(50 + CW(doc), doc.y + 3).lineWidth(0.7).strokeColor(REPORT.rule).stroke();
+  doc.y += 14;
+}
+
+// Label-links / Wert-rechts Zeile
+function drawKeyValueRow(doc, label, value, opts = {}) {
+  const x = 50, w = CW(doc), h = 22, y = doc.y;
+  if (opts.zebra) doc.save().rect(x, y, w, h).fill(REPORT.zebra).restore();
+  doc.fillColor(REPORT.text).font(opts.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(10);
+  doc.text(label, x + 10, y + 6, { width: w * 0.72 });
+  doc.text(value, x, y + 6, { width: w - 10, align: 'right' });
+  doc.y = y + h;
+}
+
+// Generische Tabelle: cols = [{ key, label, w, align }], rows = [{ key:value }]
+function drawTableHeader(doc, cols) {
+  const x = 50, w = CW(doc), y = doc.y, h = 20;
+  doc.save().rect(x, y, w, h).fill(REPORT.zebra).restore();
+  let cx = x; doc.fillColor('#666').font('Helvetica-Bold').fontSize(8);
+  cols.forEach(c => { doc.text(c.label, cx + 6, y + 6, { width: c.w - 12, align: c.align || 'left' }); cx += c.w; });
+  doc.y = y + h;
+}
+function drawTableRows(doc, cols, rows, fett = []) {
+  const x = 50, w = CW(doc);
+  rows.forEach((r, i) => {
+    ensureSpace(doc, 18);
+    const y = doc.y, h = 18;
+    if (i % 2) doc.save().rect(x, y, w, h).fill(REPORT.zebra).restore();
+    let cx = x;
+    cols.forEach(c => {
+      doc.fillColor(REPORT.text).font(fett.includes(c.key) ? 'Helvetica-Bold' : 'Helvetica').fontSize(9);
+      doc.text(r[c.key] == null ? '' : String(r[c.key]), cx + 6, y + 5, { width: c.w - 12, align: c.align || 'left' });
+      cx += c.w;
     });
-    const sy = doc.y;
-    doc.rect(PDF_M, sy, PDF_W, 20).fill(color + '28');
-    doc.font('Helvetica').fontSize(9).fillColor('#333').text(`Summe ${label}:`, PDF_M+8, sy+5);
-    doc.font('Helvetica-Bold').fontSize(10).fillColor('#333').text(pdfFmt(sub), PDF_M+2, sy+5, { width:PDF_W-4, align:'right' });
-    doc.y = sy + 24;
+    doc.y = y + h;
   });
+}
+
+// Gruppierte Tabelle (KUNDENLISTE): groups = [{ title, rows, sumLabel, sumValue }]
+function drawGroupedTable(doc, cols, groups, fett = ['betrag']) {
+  const x = 50, w = CW(doc);
+  groups.forEach(g => {
+    ensureSpace(doc, 70);
+    const ty = doc.y, th = 22;
+    doc.save().rect(x, ty, w, th).fill(REPORT.boxGray).restore();
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(10).text(g.title, x + 8, ty + 6);
+    doc.y = ty + th;
+    drawTableHeader(doc, cols);
+    drawTableRows(doc, cols, g.rows, fett);
+    const sy = doc.y, sh = 20;
+    doc.save().rect(x, sy, w, sh).fill(REPORT.sumGray).restore();
+    doc.fillColor(REPORT.text).font('Helvetica-Bold').fontSize(9).text(g.sumLabel, x + 8, sy + 6, { width: w * 0.6 });
+    doc.text(g.sumValue, x, sy + 6, { width: w - 10, align: 'right' });
+    doc.y = sy + sh + 14;
+  });
+}
+
+// KUNDENLISTE: Bestellungen nach Zahlart gruppiert (Bar / Online-Stripe)
+function drawKundenliste(doc, orders) {
+  const cols = [
+    { key:'nr', label:'#', w:50 }, { key:'datum', label:'Datum', w:60 },
+    { key:'kunde', label:'Kunde', w:215 }, { key:'art', label:'Art', w:90 },
+    { key:'betrag', label:'Betrag', w:80, align:'right' },
+  ];
+  const toRow = o => ({
+    nr: o.orderNum,
+    datum: new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }),
+    kunde: `${o.customer?.first || ''} ${o.customer?.last || ''}`.trim(),
+    art:   o.mode === 'lieferung' ? 'Lieferung' : 'Abholung',
+    betrag: eur(o.total),
+  });
+  const bar    = orders.filter(o => o.payment === 'bar');
+  const stripe = orders.filter(o => o.payment === 'stripe' || o.payment === 'karte');
+  const groups = [];
+  if (bar.length)    groups.push({ title:'Barzahlung', rows: bar.map(toRow),
+    sumLabel:'Summe Barzahlung:', sumValue: eur(bar.reduce((s, o) => s + (o.total || 0), 0)) });
+  if (stripe.length) groups.push({ title:'Online-Zahlung (Stripe)', rows: stripe.map(toRow),
+    sumLabel:'Summe Online-Zahlung (Stripe):', sumValue: eur(stripe.reduce((s, o) => s + (o.total || 0), 0)) });
+  drawGroupedTable(doc, cols, groups);
+}
+
+// Tagesbericht — Header + KPI + Kundenliste
+function buildTagesbericht(doc, orders, dateStr) {
+  const t = reportTotals(orders);
+  drawHeaderBand(doc, 'Tagesbericht', `${RESTAURANT_NAME()} · ${dateStr}`);
+  drawKpiBoxes(doc, [
+    { value: t.count,        label: 'Bestellungen' },    { value: t.nBar,    label: 'Barzahlung' },
+    { value: t.nStripe,      label: 'Online (Stripe)' }, { value: eur(t.brutto), label: 'Umsatz' },
+  ]);
+  drawSectionTitle(doc, 'Kundenliste');
+  drawKundenliste(doc, orders);
+}
+
+// Monatsbericht — Header + KPI + Wochenübersicht + Kundenliste (reine Verkaufs-Zusammenfassung; Rechnung läuft über Lexware)
+function buildMonatsbericht(doc, orders, range) {
+  const t = reportTotals(orders);
+  drawHeaderBand(doc, `Monatsbericht ${range.label}`, `${RESTAURANT_NAME()} · ${range.von} – ${range.bis}`);
+  drawKpiBoxes(doc, [
+    { value: t.count,        label: 'Bestellungen' },    { value: t.nBar,    label: 'Barzahlung' },
+    { value: t.nStripe,      label: 'Online (Stripe)' }, { value: eur(t.brutto), label: 'Umsatz' },
+  ]);
+  drawSectionTitle(doc, 'Wochenübersicht');
+  const byWeek = {};
+  orders.forEach(o => { const kw = getWeekNum(new Date(o.createdAt));
+    (byWeek[kw] = byWeek[kw] || { n: 0, sum: 0 }); byWeek[kw].n++; byWeek[kw].sum += o.total || 0; });
+  Object.keys(byWeek).sort((a, b) => a - b).forEach((kw, i) =>
+    drawKeyValueRow(doc, `KW ${kw}  ·  ${byWeek[kw].n} Bestellungen`, eur(byWeek[kw].sum), { zebra: i % 2 === 0 }));
+  drawSectionTitle(doc, 'Kundenliste');
+  drawKundenliste(doc, orders);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -580,7 +669,10 @@ app.delete('/api/admin/orders/:id', authMiddleware, async (req, res) => {
     if (!order) return res.status(404).json({ message: 'Nicht gefunden' });
     let refundStatus = null;
     if (order.payment === 'stripe' && order.paymentStatus === 'paid' && order.stripePaymentIntentId) {
-      const refund = await getStripe().refunds.create({ payment_intent: order.stripePaymentIntentId });
+      // Bei Connect: reverse_transfer zieht die Erstattung vom verbundenen Konto (Restaurant) zurück statt von der Plattform
+      const refundParams = { payment_intent: order.stripePaymentIntentId };
+      if (process.env.STRIPE_CONNECT_ACCOUNT) refundParams.reverse_transfer = true;
+      const refund = await getStripe().refunds.create(refundParams);
       refundStatus      = refund.status;
       order.paymentStatus = 'refunded';
     }
@@ -654,7 +746,7 @@ cron.schedule('* * * * *', async () => {
   await Settings.findByIdAndUpdate('main', { mode: calcAutoMode() }, { upsert: true });
 });
 
-// Tagesbericht (22:00)
+// Tagesbericht (täglich 22:00) — FlueVate-Design, an RESTAURANT_EMAIL
 cron.schedule('0 22 * * *', async () => {
   try {
     const now   = new Date();
@@ -665,152 +757,143 @@ cron.schedule('0 22 * * *', async () => {
       status: { $nin: ['cancelled', 'awaiting_payment'] }
     }).sort({ orderNum: 1 });
     if (!orders.length) return;
-    const total  = orders.reduce((s, o) => s + (o.total || 0), 0);
-    const datum  = now.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-    const pdf    = await generatePdf(doc => {
-      pdfColorBox(doc, `Tagesbericht – ${datum}`, `Pizzeria Parma · ${orders.length} Bestellungen · ${pdfFmt(total)}`, PRIMARY_COLOR);
-      pdfKacheln(doc, [
-        ['Bestellungen', `${orders.length}`,                                       '#1a1a2e'],
-        ['Barzahlung',   `${orders.filter(o => o.payment === 'bar').length}`,      '#2c5282'],
-        ['Stripe',       `${orders.filter(o => o.payment !== 'bar').length}`,      '#276749'],
-        ['Tagesumsatz',  pdfFmt(total),                                            '#744210'],
-      ]);
-      pdfHr(doc);
-      orders.forEach((o, i) => {
-        if (doc.y > PDF_FT - 40) { doc.addPage(); doc.y = PDF_M; }
-        const name = `${o.customer?.first || ''} ${o.customer?.last || ''}`.trim();
-        const time = new Date(o.createdAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-        pdfTableRow(doc, [
-          [`#${o.orderNum}`, PDF_M, 40, 'left'],
-          [time, PDF_M + 42, 40, 'left'],
-          [name, PDF_M + 84, 160, 'left'],
-          [o.mode === 'lieferung' ? 'Lief.' : 'Abh.', PDF_M + 246, 50, 'left'],
-          [o.payment === 'stripe' ? 'Stripe' : 'Bar', PDF_M + 298, 50, 'left'],
-          [pdfFmt(o.total || 0), PDF_M + 2, PDF_W - 4, 'right'],
-        ], i % 2 === 0);
-      });
-    });
+    if (!process.env.RESTAURANT_EMAIL) return;
+    const total   = orders.reduce((s, o) => s + (o.total || 0), 0);
+    const dateStr = now.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+    const pdf     = await generateReportPdf(`Tagesbericht ${now.toLocaleDateString('de-DE')}`,
+      d => buildTagesbericht(d, orders, dateStr));
     await getResend()?.emails.send({
       from: process.env.EMAIL_FROM,
       to:   process.env.RESTAURANT_EMAIL,
-      subject: `📊 Tagesbericht ${datum} · Pizzeria Parma`,
-      html: `<p style="font-family:Arial;color:#555">Tagesbericht im Anhang.<br><b>${orders.length} Bestellungen · ${pdfFmt(total)}</b></p>`,
+      subject: `📊 Tagesbericht ${dateStr} · ${RESTAURANT_NAME()}`,
+      html: `<p style="font-family:Arial;color:#555">Tagesbericht im Anhang.<br><b>${orders.length} Bestellungen · ${eur(total)}</b></p>`,
       attachments: [{ filename: `Tagesbericht_${now.toISOString().slice(0, 10)}_PizzeriaParma.pdf`, content: pdf.toString('base64') }],
     });
+    console.log(`📊 Tagesbericht ${dateStr} versendet`);
   } catch(e) { console.error('Tagesbericht:', e); }
 });
 
-// Wochenbericht (Sonntag 22:00)
-cron.schedule('0 22 * * 0', async () => {
-  try {
-    const now    = new Date();
-    const wStart = new Date(now); wStart.setDate(now.getDate() - 6); wStart.setHours(0, 0, 0, 0);
-    const wEnd   = new Date(now); wEnd.setHours(23, 59, 59, 999);
-    const kw     = getWeekNum(now);
-    const datum  = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const vonBis = `${wStart.toLocaleDateString('de-DE')} – ${datum}`;
-    const orders = await Order.find({
-      status: { $in: ['confirmed','preparing','ready','delivered'] },
-      createdAt: { $gte: wStart, $lte: wEnd }
-    });
-    const brutto     = orders.reduce((s, o) => s + (o.total || 0), 0);
-    const svcFees    = orders.reduce((s, o) => s + (o.serviceFee || PDF_SV), 0);
-    const nettoBase  = brutto - svcFees;
-    const provision  = nettoBase * PDF_PR;
-    const meinBetrag = svcFees + provision;
-    const auszahlung = brutto - meinBetrag;
-    const barOrders  = orders.filter(o => o.payment === 'bar');
-    const barSvc     = barOrders.reduce((s, o) => s + (o.serviceFee || PDF_SV), 0);
-    const barNetto   = barOrders.reduce((s, o) => s + (o.total || 0), 0) - barSvc;
-    const barProv    = barNetto * PDF_PR;
-    const barBetrag  = barSvc + barProv;
-    const rgnr       = await getNextRechnungNum();
-    const pdf        = await generatePdf(doc => {
-      pdfColorBox(doc, `Wochenbericht KW ${kw} / ${now.getFullYear()}`, `Pizzeria Parma  ·  ${vonBis}`, PRIMARY_COLOR);
-      pdfKacheln(doc, [
-        ['Bestellungen',  `${orders.length}`,                                       '#1a1a2e'],
-        ['Davon Bar',     `${barOrders.length}`,                                    '#2c5282'],
-        ['Davon Stripe',  `${orders.filter(o => o.payment !== 'bar').length}`,      '#276749'],
-        ['Brutto-Umsatz', pdfFmt(brutto),                                           '#744210'],
-      ]);
-      doc.moveDown(0.4); pdfHr(doc);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
-      doc.y += 14;
-      pdfTableRow(doc, [[`Servicegebühren (${pdfFmt(PDF_SV)} × ${orders.length})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false);
-      pdfTableRow(doc, [[`Systemprovision (5 % auf ${pdfFmt(nettoBase)})`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(provision), PDF_M+2, PDF_W-4, 'right']], true);
-      pdfTableRow(doc, [['Mein Gesamtbetrag', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(meinBetrag), PDF_M+2, PDF_W-4, 'right']], false, true);
-      doc.y += 4;
-      const ay = doc.y;
-      doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
-      doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Parma', PDF_M+10, ay+8, { width: PDF_W * 0.65 });
-      doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
-      doc.y = ay + 28 + 12;
-      pdfHr(doc, '#bbb');
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE', PDF_M, doc.y);
-      doc.y += 12;
-      pdfKundenliste(doc, orders);
-    });
-    if (process.env.RESTAURANT_EMAIL) {
-      await getResend()?.emails.send({
-        from: process.env.EMAIL_FROM,
-        to:   process.env.RESTAURANT_EMAIL,
-        subject: `📊 Wochenbericht KW ${kw} / ${now.getFullYear()} · Pizzeria Parma`,
-        html: `<p style="font-family:Arial;color:#555">Wochenbericht KW ${kw} im Anhang.<br><b>${orders.length} Bestellungen · ${pdfFmt(brutto)}</b></p>`,
-        attachments: [{ filename: `KW${kw}_${now.getFullYear()}_PizzeriaParma_Wochenbericht.pdf`, content: pdf.toString('base64') }],
-      });
-    }
-    if (process.env.OWNER_EMAIL) {
-      await getResend()?.emails.send({
-        from: process.env.EMAIL_FROM,
-        to:   process.env.OWNER_EMAIL,
-        subject: `🧾 ${rgnr} + Wochenbericht KW ${kw} · Pizzeria Parma`,
-        html: `<p style="font-family:Arial;color:#555">Wochenbericht KW ${kw} + Rechnung ${rgnr}.<br>Verdienst: ${pdfFmt(meinBetrag)}</p>`,
-        attachments: [{ filename: `KW${kw}_${now.getFullYear()}_PizzeriaParma_Wochenbericht.pdf`, content: pdf.toString('base64') }],
-      });
-    }
-    console.log(`📊 Wochenbericht KW ${kw} versendet`);
-  } catch(e) { console.error('Wochenbericht:', e); }
-});
-
-// Monatsbericht (letzter Tag 22:00)
-cron.schedule('0 22 * * *', async () => {
+// Monatsbericht (letzter Tag des Monats 23:58) — FlueVate-Design, an OWNER_EMAIL
+// Rechnungsstellung läuft separat über Lexware → kein Bar-Rechnungs-PDF.
+cron.schedule('58 23 * * *', async () => {
   const now      = new Date();
   const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
-  if (tomorrow.getDate() !== 1) return;
+  if (tomorrow.getDate() !== 1) return; // nur am letzten Tag
   try {
     const mStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
     const mEnd   = new Date(now); mEnd.setHours(23, 59, 59, 999);
-    const monat  = now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-    const orders = await Order.find({ status: { $in: ['confirmed','preparing','ready','delivered'] }, createdAt: { $gte: mStart, $lte: mEnd } });
+    const orders = await Order.find({
+      status: { $in: ['confirmed','preparing','ready','delivered'] },
+      createdAt: { $gte: mStart, $lte: mEnd }
+    }).sort({ orderNum: 1 });
+    if (!orders.length) return;
     const brutto = orders.reduce((s, o) => s + (o.total || 0), 0);
-    const rgnr   = await getNextRechnungNum();
-    const pdf    = await generatePdf(doc => {
-      pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Parma  ·  ${orders.length} Bestellungen`, PRIMARY_COLOR);
-      pdfKacheln(doc, [
-        ['Bestellungen',  `${orders.length}`,                                  '#1a1a2e'],
-        ['Barzahlung',    `${orders.filter(o => o.payment === 'bar').length}`, '#2c5282'],
-        ['Stripe',        `${orders.filter(o => o.payment !== 'bar').length}`, '#276749'],
-        ['Brutto-Umsatz', pdfFmt(brutto),                                     '#744210'],
-      ]);
-      pdfHr(doc);
-      pdfKundenliste(doc, orders);
-    });
-    if (process.env.RESTAURANT_EMAIL) {
+    const range  = {
+      label: now.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }),
+      von:   mStart.toLocaleDateString('de-DE'),
+      bis:   now.toLocaleDateString('de-DE'),
+    };
+    const pdf = await generateReportPdf(`Monatsbericht ${range.label}`,
+      d => buildMonatsbericht(d, orders, range));
+    const recipient = process.env.OWNER_EMAIL || process.env.RESTAURANT_EMAIL;
+    if (recipient) {
       await getResend()?.emails.send({
         from: process.env.EMAIL_FROM,
-        to:   process.env.RESTAURANT_EMAIL,
-        subject: `📅 Monatsbericht ${monat} · Pizzeria Parma`,
-        html: `<p style="font-family:Arial;color:#555">Monatsbericht ${monat} im Anhang.<br><b>${orders.length} Bestellungen · ${pdfFmt(brutto)}</b></p>`,
-        attachments: [{ filename: `${monat.replace(' ','_')}_PizzeriaParma_Monatsbericht.pdf`, content: pdf.toString('base64') }],
+        to:   recipient,
+        subject: `📅 Monatsbericht ${range.label} · ${RESTAURANT_NAME()}`,
+        html: `<p style="font-family:Arial;color:#555">Monatsbericht ${range.label} im Anhang.<br><b>${orders.length} Bestellungen · ${eur(brutto)}</b></p>`,
+        attachments: [{ filename: `${range.label.replace(' ', '_')}_PizzeriaParma_Monatsbericht.pdf`, content: pdf.toString('base64') }],
       });
     }
-    console.log(`📅 Monatsbericht ${monat} versendet`);
+    console.log(`📅 Monatsbericht ${range.label} versendet`);
   } catch(e) { console.error('Monatsbericht:', e); }
 });
 
 // ═══════════════════════════════════════════════════════════════
 // START
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// HISTORIE & AUSWERTUNG  (für die Fluevate-Kasse-App)
+// ═══════════════════════════════════════════════════════════════
+// GET /api/admin/history?from=YYYY-MM-DD&to=YYYY-MM-DD
+//
+// Liefert Kennzahlen, Tageswerte UND die Bestellungen eines Zeitraums in einer Antwort.
+// /api/admin/finance kennt nur "heute" und "diese Woche" – für Monatsumsatz und
+// Bestellhistorie reicht das nicht.
+//
+// Zeitzone: die Tagesgrenzen richten sich nach Europe/Berlin, nicht nach UTC. Sonst
+// landen Bestellungen zwischen 22:00 und 24:00 im falschen Tag.
+app.get('/api/admin/history', authMiddleware, async (req, res) => {
+  try {
+    const isDate = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
+    const berlinDay = d => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
+
+    const from = isDate(req.query.from) ? req.query.from : berlinDay(new Date());
+    const to   = isDate(req.query.to)   ? req.query.to   : from;
+    if (to < from) return res.status(400).json({ message: 'Zeitraum ist verdreht' });
+
+    // Grosszuegiges UTC-Fenster laden und danach exakt nach Berliner Tagen filtern –
+    // das ist auch bei der Sommerzeitumstellung korrekt.
+    const padFrom = new Date(from + 'T00:00:00Z'); padFrom.setUTCDate(padFrom.getUTCDate() - 1);
+    const padTo   = new Date(to   + 'T23:59:59Z'); padTo.setUTCDate(padTo.getUTCDate() + 1);
+
+    const raw = await Order.find({
+      status:    { $nin: ['awaiting_payment'] },
+      createdAt: { $gte: padFrom, $lte: padTo }
+    }).sort({ createdAt: -1 }).limit(3000);
+
+    const all = raw.filter(o => {
+      const k = berlinDay(o.createdAt);
+      return k >= from && k <= to;
+    });
+
+    // Stornierte Bestellungen zaehlen nicht zum Umsatz, aber sehr wohl zur Statistik.
+    const valid = all.filter(o => o.status !== 'cancelled');
+    const r2  = n => Math.round((n + Number.EPSILON) * 100) / 100;
+    const sum = pick => valid.reduce((s, o) => s + (pick(o) || 0), 0);
+
+    const brutto  = sum(o => o.total);
+    const svcFees = sum(o => o.serviceFee);
+
+    const byPayment = {};
+    valid.forEach(o => {
+      const k = o.payment || 'unbekannt';
+      byPayment[k] = (byPayment[k] || 0) + 1;
+    });
+
+    const days = {};
+    valid.forEach(o => {
+      const k = berlinDay(o.createdAt);
+      if (!days[k]) days[k] = { date: k, count: 0, brutto: 0 };
+      days[k].count  += 1;
+      days[k].brutto += (o.total || 0);
+    });
+
+    res.json({
+      from, to,
+      stats: {
+        count:        valid.length,
+        brutto:       r2(brutto),
+        svcFees:      r2(svcFees),
+        deliveryFees: r2(sum(o => o.deliveryFee)),
+        auszahlung:   r2(brutto - svcFees),
+        cancelled:    all.length - valid.length,
+        unpaid:       valid.filter(o => o.paymentStatus !== 'paid').length,
+        byPayment
+      },
+      byDay: Object.values(days)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(d => ({ date: d.date, count: d.count, brutto: r2(d.brutto) })),
+      // Begrenzt, damit die Antwort auf einem Kassengeraet handhabbar bleibt.
+      orders: all.slice(0, 500)
+    });
+  } catch (e) {
+    console.error('history:', e);
+    res.status(500).json({ message: 'Fehler' });
+  }
+});
+
+
 mongoose.connect(process.env.MONGODB_URI).then(() => {
   app.listen(PORT, () => console.log(`🚀 Pizzeria Parma Server läuft auf Port ${PORT}`));
 }).catch(err => console.error('MongoDB Verbindung fehlgeschlagen:', err));

@@ -164,6 +164,27 @@
         transform: scale(1.12);
     }
 
+    /* Gericht-Foto oben in der Karte */
+    .card-img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        display: block;
+        background: #f0e8dc;
+    }
+
+    /* Foto-Banner unter jedem Kategorie-Titel */
+    .category-banner {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        display: block;
+        border-radius: 14px;
+        margin: 0 0 16px 0;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+        background: #f0e8dc;
+    }
+
     /* Responsive */
     @media (max-width: 900px) {
         .product-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
@@ -175,6 +196,8 @@
         .product-info p { font-size: 0.75rem; }
         .price { font-size: 0.9rem; }
         .card-add-btn { width: 28px; height: 28px; font-size: 1.1rem; }
+        .card-img { height: 96px; }
+        .category-banner { height: 110px; border-radius: 12px; }
     }
     @media (max-width: 360px) {
         .product-grid { grid-template-columns: 1fr; }
@@ -789,9 +812,9 @@
     </div>
     <!-- Aktion Banner -->
     <div id="promotionBanner" style="position: fixed; right: 15px; top: 60px; z-index: 9999; background: linear-gradient(135deg,#8b1d1d,#c35a44); color: #fff; padding: 11px 15px; border-radius: 10px; font-size: 12px; font-weight: bold; text-align: center; max-width: 165px; line-height: 1.6; display: none; box-shadow: 0 4px 16px rgba(139,29,29,0.45);">
-      <div style="font-size: 10px; opacity: 0.85; margin-bottom: 3px;">🗓 01.07 – 31.07.2026</div>
-      <div style="font-size: 13px;">🥖 Pizzabrötchen mit Käse</div>
-      <div style="margin-top:5px; background:#fff; color:#8b1d1d; border-radius:5px; padding:3px 6px; font-size:12px;">GRATIS ab 25€!</div>
+      <div style="font-size: 10px; opacity: 0.85; margin-bottom: 3px;">🗓 01.08 – 31.08.2026</div>
+      <div style="font-size: 13px;">🍕 Kleine Margherita</div>
+      <div style="margin-top:5px; background:#fff; color:#8b1d1d; border-radius:5px; padding:3px 6px; font-size:12px;">GRATIS ab 20€!</div>
     </div>
   </div>
 </header>
@@ -923,7 +946,7 @@
                 <div class="info-icon-box"><i class="fas fa-motorcycle"></i></div>
                 <div class="info-content">
                     <h3>vorbestellen / liefern lassen</h3>
-                    <p>Beckum ab 15€ · Roland/Vellern ab 20€ Mindestbestellwert · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
+                    <p>Mindestbestellwert 20€ (Beckum, Roland, Vellern) · Beckum +2,50€, Roland/Vellern +3,00€ Liefergebühr</p>
                 </div>
             </div>
             
@@ -946,9 +969,9 @@
 
     <!-- ═══ AKTIONS-BANNER ═══ -->
     <div id="aktionsBanner" style="display:none; background: linear-gradient(135deg, #8b1d1d 0%, #c35a44 60%, #d4793a 100%); color: white; text-align: center; padding: 18px 20px; border-bottom: 3px solid #a02222;">
-      <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 6px;">🗓 Aktion · 1. – 31. Juli 2026</div>
-      <div style="font-size: 20px; font-weight: 900; line-height: 1.3;">🥖 Pizzabrötchen mit Käse <span style="background:#fff; color:#8b1d1d; border-radius:6px; padding:2px 10px; margin-left:4px;">GRATIS</span></div>
-      <div style="font-size: 13px; margin-top: 7px; opacity: 0.9;">Bei jeder Bestellung ab <strong>25 €</strong> · Pizzabrötchen mit Käse · automatisch im Warenkorb</div>
+      <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 6px;">🗓 Aktion · 1. – 31. August 2026</div>
+      <div style="font-size: 20px; font-weight: 900; line-height: 1.3;">🍕 Kleine Pizza Margherita <span style="background:#fff; color:#8b1d1d; border-radius:6px; padding:2px 10px; margin-left:4px;">GRATIS</span></div>
+      <div style="font-size: 13px; margin-top: 7px; opacity: 0.9;">Bei jeder Bestellung ab <strong>20 €</strong> · kleine Margherita (22 cm) · automatisch im Warenkorb</div>
     </div>
     <script>
         if (typeof isPromotionActive === 'function' && isPromotionActive()) {
@@ -2096,11 +2119,11 @@ function selectOption(option) {
 <script>
 let warenkorb = [];
 
-// ═══ AKTION: Pizzabrötchen mit Käse GRATIS ab 25 € ═══
+// ═══ AKTION: kleine Pizza Margherita GRATIS ab 20 € ═══
 function isPromotionActive() {
   const now = new Date();
-  const start = new Date('2026-07-01T00:00:00+02:00');
-  const end   = new Date('2026-07-31T23:59:59+02:00');
+  const start = new Date('2026-08-01T00:00:00+02:00');
+  const end   = new Date('2026-08-31T23:59:59+02:00');
   return now >= start && now <= end;
 }
 
@@ -2114,15 +2137,19 @@ function showPromotionBanner() {
 }
 
 function addFreePizzaIfNeeded() {
-  if (!isPromotionActive()) return;
-  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : b.preis), 0);
-  const hasFreeItem = warenkorb.some(item => item.isFree);
-  if (summe >= 25 && !hasFreeItem) {
-    warenkorb.push({ id: Date.now(), name: 'Pizzabrötchen mit Käse (GRATIS)', preis: 0, isFree: true });
-  } else if (summe < 25 && hasFreeItem) {
-    // Warenkorb wieder unter 25€ → Gratis-Pizzabrötchen entfernen
-    const idx = warenkorb.findIndex(item => item.isFree);
-    if (idx !== -1) warenkorb.splice(idx, 1);
+  // Warenwert ohne Gratis-Artikel
+  const summe = warenkorb.reduce((a, b) => a + (b.isFree ? 0 : (b.preis || 0)), 0);
+  // Aktions-Gratisgabe = ein Gratis-Artikel, der NICHT die Stempel-Prämie ist
+  const idxPromo = warenkorb.findIndex(item => item.isFree && !item.stampReward);
+  // Stempel-Belohnung im Warenkorb? → Aktion NICHT zusätzlich gewähren (kein Stapeln)
+  const hasStampReward = warenkorb.some(item => item.stampReward);
+  const eligible = isPromotionActive() && summe >= 20 && !hasStampReward;
+
+  if (eligible && idxPromo === -1) {
+    warenkorb.push({ id: Date.now(), name: 'Pizza Margherita 22 cm (GRATIS)', preis: 0, basePreis: 0, isFree: true });
+  } else if (!eligible && idxPromo !== -1) {
+    // nicht (mehr) berechtigt (unter 20€, keine Aktion, oder Stempel-Prämie aktiv) → Gratisgabe entfernen
+    warenkorb.splice(idxPromo, 1);
   }
 }
 
@@ -2236,7 +2263,7 @@ function artikelQtyChange(index, delta) {
 function artikelLoeschen(index) {
     if (warenkorb[index] && warenkorb[index].isFree) return;
     warenkorb.splice(index, 1);
-    addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 15€, sonst Gratis-Pizza entfernen
+    addFreePizzaIfNeeded(); // prüft ob Summe noch ≥ 20€, sonst Gratis-Margherita entfernen
     renderWarenkorb();
 }
 
@@ -2534,7 +2561,7 @@ function showCouponMsg(text, success) {
 
 <script>
 const AREA_CONFIG = {
-    "beckum": { min: 15.00, fee: 2.50, label: "Beckum" },
+    "beckum": { min: 20.00, fee: 2.50, label: "Beckum" },
     "roland": { min: 20.00, fee: 3.00, label: "Roland" },
     "vellern": { min: 20.00, fee: 3.00, label: "Vellern" }
 };
@@ -3899,6 +3926,10 @@ function confirmFamSelection() {
     &#9742; 02521&nbsp;/&nbsp;829&nbsp;06&nbsp;00 &middot;
     <a href="https://www.pizzeria-amoura.de" style="color:#8b1d1d;">www.pizzeria-amoura.de</a>
   </p>
+  <p style="font-size:.72rem;color:#bbb;margin:10px 0 0;">
+    Made by <a href="https://www.fluevate.de" target="_blank" rel="noopener"
+       style="color:#71B49A;font-weight:600;text-decoration:none;">Fluevate</a>
+  </p>
 </div>
 
 <script>
@@ -3906,14 +3937,14 @@ var LEGAL = {};
 
 LEGAL.impressum = {
   title: "Impressum",
-  text:  "<h3 style='color:#8b1d1d;margin:0 0 14px'>Angaben gem&auml;&szlig; &sect;&nbsp;5 TMG</h3>"
+  text:  "<h3 style='color:#8b1d1d;margin:0 0 14px'>Angaben gem&auml;&szlig; &sect;&nbsp;5 DDG</h3>"
        + "<p><strong>Pizzeria Amoura</strong><br>Oststra&szlig;e 48<br>59269 Beckum<br>Deutschland</p>"
        + "<p style='margin-top:12px'><strong>Kontakt</strong><br>"
        + "Tel: <a href='tel:025218290600' style='color:#8b1d1d'>02521&nbsp;/&nbsp;829&nbsp;06&nbsp;00</a><br>"
        + "E-Mail: <a href='mailto:info@pizzeria-amoura.de' style='color:#8b1d1d'>info@pizzeria-amoura.de</a><br>"
        + "Web: <a href='https://www.pizzeria-amoura.de' style='color:#8b1d1d'>www.pizzeria-amoura.de</a></p>"
-       + "<p style='margin-top:12px'><strong>Inhaber:</strong> [Vor- und Nachname eintragen]</p>"
-       + "<p><strong>Steuernummer:</strong> [Steuernummer &ndash; Finanzamt Beckum]</p>"
+       + "<p style='margin-top:12px'><strong>Inhaber:</strong> Mohamad Alkhateeb</p>"
+       + "<p><strong>Steuernummer:</strong> 5304/5002/5424 &middot; Finanzamt Beckum</p>"
        + "<h3 style='color:#8b1d1d;margin:20px 0 10px'>&Ouml;ffnungszeiten</h3>"
        + "<table style='width:100%;font-size:.84rem;border-collapse:collapse'>"
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>Montag &ndash; Freitag</td><td>11:30 &ndash; 14:00 Uhr &amp; 17:00 &ndash; 22:00 Uhr</td></tr>"
@@ -3921,17 +3952,24 @@ LEGAL.impressum = {
        + "<tr><td style='padding:4px 12px 4px 0;color:#666'>So &amp; Feiertage</td><td>12:00 &ndash; 14:00 Uhr &amp; 16:00 &ndash; 22:00 Uhr</td></tr>"
        + "</table>"
        + "<p style='margin-top:20px;font-size:.84rem'>Liefergebiet: Beckum (2,50 &euro;) &middot; Roland &amp; Vellern (3,00 &euro;)</p>"
-       + "<h3 style='color:#8b1d1d;margin:20px 0 8px'>EU-Streitschlichtung</h3>"
-       + "<p>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung bereit:<br>"
-       + "<a href='https://ec.europa.eu/consumers/odr/' target='_blank' style='color:#8b1d1d'>ec.europa.eu/consumers/odr</a></p>"
-       + "<p style='margin-top:18px;font-size:.73rem;color:#999'>Stand: M&auml;rz 2026</p>"
+       + "<h3 style='color:#8b1d1d;margin:20px 0 8px'>Verbraucherstreitbeilegung</h3>"
+       + "<p>Die Europ&auml;ische Plattform zur Online-Streitbeilegung (OS-Plattform) wurde von der EU-Kommission "
+       + "zum 20.&nbsp;Juli&nbsp;2025 eingestellt; eine Verlinkung ist daher nicht mehr m&ouml;glich.</p>"
+       + "<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer "
+       + "Verbraucherschlichtungsstelle teilzunehmen.</p>"
+       + "<h3 style='color:#8b1d1d;margin:20px 0 8px'>Haftung f&uuml;r Inhalte und Links</h3>"
+       + "<p>Als Diensteanbieter sind wir gem&auml;&szlig; &sect;&nbsp;7 Abs.&nbsp;1 DDG f&uuml;r eigene Inhalte auf diesen Seiten "
+       + "verantwortlich. Nach &sect;&sect;&nbsp;8 bis 10 DDG sind wir nicht verpflichtet, &uuml;bermittelte oder gespeicherte "
+       + "fremde Informationen zu &uuml;berwachen. F&uuml;r die Inhalte verlinkter externer Seiten ist stets deren jeweiliger "
+       + "Anbieter verantwortlich.</p>"
+       + "<p style='margin-top:18px;font-size:.73rem;color:#999'>Stand: August 2026</p>"
 };
 
 LEGAL.datenschutz = {
   title: "Datenschutzerkl&auml;rung",
   text:  "<h3 style='color:#8b1d1d;margin:0 0 14px'>Datenschutz (DSGVO)</h3>"
        + "<h4 style='color:#8b1d1d;margin:0 0 6px;font-size:.92rem'>1. Verantwortlicher</h4>"
-       + "<p>Pizzeria Amoura &middot; Oststra&szlig;e 48 &middot; 59269 Beckum<br>"
+       + "<p>Pizzeria Amoura, Inhaber Mohamad Alkhateeb &middot; Oststra&szlig;e 48 &middot; 59269 Beckum<br>"
        + "Tel: <a href='tel:025218290600' style='color:#8b1d1d'>02521 / 829 06 00</a> &middot; info@pizzeria-amoura.de</p>"
        + "<h4 style='color:#8b1d1d;margin:16px 0 6px;font-size:.92rem'>2. Erhobene Daten bei Bestellung</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
@@ -3971,7 +4009,7 @@ LEGAL.agb = {
        + "<p>Alle Preise inkl. MwSt. (7&nbsp;% auf Speisen, 19&nbsp;% auf Getr&auml;nke). F&uuml;r die Nutzung der Online-Bestellplattform wird eine <strong>Servicegeb&uuml;hr von 0,99&nbsp;&euro;</strong> pro Bestellung erhoben (gem. &sect;&nbsp;312a BGB). Diese z&auml;hlt nicht zum Mindestbestellwert.</p>"
        + "<h4 style='color:#8b1d1d;margin:14px 0 6px;font-size:.92rem'>&sect;&nbsp;4 Lieferung &amp; Mindestbestellwerte</h4>"
        + "<ul style='margin:6px 0 8px 18px;color:#555;line-height:1.85'>"
-       + "<li>Beckum: Mindestbestellwert 15,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
+       + "<li>Beckum: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 2,50&nbsp;&euro;</li>"
        + "<li>Roland: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
        + "<li>Vellern: Mindestbestellwert 20,00&nbsp;&euro; &middot; Liefergeb&uuml;hr 3,00&nbsp;&euro;</li>"
        + "</ul>"
@@ -4203,11 +4241,77 @@ document.readyState === 'loading'
     getraenke:'🥤'
   };
 
+  // Gericht-Foto pro Artikelnummer (Dateien in img/menu/, lizenzfrei — siehe img/menu/QUELLEN.md)
+  var ITEM_IMG = {
+    1:'pizza-margherita', 2:'pizza-formaggi', 3:'pizza-formaggi', 4:'pizza-formaggi',
+    5:'pizza-prosciutto', 6:'pizza-salami', 7:'pizza-tonno', 8:'pizza-funghi',
+    9:'pizza-verdure', 10:'pizza-verdure', 11:'pizza-salami', 12:'pizza-hawaii',
+    13:'pizza-funghi', 14:'pizza-tonno', 15:'pizza-prosciutto', 16:'pizza-verdure',
+    17:'pizza-tonno', 18:'pizza-suprema', 19:'pizza-spinaci', 20:'pizza-prosciutto',
+    21:'pizza-suprema', 22:'pizza-suprema', 23:'pizza-frutti-di-mare', 24:'pizza-pomodoro',
+    25:'pizza-formaggi', 26:'pizza-frutti-di-mare', 27:'pizza-suprema', 28:'pizza-suprema',
+    29:'pizza-frutti-di-mare', 30:'pizza-uovo', 31:'pizza-spinaci', 32:'pizza-suprema',
+    33:'pizza-verdure', 34:'pizza-verdure', 35:'pizza-pomodoro', 36:'pizza-salami',
+    37:'pizza-tonno', 38:'pizza-spinaci', 39:'pizza-verdure', 40:'pizza-lachs',
+    41:'pizza-chicken', 42:'pizza-salami', 43:'pizza-schinken-rucola', 44:'pizza-formaggi',
+    45:'pizza-chicken', 46:'doener-teller', 47:'doener-teller', 48:'doener-teller',
+    49:'pizza-chicken', 50:'doener-teller', 51:'doener-teller', 52:'pizza-hawaii',
+    53:'pizza-spinaci', 54:'pizza-funghi', 55:'pizza-verdure', 56:'pizza-uovo',
+    57:'calzone-spezial', 58:'calzone', 59:'calzone', 60:'calzone',
+    61:'pizza-rucola', 62:'doener-teller', 63:'doener-teller', 64:'doener-teller',
+    65:'pizza-chicken', 66:'pizza-rucola', 67:'pizza-pomodoro', 68:'pizza-salami',
+    80:'spaghetti-bolognese', 81:'spaghetti-carbonara', 82:'spaghetti-napolitana',
+    83:'spaghetti-carbonara', 84:'pasta-pollo-panna', 85:'spaghetti-frutti-di-mare',
+    86:'rigatoni-panna', 87:'spaghetti-gamberetti', 88:'spaghetti-napolitana',
+    89:'rigatoni-panna', 90:'pasta-pollo-panna', 91:'spaghetti-napolitana',
+    92:'pasta-pesto', 93:'spaghetti-caprese',
+    94:'rigatoni-bolognese', 95:'pasta-pollo-panna', 96:'rigatoni-bolognese',
+    97:'pasta-pollo-panna', 98:'pasta-pollo-panna', 99:'rigatoni-panna',
+    100:'pasta-pollo-panna', 101:'rigatoni-panna', 102:'tagliatelle-italia',
+    103:'tagliatelle-italia', 104:'rigatoni-panna',
+    106:'tortellini', 107:'tortellini', 108:'tortellini', 109:'tortellini',
+    110:'tortellini', 111:'tortellini', 112:'tortellini',
+    115:'lasagne', 116:'lasagne', 117:'lasagne-tris', 118:'lasagne-tris',
+    119:'cannelloni', 120:'cannelloni',
+    123:'gnocchi-pomodoro', 124:'gnocchi-formaggi', 125:'gnocchi-pomodoro',
+    126:'gnocchi-formaggi', 127:'gnocchi-formaggi',
+    128:'haehnchen-curry', 129:'pasta-pollo-panna', 130:'haehnchen-curry',
+    131:'haehnchen-curry', 132:'pasta-pollo-panna',
+    135:'auflauf', 136:'auflauf', 137:'auflauf', 138:'auflauf', 139:'auflauf',
+    140:'auflauf', 141:'auflauf', 142:'auflauf', 143:'gyros', 144:'gyros',
+    150:'salat-misto', 151:'salat-caprese', 152:'salat-misto', 153:'salat-bunt',
+    154:'salat-bunt', 155:'salat-misto', 156:'salat-bunt', 157:'salat-tonno',
+    158:'salat-misto', 159:'salat-bunt', 160:'salat-caprese', 161:'salat-misto',
+    162:'salat-bunt', 163:'salat-misto', 164:'salat-tonno', 165:'gyros',
+    166:'salat-tonno', 167:'salat-rucola', 168:'salat-rucola', 169:'salat-rucola',
+    170:'salat-rucola',
+    201:'pizzabroetchen', 202:'pizzabroetchen', 203:'pizzabroetchen', 204:'pizzabrot'
+  };
+
+  // Artikel ohne Nummer (Getränke, Familienpizzen) → Zuordnung über den Namen
+  var NAME_IMG = [
+    [/familienpizza|pizzablech/i, 'familienpizza'],
+    [/cola/i, 'cola'],
+    [/fanta/i, 'limo-orange'],
+    [/sprite/i, 'limo-zitrone'],
+    [/wasser/i, 'wasser']
+  ];
+
+  // Fallback pro Kategorie
+  var CAT_IMG = {
+    familienpizza:'familienpizza', pizza:'pizza-margherita', spaghetti:'spaghetti-bolognese',
+    rigatoni:'rigatoni-bolognese', tortellini:'tortellini', backofen:'lasagne',
+    gnocchi:'gnocchi-pomodoro', haehnchen:'haehnchen-curry', auflaeufe:'auflauf',
+    salate:'salat-misto', rucola:'salat-rucola', pizzabroetchen:'pizzabroetchen',
+    getraenke:'cola'
+  };
+
   function processContainer(container) {
     var els = Array.from(container.children);
     var currentGrid = null;
+    var currentCat = null;
 
-    // First: inject icons into category titles
+    // First: inject icons + photo banner into category titles
     container.querySelectorAll('.category-title').forEach(function(h2) {
       var icon = ICONS[h2.id];
       if (icon && !h2.querySelector('.category-icon')) {
@@ -4215,6 +4319,17 @@ document.readyState === 'loading'
         span.className = 'category-icon';
         span.textContent = icon;
         h2.insertBefore(span, h2.firstChild);
+      }
+      // Foto-Banner direkt unter dem Kategorie-Titel
+      var next = h2.nextElementSibling;
+      if (!next || !next.classList || !next.classList.contains('category-banner')) {
+        var banner = document.createElement('img');
+        banner.className = 'category-banner';
+        banner.src = 'img/menu/banner/' + h2.id + '.jpg';
+        banner.alt = h2.textContent.trim();
+        banner.loading = 'lazy';
+        banner.onerror = function() { this.remove(); };
+        h2.parentNode.insertBefore(banner, h2.nextSibling);
       }
     });
 
@@ -4226,6 +4341,7 @@ document.readyState === 'loading'
       }
       if (el.classList.contains('category-title')) {
         currentGrid = null;
+        currentCat = el.id;
         return;
       }
       if (el.classList.contains('product-item')) {
@@ -4234,15 +4350,26 @@ document.readyState === 'loading'
           currentGrid.className = 'product-grid';
           container.insertBefore(currentGrid, el);
         }
-        buildCard(el);
+        buildCard(el, currentCat);
         currentGrid.appendChild(el);
         return;
       }
+      if (el.classList.contains('category-banner')) return; // Banner nicht als Grid-Unterbrechung werten
       currentGrid = null;
     });
   }
 
-  function buildCard(el) {
+  function pickImage(num, name, cat) {
+    if (num && ITEM_IMG[num]) return ITEM_IMG[num];
+    if (name) {
+      for (var i = 0; i < NAME_IMG.length; i++) {
+        if (NAME_IMG[i][0].test(name)) return NAME_IMG[i][1];
+      }
+    }
+    return cat ? CAT_IMG[cat] : null;
+  }
+
+  function buildCard(el, cat) {
     var infoDiv = el.querySelector('.product-info');
     var priceDiv = el.querySelector('.price');
     if (!infoDiv || !priceDiv) return;
@@ -4282,6 +4409,19 @@ document.readyState === 'loading'
     cardBody.appendChild(footer);
 
     el.innerHTML = '';
+
+    // Gericht-Foto oben in die Karte einsetzen
+    var imgFile = pickImage(el.dataset.itemNum, h3 ? h3.textContent : '', cat);
+    if (imgFile) {
+      var img = document.createElement('img');
+      img.className = 'card-img';
+      img.src = 'img/menu/' + imgFile + '.jpg';
+      img.alt = h3 ? h3.textContent.trim() : '';
+      img.loading = 'lazy';
+      img.onerror = function() { this.remove(); };
+      el.appendChild(img);
+    }
+
     el.appendChild(cardBody);
   }
 
@@ -4884,12 +5024,13 @@ body.modal-open {
         if (btn) { btn.disabled = false; btn.textContent = '🎁 Gratis-Pizza einlösen'; }
         return;
       }
-      // Gratis Margherita (groß) in den Warenkorb
-      var pizzaItem = { name: 'Pizza Margherita (groß) 🎁', price: 0, qty: 1, note: 'Gratis-Prämie (Stempelkarte)' };
+      // Gratis Margherita (groß) in den Warenkorb – gleiches Schema wie normale Artikel
+      var pizzaItem = { id: Date.now(), name: 'Pizza Margherita (groß) 🎁', preis: 0, basePreis: 0, qty: 1, isFree: true, stampReward: true, note: 'Gratis-Prämie (Stempelkarte)' };
       if (typeof warenkorb !== 'undefined' && Array.isArray(warenkorb)) {
         warenkorb.push(pizzaItem);
-        if (typeof updateCart === 'function') updateCart();
-        else if (typeof renderWarenkorb === 'function') renderWarenkorb();
+        // Stempel-Prämie und Aktion nicht stapeln: ggf. Aktions-Gratisgabe entfernen
+        if (typeof addFreePizzaIfNeeded === 'function') addFreePizzaIfNeeded();
+        if (typeof renderWarenkorb === 'function') renderWarenkorb();
       }
       closeStampPopup();
       // kurzes Feedback-Banner

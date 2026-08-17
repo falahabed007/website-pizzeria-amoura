@@ -1,3 +1,6 @@
 node_modules/
 .env
 *.log
+
+# Generierte Berichte (Umsatzdaten) gehoeren NICHT in ein oeffentliches Repo
+PDFs/
