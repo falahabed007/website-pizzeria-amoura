@@ -1538,6 +1538,9 @@ function pdfKacheln(doc, items) {
   doc.y = top + 54;
 }
 
+// Zeichnet alle Zellen auf derselben Baseline (top+5) - die x/width-Bereiche
+// der Zellen duerfen sich daher NICHT ueberlappen, sonst ueberdrucken sie sich.
+// Zell-Tupel: [text, x, width, align]
 function pdfTableRow(doc, cells, shade, bold = false) {
   const top = doc.y;
   if (shade) doc.rect(PDF_M, top, PDF_W, 20).fill('#f5f7fa');
@@ -1901,6 +1904,55 @@ function getWeekNum(d) {
   return 1+Math.round(((dt-w1)/86400000-3+(w1.getDay()+6)%7)/7);
 }
 
+// Baut den kompletten Monatsbericht. Einzige Quelle fuer das Layout -
+// Cron und manueller Endpunkt rufen beide hier rein.
+function buildMonatsberichtPdf(doc, d) {
+  const { monat, vonBis, orders, brutto, svcFees, auszahlung,
+          barOrdersM, barSvcM, barNettoM, barBetragM, weekRows } = d;
+
+  pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
+  pdfKacheln(doc, [
+    ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
+    ['Davon Bar',           `${barOrdersM.length}`,                          '#2c5282'],
+    ['Davon Online',        `${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],
+    ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
+  ]);
+  doc.moveDown(0.4);
+  pdfHr(doc);
+  doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
+  doc.y += 14;
+  pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen)`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false);
+  pdfTableRow(doc, [['Grundgebühr (monatlich)', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(PDF_BASE), PDF_M+2, PDF_W-4, 'right']], true);
+  pdfTableRow(doc, [['Gesamt FlueVate-Gebühren', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees + PDF_BASE), PDF_M+2, PDF_W-4, 'right']], false, true);
+  doc.y += 4;
+  const ay = doc.y;
+  doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
+  doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura', PDF_M+10, ay+8, { width: PDF_W*0.65 });
+  doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
+  doc.y = ay + 28 + 16;
+  pdfHr(doc, '#bbb');
+  doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('WOCHENÜBERSICHT', PDF_M, doc.y);
+  doc.y += 14;
+  // Spalte 1 endet bei PDF_M+8+70 = 128, Spalte 2 startet bei PDF_M+90 = 140.
+  weekRows.forEach(([kw2, w], i) => {
+    pdfTableRow(doc, [
+      [`KW ${kw2}`,           PDF_M+8,  70,        'left'],
+      [`${w.n} Bestellungen`, PDF_M+90, PDF_W-170, 'left'],
+      [pdfFmt(w.brutto),      PDF_M+2,  PDF_W-4,   'right'],
+    ], i % 2 === 1);
+  });
+  doc.y += 8;
+  pdfHr(doc, '#bbb');
+  doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE', PDF_M, doc.y);
+  doc.y += 12;
+  pdfKundenliste(doc, orders);
+  if (barOrdersM.length > 0) {
+    pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barBetrag: barBetragM }, vonBis);
+  }
+  doc.font('Helvetica').fontSize(7).fillColor('#bbb')
+    .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, 820, { width: PDF_W, align: 'center' });
+}
+
 // MONATSBERICHT (Cron – täglich 22:00, nur am letzten Tag des Monats)
 // ═══════════════════════════════════════════════════════════════════
 cron.schedule('0 22 * * *', async () => {
@@ -1939,48 +1991,10 @@ cron.schedule('0 22 * * *', async () => {
     const weekRows = Object.entries(weeksMap).sort((a, b) => +a[0] - +b[0]);
 
     // ── PDF 1: Monatsbericht (Kennzahlen + Kundenliste + Bar-Rechnung) ─────
-    const monatsPdf = await generatePdf(doc => {
-      pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
-      pdfKacheln(doc, [
-        ['Bestellungen gesamt', `${orders.length}`,                              '#1a1a2e'],
-        ['Davon Bar',           `${barOrdersM.length}`,                          '#2c5282'],
-        ['Davon Online',        `${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],
-        ['Brutto-Umsatz',       pdfFmt(brutto),                                  '#744210'],
-      ]);
-      doc.moveDown(0.4);
-      pdfHr(doc);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG', PDF_M, doc.y);
-      doc.y += 14;
-      pdfTableRow(doc, [[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen)`, PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees), PDF_M+2, PDF_W-4, 'right']], false);
-      pdfTableRow(doc, [['Grundgebühr (monatlich)', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(PDF_BASE), PDF_M+2, PDF_W-4, 'right']], true);
-      pdfTableRow(doc, [['Gesamt FlueVate-Gebühren', PDF_M+8, PDF_W-80, 'left'], [pdfFmt(svcFees + PDF_BASE), PDF_M+2, PDF_W-4, 'right']], false, true);
-      doc.y += 4;
-      const ay = doc.y;
-      doc.rect(PDF_M, ay, PDF_W, 28).fill('#e8f5e9');
-      doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura', PDF_M+10, ay+8, { width: PDF_W*0.65 });
-      doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
-      doc.y = ay + 28 + 16;
-      pdfHr(doc, '#bbb');
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('WOCHENÜBERSICHT', PDF_M, doc.y);
-      doc.y += 14;
-      weekRows.forEach(([kw2, d], i) => {
-        pdfTableRow(doc, [
-          [`KW ${kw2}`,           PDF_M+8, 70,       'left'],
-          [`${d.n} Bestellungen`, PDF_M+8, PDF_W-80, 'left'],
-          [pdfFmt(d.brutto),      PDF_M+2, PDF_W-4,  'right'],
-        ], i % 2 === 1);
-      });
-      doc.y += 8;
-      pdfHr(doc, '#bbb');
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE', PDF_M, doc.y);
-      doc.y += 12;
-      pdfKundenliste(doc, orders);
-      if (barOrdersM.length > 0) {
-        pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barBetrag: barBetragM }, vonBis);
-      }
-      doc.font('Helvetica').fontSize(7).fillColor('#bbb')
-        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, 820, { width: PDF_W, align: 'center' });
-    });
+    const monatsPdf = await generatePdf(doc => buildMonatsberichtPdf(doc, {
+      monat, vonBis, orders, brutto, svcFees, auszahlung,
+      barOrdersM, barSvcM, barNettoM, barBetragM, weekRows,
+    }));
 
     // ── E-Mail: Restaurant ────────────────────────────────────────────────
     if (process.env.RESTAURANT_EMAIL) {
@@ -2060,30 +2074,10 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
     orders.forEach(o => { const kw2=getWeekNum(new Date(o.createdAt)); if(!weeksMap[kw2])weeksMap[kw2]={n:0,brutto:0}; weeksMap[kw2].n++; weeksMap[kw2].brutto+=o.total||0; });
     const weekRows = Object.entries(weeksMap).sort((a,b)=>+a[0]-+b[0]);
 
-    const monatsPdf = await generatePdf(doc => {
-      pdfColorBox(doc, `Monatsbericht ${monat}`, `Pizzeria Amoura  ·  ${vonBis}`, '#8b1d1d');
-      pdfKacheln(doc, [
-        ['Bestellungen gesamt',`${orders.length}`,'#1a1a2e'],['Davon Bar',`${barOrdersM.length}`,'#2c5282'],
-        ['Davon Online',`${orders.filter(o=>['stripe','paypal'].includes(o.payment)).length}`,'#276749'],['Brutto-Umsatz',pdfFmt(brutto),'#744210'],
-      ]);
-      doc.moveDown(0.4); pdfHr(doc);
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('ABRECHNUNG',PDF_M,doc.y); doc.y+=14;
-      pdfTableRow(doc,[[`Servicegebühren  (${pdfFmt(PDF_SV)} × ${orders.length} Bestellungen)`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees),PDF_M+2,PDF_W-4,'right']],false);
-      pdfTableRow(doc,[['Grundgebühr (monatlich)',PDF_M+8,PDF_W-80,'left'],[pdfFmt(PDF_BASE),PDF_M+2,PDF_W-4,'right']],true);
-      pdfTableRow(doc,[['Gesamt FlueVate-Gebühren',PDF_M+8,PDF_W-80,'left'],[pdfFmt(svcFees + PDF_BASE),PDF_M+2,PDF_W-4,'right']],false,true);
-      doc.y+=4;
-      const ay=doc.y; doc.rect(PDF_M,ay,PDF_W,28).fill('#e8f5e9');
-      doc.font('Helvetica-Bold').fontSize(12).fillColor('#2e7d32').text('Auszahlung an Pizzeria Amoura',PDF_M+10,ay+8,{width:PDF_W*0.65});
-      doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(auszahlung),PDF_M+2,ay+8,{width:PDF_W-4,align:'right'});
-      doc.y=ay+28+16; pdfHr(doc,'#bbb');
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('WOCHENÜBERSICHT',PDF_M,doc.y); doc.y+=14;
-      weekRows.forEach(([kw2,d],i)=>{ pdfTableRow(doc,[[`KW ${kw2}`,PDF_M+8,70,'left'],[`${d.n} Bestellungen`,PDF_M+8,PDF_W-80,'left'],[pdfFmt(d.brutto),PDF_M+2,PDF_W-4,'right']],i%2===1); });
-      doc.y+=8; pdfHr(doc,'#bbb');
-      doc.font('Helvetica-Bold').fontSize(10).fillColor('#1a1a2e').text('KUNDENLISTE',PDF_M,doc.y); doc.y+=12;
-      pdfKundenliste(doc,orders);
-      if(barOrdersM.length>0) pdfBarRechnung(doc,barOrdersM,{barSvc:barSvcM,barNetto:barNettoM,barBetrag:barBetragM},vonBis);
-      doc.font('Helvetica').fontSize(7).fillColor('#bbb').text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`,PDF_M,820,{width:PDF_W,align:'center'});
-    });
+    const monatsPdf = await generatePdf(doc => buildMonatsberichtPdf(doc, {
+      monat, vonBis, orders, brutto, svcFees, auszahlung,
+      barOrdersM, barSvcM, barNettoM, barBetragM, weekRows,
+    }));
 
     if (process.env.RESTAURANT_EMAIL) {
       await getResend()?.emails.send({
