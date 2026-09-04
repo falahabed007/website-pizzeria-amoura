@@ -363,7 +363,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'august-aktion-margherita-2026-08-01'
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'september-aktion-pizzabroetchen-2026-09-01'
 }));
 
 app.get('/api/config', (req, res) => res.json({
@@ -524,16 +524,16 @@ const AMOURA_SERVICE_FEE = 0.99;
 
 // Namens-Marker der Gratis-Artikel – müssen mit dem Frontend übereinstimmen
 const STAMP_REWARD_NAME = 'Pizza Margherita (groß) 🎁';
-const PROMO_FREE_NAME   = 'Pizza Margherita 22 cm (GRATIS)';
+const PROMO_FREE_NAME   = 'Pizzabrötchen mit Käse (GRATIS)';
 
 // Mindestbestellwert der Aktion – muss mit addFreePizzaIfNeeded() im Frontend übereinstimmen
-const PROMO_MIN_SUBTOTAL = 20;
+const PROMO_MIN_SUBTOTAL = 25;
 
 // Aktions-Zeitfenster muss mit isPromotionActive() im Frontend übereinstimmen
 function serverPromotionActive() {
   const now = new Date();
-  return now >= new Date('2026-08-01T00:00:00+02:00')
-      && now <= new Date('2026-08-31T23:59:59+02:00');
+  return now >= new Date('2026-09-01T00:00:00+02:00')
+      && now <= new Date('2026-09-30T23:59:59+02:00');
 }
 
 // Zwischensumme (nur bezahlte Artikel) + Gesamt serverseitig nachrechnen
