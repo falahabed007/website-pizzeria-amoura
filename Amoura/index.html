@@ -761,6 +761,14 @@
     .hero { padding-top: 120px !important; }
 
 
+
+/* Spinner des Wartebildschirms (Bestellung wartet auf Annahme) */
+@keyframes warteSpin { to { transform: rotate(360deg); } }
+.warte-spinner {
+    display: inline-block; width: 16px; height: 16px; flex: none;
+    border: 2px solid rgba(0,0,0,.15); border-top-color: #8b1d1d;
+    border-radius: 50%; animation: warteSpin .7s linear infinite;
+}
 </style>
 </head>
 <body>
@@ -2312,23 +2320,16 @@ function toggleMobileMenu() {
 
 <div id="dankeModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:999999; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
     <div style="background:white; border-radius:20px; padding:35px 30px; max-width:400px; width:100%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.4);">
-        <div style="font-size:64px; margin-bottom:10px;">🍕</div>
-        <h2 style="color:#8b1d1d; font-size:24px; margin:0 0 10px 0;">Vielen Dank!</h2>
-        <p style="color:#555; font-size:15px; margin:0 0 8px 0;">Deine Bestellung wurde erfolgreich aufgegeben.</p>
+        <div id="dankeIcon" style="font-size:64px; margin-bottom:10px;">⏳</div>
+        <h2 id="dankeTitel" style="color:#8b1d1d; font-size:24px; margin:0 0 10px 0;">Bestellung eingegangen!</h2>
         <div style="background:#fff5f5; border:2px dashed #8b1d1d; border-radius:10px; padding:12px; margin:15px 0;">
             <div style="font-size:12px; color:#888;">Bestellnummer</div>
             <div id="dankeOrderId" style="font-size:22px; font-weight:bold; color:#8b1d1d;"></div>
         </div>
-        <div style="background:#f0f9f0; border-radius:10px; padding:12px; margin-bottom:20px; display:flex; align-items:center; gap:10px; text-align:left;">
-            <span style="font-size:28px;">⏱️</span>
-            <div>
-                <div style="font-weight:bold; color:#2d6a2d; font-size:14px;">Bestellung eingegangen!</div>
-                <div style="color:#555; font-size:13px;">Du bekommst gleich eine <strong>Bestätigungs-E-Mail</strong> mit der Wartezeit.</div>
-            </div>
-        </div>
+        <div id="dankeText" style="background:#f0f9f0; border-radius:10px; padding:14px; margin-bottom:20px; color:#555; font-size:13.5px; line-height:1.6; text-align:left;"></div>
         <div id="dankeStampHint" style="display:none; background:#fff7ea; border:1px solid #e7c98a; border-radius:10px; padding:12px 14px; margin-bottom:20px; font-size:13.5px; color:#7a5a1e; text-align:left;"></div>
-        <button onclick="document.getElementById('dankeModal').style.display='none';"
-            style="background:#8b1d1d; color:white; border:none; border-radius:10px; padding:14px 30px; font-size:15px; font-weight:bold; cursor:pointer; width:100%;">
+        <button id="dankeCloseBtn" onclick="dankeSchliessen()"
+            style="display:none; background:#8b1d1d; color:white; border:none; border-radius:10px; padding:14px 30px; font-size:15px; font-weight:bold; cursor:pointer; width:100%;">
             Alles klar, danke! 👍
         </button>
     </div>
@@ -2611,20 +2612,10 @@ function updateSummary() {
 //   2. Neuen Bin erstellen mit Inhalt: {"orders":[]}
 //   3. BIN_ID und API_KEY unten eintragen
 // ============================================================
-const AmouraDB = {
-    // Neue Bestellung ans Render-Backend schicken → Dashboard bekommt sie per WebSocket sofort
-    async addOrder(order) {
-        try {
-            await fetch(`${BACKEND_URL}/api/orders`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(order)
-            });
-        } catch(e) {
-            console.error('Backend nicht erreichbar:', e);
-        }
-    }
-};
+// Frueher stand hier AmouraDB.addOrder(): ein zweiter POST auf /api/orders mit
+// einem Legacy-Objekt (status:'neu', ohne mode). Der scheiterte serverseitig an
+// der Preispruefung, der Fehler verschwand in einem catch -- und es war unklar,
+// welche Bestellung der Wartebildschirm meint. Entfernt.
 
 // ============================================================
 // STRIPE CHECKOUT SESSION INTEGRATION
@@ -2835,29 +2826,28 @@ async function processOrder() {
             })
         });
         window.__amouraStamp = null;
-        if (barResp.ok) {
-            const barData = await barResp.json();
-            if (barData.orderNum) orderId = '#' + barData.orderNum;
-            window.__amouraStamp = barData.stamp || null;
-        } else {
+        if (!barResp.ok) {
+            // Keine Bestellung angelegt -- dann auch keinen Wartebildschirm zeigen.
             console.error('Backend Fehler:', barResp.status, await barResp.text());
+            throw new Error('HTTP ' + barResp.status);
         }
-    } catch(e) { console.error('Backend-Fehler:', e); }
-
-    try { await AmouraDB.addOrder(newOrder); } catch(e) { console.error('Speicherfehler:', e); }
-
-    closeCheckoutModal();
-    warenkorb = [];
-    renderWarenkorb();
-    showDankeModal(orderId);
-    renderStampHint(window.__amouraStamp || null);
-}
-
-function showDankeModal(orderId) {
-    document.getElementById('dankeOrderId').textContent = orderId;
-    var hint = document.getElementById('dankeStampHint');
-    if (hint) { hint.style.display = 'none'; hint.innerHTML = ''; }
-    document.getElementById('dankeModal').style.display = 'flex';
+        const barData = await barResp.json();
+        if (barData.orderNum) orderId = '#' + barData.orderNum;
+        window.__amouraStamp = barData.stamp || null;
+        const barToken = barData.statusToken || (barData.order && barData.order.statusToken) || null;
+        closeCheckoutModal();
+        // Ab hier wartet der Kunde auf die Annahme durch das Restaurant.
+        starteWarten({ t: barToken, mode: barMode, email: email, num: orderId,
+                       betrag: finalTotal.toFixed(2).replace('.', ',') + ' €', name: vorname });
+        renderStampHint(window.__amouraStamp || null);
+        return;
+    } catch(e) {
+        // Die Bestellung liess sich nicht absenden -- das muss der Kunde erfahren,
+        // statt eine Bestaetigung fuer etwas zu sehen, das nie ankam.
+        console.error('Backend-Fehler:', e);
+        resetOrderButton();
+        alert('Die Bestellung konnte nicht übermittelt werden. Bitte prüfe deine Internetverbindung und versuche es erneut.');
+    }
 }
 
 // Stempel-Hinweis im Danke-Fenster (nur für eingeloggte Kunden)
@@ -2888,6 +2878,180 @@ async function refreshStampHint() {
     } catch (e) {}
 }
 
+
+// ─── KUNDE: WARTEN AUF DIE ANNAHME DURCH DAS RESTAURANT ──────────
+// Nach dem Absenden sieht der Kunde einen Wartebildschirm. Das "Okay" gibt es
+// erst, wenn das Restaurant die Bestellung im Dashboard angenommen hat.
+const KONTAKT_TEL_HREF = 'tel:025218290600';
+const KONTAKT_TEL_TEXT = '02521 / 829 06 00';
+const WARTE_INTERVALL  = 3000;           // Abstand zweier Statusabfragen
+const WARTE_TIMEOUT    = 5 * 60 * 1000;  // danach Telefonnummer anbieten
+const WARTE_SPEICHER   = 'amouraWartendeBestellung';
+
+let warteTimer = null;   // laufendes Intervall
+let warteStart = 0;      // Beginn der Wartezeit (fuer den Timeout)
+let warteDaten = null;   // {t, mode, email, num, betrag, name}
+
+// Ein Zustand des Bestaetigungsbildschirms.
+// warten = Text neben dem Spinner (leer -> kein Spinner)
+// btn    = Beschriftung des Schliessen-Knopfs (leer -> versteckt)
+function zeigeBestellZustand(icon, titel, html, warten, btn) {
+    document.getElementById('dankeIcon').textContent = icon;
+    document.getElementById('dankeTitel').textContent = titel;
+    document.getElementById('dankeText').innerHTML = html + (warten
+        ? '<div style="display:flex;align-items:center;gap:8px;margin-top:12px;">'
+          + '<span class="warte-spinner"></span>'
+          + '<span style="font-size:12.5px;color:#888;">' + warten + '</span></div>'
+        : '');
+    const b = document.getElementById('dankeCloseBtn');
+    b.style.display = btn ? 'block' : 'none';
+    if (btn) b.textContent = btn;
+}
+
+// Zustand "liegt beim Restaurant, wartet auf Annahme"
+function zeigeWarten() {
+    const hinweis = warteDaten && warteDaten.betrag
+        ? '<br>💵 Bitte halte <strong>' + warteDaten.betrag + '</strong> bei Übergabe bereit.'
+        : '<br>✅ Deine Zahlung ist eingegangen.';
+    const anrede = warteDaten && warteDaten.name
+        ? 'Vielen Dank, <strong>' + warteDaten.name + '</strong>! ' : '';
+    zeigeBestellZustand('⏳', 'Bestellung eingegangen!',
+        anrede + 'Deine Bestellung wurde übermittelt.' + hinweis,
+        'Warte auf Bestätigung vom Restaurant…', '');
+}
+
+function starteWarten(daten) {
+    warteDaten = daten;
+    warteStart = Date.now();
+    document.getElementById('dankeOrderId').textContent = daten && daten.num ? '#' + String(daten.num).replace(/^#/, '') : '–';
+    document.getElementById('dankeModal').style.display = 'flex';
+    zeigeWarten();
+    if (!daten || !daten.t) {
+        // Ohne Zugriffsschluessel ist keine Statusabfrage moeglich -- dann direkt
+        // den ehrlichen Hinweis zeigen statt eines Spinners, der nie endet.
+        zeigeKeineRueckmeldung();
+        return;
+    }
+    try { localStorage.setItem(WARTE_SPEICHER, JSON.stringify(Object.assign({ ts: warteStart }, daten))); } catch(e) {}
+    clearInterval(warteTimer);
+    warteTimer = setInterval(warteTick, WARTE_INTERVALL);
+    warteTick();
+}
+
+function stoppeWarten() {
+    clearInterval(warteTimer);
+    warteTimer = null;
+    try { localStorage.removeItem(WARTE_SPEICHER); } catch(e) {}
+}
+
+async function warteTick() {
+    if (!warteDaten || !warteDaten.t) return;
+    if (Date.now() - warteStart > WARTE_TIMEOUT) { stoppeWarten(); zeigeKeineRueckmeldung(); return; }
+    let res;
+    try {
+        res = await fetch(BACKEND_URL + '/api/orders/status/' + encodeURIComponent(warteDaten.t));
+    } catch(e) { return; }              // Netzproblem: beim naechsten Tick erneut
+    if (res.status === 404) {
+        // Zwei sehr verschiedene Faelle unter derselben Nummer:
+        // - unsere Route antwortet mit dem Marker -> der Schluessel ist wirklich unbekannt
+        // - irgendetwas anderes antwortet -> das Backend kennt die Route noch nicht
+        //   (Fenster zwischen Seiten- und Backend-Deploy). Dann nicht alarmieren.
+        stoppeWarten();
+        let d404 = null;
+        try { d404 = await res.json(); } catch(e) {}
+        if (d404 && d404.unbekannterSchluessel === true) zeigeKeineRueckmeldung();
+        else zeigeOhneStatusabfrage();
+        return;
+    }
+    if (!res.ok) return;                // 5xx: spaeter noch einmal versuchen
+    let d;
+    try { d = await res.json(); } catch(e) { return; }
+
+    if (d.status === 'awaiting_payment') {
+        zeigeBestellZustand('💳', 'Zahlung wird geprüft…',
+            'Einen Moment noch – wir bestätigen deine Zahlung.',
+            'Zahlung wird geprüft…', '');
+    } else if (d.status === 'cancelled') {
+        stoppeWarten();
+        const grund = d.cancelReason ? '<br><br>Grund: <em>' + d.cancelReason + '</em>' : '';
+        zeigeBestellZustand('❌', 'Bestellung abgelehnt',
+            'Leider konnte deine Bestellung nicht angenommen werden.' + grund
+            + '<br><br>Bitte ruf uns an: <strong><a href="' + KONTAKT_TEL_HREF + '" style="color:#8b1d1d">' + KONTAKT_TEL_TEXT + '</a></strong>'
+            + '<br>Eine bereits geleistete Zahlung wird vollständig zurückerstattet.',
+            '', 'OK');
+    } else if (d.status && d.status !== 'pending') {
+        // confirmed / preparing / ready / delivered -- das Restaurant hat angenommen
+        stoppeWarten();
+        const art = d.mode || warteDaten.mode;
+        const min = d.estimatedMinutes || (art === 'lieferung' ? 45 : 20);
+        const zeit = art === 'lieferung'
+            ? '🛵 Deine Bestellung wird in ca. <strong>' + min + ' Minuten</strong> geliefert.'
+            : '🏃 Deine Bestellung ist in ca. <strong>' + min + ' Minuten</strong> abholbereit.';
+        const mail = warteDaten.email
+            ? '<br><br>📧 Eine Bestätigung wurde an <strong>' + warteDaten.email + '</strong> gesendet.' : '';
+        zeigeBestellZustand('✅', 'Bestellung bestätigt!',
+            'Deine Bestellung wurde von <strong>Pizzeria Amoura</strong> bestätigt!<br><br>' + zeit + mail,
+            '', 'Super, danke! 🎉');
+    } else {
+        zeigeWarten();
+    }
+}
+
+
+// Das Backend kann den Status (noch) nicht beantworten. Die Bestellung ist
+// trotzdem angekommen -- also genau das sagen und nicht beunruhigen.
+function zeigeOhneStatusabfrage() {
+    zeigeBestellZustand('✅', 'Bestellung eingegangen!',
+        'Deine Bestellung liegt beim Restaurant.<br><br>'
+        + '📧 Sobald sie angenommen ist, bekommst du eine <strong>Bestätigungs-E-Mail</strong> mit der Wartezeit.',
+        '', 'Alles klar, danke! 👍');
+}
+
+// Nach fünf Minuten ohne Antwort: die Bestellung bleibt gültig, aber der Kunde
+// bekommt einen Weg nachzufragen -- statt eines Spinners, der ewig dreht.
+function zeigeKeineRueckmeldung() {
+    const num = warteDaten && warteDaten.num ? ' <strong>#' + String(warteDaten.num).replace(/^#/, '') + '</strong>' : '';
+    zeigeBestellZustand('📞', 'Wir haben deine Bestellung',
+        'Deine Bestellung' + num + ' liegt beim Restaurant vor, ist aber noch nicht bestätigt. '
+        + 'Bei viel Betrieb kann das etwas dauern – sobald sie angenommen ist, bekommst du eine E-Mail.'
+        + '<br><br>Du willst sichergehen? Ruf uns an: <strong><a href="' + KONTAKT_TEL_HREF + '" style="color:#8b1d1d">' + KONTAKT_TEL_TEXT + '</a></strong>',
+        '', 'Schließen');
+}
+
+// Schliessen raeumt auch den Warenkorb ab -- bis dahin bleibt er erhalten,
+// damit eine abgelehnte Bestellung nicht neu zusammengesucht werden muss.
+function dankeSchliessen() {
+    stoppeWarten();
+    document.getElementById('dankeModal').style.display = 'none';
+    warenkorb = [];
+    renderWarenkorb();
+}
+
+// Nach einem Neuladen der Seite den Wartebildschirm wieder aufnehmen.
+function warteWiederaufnehmen() {
+    if (warteTimer) return true;   // es wartet bereits jemand -- nicht neu aufsetzen
+    let g;
+    try { g = JSON.parse(localStorage.getItem(WARTE_SPEICHER) || 'null'); } catch(e) { return false; }
+    if (!g || !g.t) return false;
+    if (Date.now() - (g.ts || 0) > 30 * 60 * 1000) {     // aelter als 30 Minuten
+        try { localStorage.removeItem(WARTE_SPEICHER); } catch(e) {}
+        return false;
+    }
+    starteWarten(g);
+    warteStart = g.ts;      // Timeout laeuft ab dem urspruenglichen Absenden
+    return true;
+}
+
+// Mobile Browser drosseln Timer im Hintergrund stark -- beim Zurueckkehren
+// sofort einmal nachfragen. Das Dashboard macht es genauso.
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && warteTimer) {
+        clearInterval(warteTimer);
+        warteTimer = setInterval(warteTick, WARTE_INTERVALL);
+        warteTick();
+    }
+});
+
 // Zahlung erfolgreich erkennen (Stripe-/PayPal-Rückleitung)
 window.addEventListener('load', async () => {
     const params = new URLSearchParams(window.location.search);
@@ -2897,11 +3061,17 @@ window.addEventListener('load', async () => {
     const isPaypal   = params.get('paypal') === '1';
     const paypalToken = params.get('token'); // PayPal hängt die Order-ID als ?token=... an
 
+    const statusToken = params.get('t');
     if (orderId || orderNum) {
         warenkorb = [];
         renderWarenkorb();
-        showDankeModal(orderNum ? '#' + orderNum : orderId);
         window.history.replaceState({}, document.title, window.location.pathname);
+        // Bis die Zahlung verbucht ist, steht die Bestellung auf 'awaiting_payment'
+        // und ist im Dashboard noch gar nicht sichtbar. Das sagen wir auch so.
+        document.getElementById('dankeOrderId').textContent = orderNum ? '#' + orderNum : orderId;
+        document.getElementById('dankeModal').style.display = 'flex';
+        zeigeBestellZustand('💳', 'Zahlung wird geprüft…',
+            'Einen Moment noch – wir bestätigen deine Zahlung.', 'Zahlung wird geprüft…', '');
 
         // Stripe-Zahlung serverseitig bestätigen (Fallback falls Webhook fehlschlägt)
         if (sessionId) {
@@ -2928,6 +3098,10 @@ window.addEventListener('load', async () => {
                 console.warn('paypal-capture fehlgeschlagen:', e.message);
             }
         }
+        // Erst nach verify/capture warten -- sonst zeigt der erste Tick
+        // unnoetig noch einmal 'Zahlung wird geprüft'.
+        starteWarten({ t: statusToken, mode: null, email: '',
+                       num: orderNum || orderId, betrag: null, name: '' });
         // Stempel-Hinweis (Bestellung ist nach verify/capture verbucht)
         await refreshStampHint();
         return;
@@ -2938,7 +3112,12 @@ window.addEventListener('load', async () => {
         window.history.replaceState({}, document.title, window.location.pathname);
         resetOrderButton();
         showStripeCancelBanner();
+        return;
     }
+
+    // Kein Zahlungs-Rueckweg: haengt hier noch eine Bestellung aus einer
+    // vorherigen Sitzung? Dann den Wartebildschirm wieder aufnehmen.
+    warteWiederaufnehmen();
 });
 
 // BFCache-Fix: Seite aus Browser-Cache geladen (z.B. nach Zurück-Button) → Button-State zurücksetzen
