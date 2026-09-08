@@ -7,6 +7,7 @@ const cron       = require('node-cron');
 const PDFDocument = require('pdfkit');
 const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
+const crypto     = require('crypto');
 require('dotenv').config();
 
 const app  = express();
@@ -138,6 +139,10 @@ const orderSchema = new mongoose.Schema({
   coupon:      String,
   userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   // Online-Zahlung: Stempel-Prämie erst bei Zahlungseingang verbuchen (genau einmal)
+  // Zugriffsschluessel fuer die Statusabfrage des Kunden. Bewusst nicht die _id:
+  // deren Zufallsteil ist pro Serverprozess konstant und damit ratbar.
+  statusToken: { type: String, index: true,
+                 default: () => crypto.randomBytes(9).toString('base64url') },
   stampRewardPending:  { type: Boolean, default: false },
   stampRewardConsumed: { type: Boolean, default: false },
 }, { timestamps: true });
@@ -651,14 +656,43 @@ app.post('/api/orders', async (req, res) => {
     // Stempel-Stand für eingeloggte Kunden mitliefern (für Hinweis im Danke-Fenster)
     let stamp = null;
     if (userId) { try { stamp = await getStampInfo(userId); } catch {} }
-    res.status(201).json({ orderNum: order.orderNum, order, stamp });
+    res.status(201).json({ orderNum: order.orderNum, statusToken: order.statusToken, order, stamp });
   } catch(e) { console.error(e); res.status(500).json({ message: 'Fehler beim Speichern' }); }
+});
+
+// ── Bestellstatus fuer den wartenden Kunden (oeffentlich, Token-geschuetzt) ──
+// Der Kunde wartet nach dem Absenden auf die Annahme durch das Restaurant.
+// Antwortet absichtlich minimal: kein Name, keine Adresse, keine Betraege.
+app.get('/api/orders/status/:token', async (req, res) => {
+  try {
+    const o = await Order.findOne({ statusToken: req.params.token })
+      .select('status paymentStatus prepTime orderNum mode cancelReason');
+    // Der Marker unterscheidet diese 404 von der eines Backends, das die Route
+    // noch gar nicht kennt -- etwa im Fenster zwischen Seiten- und Backend-Deploy.
+    if (!o) return res.status(404).json({ message: 'Nicht gefunden', unbekannterSchluessel: true });
+    res.json({
+      status:           o.status,
+      paymentStatus:    o.paymentStatus,
+      estimatedMinutes: o.prepTime || null,
+      orderNum:         o.orderNum,
+      mode:             o.mode,
+      cancelReason:     o.cancelReason || ''
+    });
+  } catch (e) {
+    console.error('Statusabfrage:', e.message);
+    res.status(500).json({ message: 'Fehler' });
+  }
 });
 
 // ── Stripe Checkout ───────────────────────────────────────────────
 app.post('/api/create-stripe-checkout', async (req, res) => {
   try {
     const { items, customer, mode, note } = req.body;
+
+    // Zugriffsschluessel schon hier erzeugen: die Rueckkehr-URL wird gebaut,
+    // bevor die Bestellung existiert, und muss ihn mitfuehren.
+    const statusToken = crypto.randomBytes(9).toString('base64url');
+
 
     // userId aus Kunden-JWT (falls eingeloggt) – für Kontoverknüpfung & Stempel
     let userId = null;
@@ -710,7 +744,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       ...(customer.email ? { customer_email: customer.email } : {}),
       locale: 'de',
       metadata: { orderNum: String(orderNum) },
-      success_url: `https://pizzeria-amoura.de?order=${orderNum}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `https://pizzeria-amoura.de?order=${orderNum}&t=${statusToken}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `https://pizzeria-amoura.de?payment=cancelled`,
     };
 
@@ -735,7 +769,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'stripe', paymentStatus: 'pending',
-      stripeSessionId: session.id, status: 'awaiting_payment',
+      stripeSessionId: session.id, status: 'awaiting_payment', statusToken,
       stampRewardPending: !!free.hasStampReward
     });
     await order.save();
@@ -805,6 +839,11 @@ app.post('/api/create-paypal-order', async (req, res) => {
   try {
     const { items, customer, mode, note } = req.body;
 
+    // Zugriffsschluessel schon hier erzeugen: die Rueckkehr-URL wird gebaut,
+    // bevor die Bestellung existiert, und muss ihn mitfuehren.
+    const statusToken = crypto.randomBytes(9).toString('base64url');
+
+
     // userId aus Kunden-JWT (falls eingeloggt)
     let userId = null;
     const authHeader = req.headers.authorization;
@@ -843,7 +882,7 @@ app.post('/api/create-paypal-order', async (req, res) => {
         locale:              'de-DE',
         user_action:         'PAY_NOW',
         shipping_preference: 'NO_SHIPPING',
-        return_url: `https://pizzeria-amoura.de?order=${orderNum}&paypal=1`,
+        return_url: `https://pizzeria-amoura.de?order=${orderNum}&t=${statusToken}&paypal=1`,
         cancel_url: `https://pizzeria-amoura.de?payment=cancelled`,
       }
     });
@@ -855,7 +894,7 @@ app.post('/api/create-paypal-order', async (req, res) => {
       customer, mode, note, orderNum, userId,
       coupon: req.body.coupon || null,
       payment: 'paypal', paymentStatus: 'pending',
-      paypalOrderId: ppOrder.id, status: 'awaiting_payment',
+      paypalOrderId: ppOrder.id, status: 'awaiting_payment', statusToken,
       stampRewardPending: !!free.hasStampReward
     });
     await order.save();
