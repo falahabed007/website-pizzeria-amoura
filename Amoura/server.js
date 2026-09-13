@@ -1533,6 +1533,17 @@ cron.schedule('* * * * *', async () => {
 // Rettung und Alarm zugleich: Das Geschaeft laeuft mit Verspaetung weiter,
 // und es faellt trotzdem auf, statt monatelang unbemerkt zu bleiben.
 const WACHHUND_MINUTEN = 10;
+// Obere Altersgrenze, und die ist nicht optional. Ohne sie greift der
+// Wachhund beim ersten Lauf nach JEDER haengenden Bestellung - bei Ararat,
+// Amoura und Vorhelm also nach allem seit April. Die Liste der eingehenden
+// Bestellungen im Dashboard hat keine Datumsgrenze und sortiert die aeltesten
+// nach oben: Mitten im Betrieb stuende dort eine Wand aus Monate alten
+// "neuen" Bestellungen, jede mit Alarmton. Und weil "pending" im Umsatz
+// zaehlt, aenderten sich rueckwirkend Berichte und Gebuehren.
+//
+// Nach zwei Stunden wartet kein Gast mehr. Aeltere Faelle sind Aufraeumarbeit
+// und brauchen eine Entscheidung, keinen Automaten.
+const WACHHUND_HOECHSTENS_STUNDEN = 2;
 
 cron.schedule('*/5 * * * *', async () => {
   if (mongoose.connection.readyState !== 1) return;
@@ -1543,7 +1554,8 @@ cron.schedule('*/5 * * * *', async () => {
     const grenze = new Date(Date.now() - WACHHUND_MINUTEN * 60 * 1000);
     const haengend = await Order.find({
       status: 'awaiting_payment', payment: 'stripe',
-      createdAt: { $lt: grenze }, nachgeholt: { $ne: true },
+      createdAt: { $lt: grenze, $gt: new Date(Date.now() - WACHHUND_HOECHSTENS_STUNDEN * 3600 * 1000) },
+      nachgeholt: { $ne: true },
     }).limit(50);
     if (!haengend.length) return;
 
