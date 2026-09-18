@@ -121,6 +121,9 @@ const orderSchema = new mongoose.Schema({
   paymentStatus:        { type: String, default: 'unpaid', enum: ['unpaid','paid','pending','refunded'] },
   source:               { type: String, default: 'web', enum: ['web','pos'] },
   stripeSessionId:      String,
+  // Vom Wachhund nachgeholt, statt vom Webhook. Verhindert doppelten Alarm
+  // und macht im Nachhinein sichtbar, dass die Zahlkette geklemmt hat.
+  nachgeholt:          { type: Boolean, default: false },
   stripePaymentIntentId:String,
   paypalOrderId:        String,
   paypalCaptureId:      String,
@@ -784,21 +787,33 @@ app.post('/api/stripe-webhook', async (req, res) => {
     event = getStripe().webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
   } catch(e) { return res.status(400).send('Webhook Error: '+e.message); }
 
-  if (event.type === 'checkout.session.completed') {
-    const s = event.data.object;
-    const order = await Order.findOne({ stripeSessionId: s.id });
-    if (order) {
-      order.paymentStatus = 'paid';
-      order.status = 'pending'; // wartet auf Admin-Bestätigung
-      order.stripePaymentIntentId = s.payment_intent;
-      await order.save();
-      console.log(`💳 Bezahlt: #${order.orderNum} → wartet auf Bestätigung`);
-      await sendCouponRaffleEmail(order);
-      await consumeStampRewardOnce(order);
+  // Nur aus `awaiting_payment` heraus, und atomar. Stripe wiederholt eine
+  // Zustellung bis zu drei Tage lang. Bis dahin ist die Bestellung laengst per
+  // verify-payment oder Wachhund eingebucht, vielleicht schon ausgeliefert.
+  // Ohne die Statusbedingung setzt eine spaete Wiederholung sie auf `pending`
+  // zurueck, und sie steht als neue Bestellung an der Kasse. Genau das drohte
+  // am 18.09.2026, als die Webhooks nach fuenf Tagen Ausfall wieder durchkamen.
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const s = event.data.object;
+      const order = await Order.findOneAndUpdate(
+        { stripeSessionId: s.id, status: 'awaiting_payment' },
+        { $set: { paymentStatus: 'paid', status: 'pending', stripePaymentIntentId: s.payment_intent } }, // wartet auf Admin-Bestätigung
+        { new: true });
+      if (order) {
+        console.log(`💳 Bezahlt: #${order.orderNum} → wartet auf Bestätigung`);
+        await sendCouponRaffleEmail(order);
+        await consumeStampRewardOnce(order);
+      }
     }
-  }
-  if (event.type === 'checkout.session.expired') {
-    await Order.findOneAndUpdate({ stripeSessionId: event.data.object.id }, { status:'cancelled' });
+    if (event.type === 'checkout.session.expired') {
+      await Order.findOneAndUpdate({ stripeSessionId: event.data.object.id, status: 'awaiting_payment' }, { status:'cancelled' });
+    }
+  } catch(e) {
+    // Antworten statt haengen lassen: Stripe versucht es spaeter erneut, und
+    // dank der Statusbedingung richtet die Wiederholung keinen Schaden an.
+    console.error('Stripe-Webhook Verarbeitung fehlgeschlagen:', e.message);
+    return res.status(500).send('Verarbeitung fehlgeschlagen');
   }
   res.json({ received: true });
 });
@@ -1517,6 +1532,103 @@ cron.schedule('* * * * *', async () => {
     );
   } catch(e) { console.error('Auto-Status Fehler:', e); }
 });
+
+// ── Wachhund: bezahlt, aber unsichtbar ──────────────────────────
+// Eine Kartenzahlung wird erst zur Bestellung, wenn Stripes Webhook sie
+// meldet. Bricht diese Kette, bleibt die Bestellung auf `awaiting_payment`
+// stehen: Der Gast hat gezahlt, die Kueche sieht nichts, und nichts meldet
+// sich. Genau das ist Ararat, Amoura und Vorhelm von April bis September 2026
+// passiert - allein in den letzten 30 Tagen 18 Zahlungen ueber 757,91 €.
+//
+// Der Wachhund schaut alle fuenf Minuten nach Bestellungen, die laenger als
+// zehn Minuten warten, fragt bei Stripe nach und holt sie nach. Er ist
+// Rettung und Alarm zugleich: Das Geschaeft laeuft mit Verspaetung weiter,
+// und es faellt trotzdem auf, statt monatelang unbemerkt zu bleiben.
+const WACHHUND_MINUTEN = 10;
+// Obere Altersgrenze, und die ist nicht optional. Ohne sie greift der
+// Wachhund beim ersten Lauf nach JEDER haengenden Bestellung - bei Ararat,
+// Amoura und Vorhelm also nach allem seit April. Die Liste der eingehenden
+// Bestellungen im Dashboard hat keine Datumsgrenze und sortiert die aeltesten
+// nach oben: Mitten im Betrieb stuende dort eine Wand aus Monate alten
+// "neuen" Bestellungen, jede mit Alarmton. Und weil "pending" im Umsatz
+// zaehlt, aenderten sich rueckwirkend Berichte und Gebuehren.
+//
+// Nach zwei Stunden wartet kein Gast mehr. Aeltere Faelle sind Aufraeumarbeit
+// und brauchen eine Entscheidung, keinen Automaten.
+const WACHHUND_HOECHSTENS_STUNDEN = 2;
+
+cron.schedule('*/5 * * * *', async () => {
+  if (mongoose.connection.readyState !== 1) return;
+  let stripe;
+  try { stripe = getStripe(); } catch { return; }   // ohne Stripe kein Wachhund
+
+  try {
+    const grenze = new Date(Date.now() - WACHHUND_MINUTEN * 60 * 1000);
+    const haengend = await Order.find({
+      status: 'awaiting_payment', payment: 'stripe',
+      createdAt: { $lt: grenze, $gt: new Date(Date.now() - WACHHUND_HOECHSTENS_STUNDEN * 3600 * 1000) },
+      nachgeholt: { $ne: true },
+    }).limit(50);
+    if (!haengend.length) return;
+
+    const geholt = [];
+    for (const order of haengend) {
+      try {
+        const sitzung = await stripe.checkout.sessions.retrieve(order.stripeSessionId);
+        if (sitzung.payment_status !== 'paid') continue;   // Gast hat abgebrochen
+        // Atomar und nur aus awaiting_payment heraus: Hat verify-payment oder
+        // der Webhook zwischen Suche und hier schon verbucht, gibt es nichts
+        // nachzuholen - und auch keinen Fehlalarm.
+        const nachgeholt = await Order.findOneAndUpdate(
+          { _id: order._id, status: 'awaiting_payment' },
+          { $set: { paymentStatus: 'paid', status: 'pending', nachgeholt: true,
+                    ...(sitzung.payment_intent && { stripePaymentIntentId: sitzung.payment_intent }) } },
+          { new: true });
+        if (!nachgeholt) continue;
+        geholt.push(nachgeholt);
+        console.error(`🚨 Wachhund: #${order.orderNum} war bezahlt und unsichtbar - jetzt auf pending`);
+        // Wie Webhook und verify-payment: eine eingeloeste Stempelpraemie verbuchen.
+        await consumeStampRewardOnce(nachgeholt);
+      } catch (e) {
+        console.warn(`Wachhund uebersprungen #${order.orderNum}: ${e.message}`);
+      }
+    }
+    if (geholt.length) await wachhundMelden(geholt);
+  } catch (e) { console.error('Wachhund Fehler:', e.message); }
+});
+
+// Die Meldung geht an beide: der Betreiber muss wissen, dass die Zahlkette
+// klemmt, und das Restaurant, dass ein Gast seit zehn Minuten wartet.
+async function wachhundMelden(bestellungen) {
+  const resend = getResend();
+  if (!resend) { console.error('🚨 Wachhund: kein RESEND_API_KEY - Alarm bleibt ungesendet'); return; }
+  const empfaenger = [process.env.OWNER_EMAIL, process.env.RESTAURANT_EMAIL].filter(Boolean);
+  if (!empfaenger.length) { console.error('🚨 Wachhund: kein Empfaenger gesetzt'); return; }
+
+  const zeilen = bestellungen.map(o =>
+    `<tr><td style="padding:4px 12px 4px 0">#${o.orderNum}</td>` +
+    `<td style="padding:4px 12px 4px 0">${Number(o.total || 0).toFixed(2).replace('.', ',')} €</td>` +
+    `<td style="padding:4px 0;color:#666">${new Date(o.createdAt).toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</td></tr>`).join('');
+
+  const { error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM,
+    to: empfaenger,
+    subject: `🚨 ${bestellungen.length} bezahlte Bestellung${bestellungen.length > 1 ? 'en' : ''} war${bestellungen.length > 1 ? 'en' : ''} unsichtbar`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;color:#222">
+      <h2 style="font-size:18px;margin:0 0 8px">Bezahlt, aber nicht im Dashboard angekommen</h2>
+      <p style="margin:0 0 12px">Diese Bestellung${bestellungen.length > 1 ? 'en' : ''} stand${bestellungen.length > 1 ? 'en' : ''}
+      laenger als ${WACHHUND_MINUTEN} Minuten auf "wartet auf Zahlung", obwohl bei Stripe bezahlt wurde.
+      Sie wurde${bestellungen.length > 1 ? 'n' : ''} soeben nachgeholt und ist jetzt im Dashboard sichtbar.</p>
+      <table style="font-size:14px;border-collapse:collapse">${zeilen}</table>
+      <p style="margin:16px 0 0;font-size:13px;color:#666">
+        Der Gast wartet entsprechend laenger. Ursache ist fast immer der Stripe-Webhook:
+        falsche Adresse, abgeschalteter Endpunkt oder ein Signaturgeheimnis, das mit
+        <code>we_</code> statt <code>whsec_</code> beginnt. Pruefen mit
+        <code>zahlkette-pruefen.js</code> aus dem Betriebs-Skill.</p></div>`,
+  });
+  if (error) console.error('🚨 Wachhund: Alarm-Mail fehlgeschlagen:', error.message || error);
+  else console.error(`🚨 Wachhund: Alarm an ${empfaenger.join(', ')} gesendet`);
+}
 
 // Cleanup: verwaiste „awaiting_payment"-Bestellungen (abgebrochene Stripe-Zahlung) nach 1 h entfernen
 cron.schedule('*/15 * * * *', async () => {
