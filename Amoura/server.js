@@ -371,7 +371,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'september-aktion-pizzabroetchen-2026-09-01'
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'aktion-pizzabroetchen-unbefristet-2026-10-06'
 }));
 
 app.get('/api/config', (req, res) => res.json({
@@ -537,11 +537,9 @@ const PROMO_FREE_NAME   = 'Pizzabrötchen mit Käse (GRATIS)';
 // Mindestbestellwert der Aktion – muss mit addFreePizzaIfNeeded() im Frontend übereinstimmen
 const PROMO_MIN_SUBTOTAL = 25;
 
-// Aktions-Zeitfenster muss mit isPromotionActive() im Frontend übereinstimmen
+// Aktion läuft seit 06.10.2026 unbefristet – muss mit isPromotionActive() im Frontend übereinstimmen
 function serverPromotionActive() {
-  const now = new Date();
-  return now >= new Date('2026-09-01T00:00:00+02:00')
-      && now <= new Date('2026-09-30T23:59:59+02:00');
+  return true;
 }
 
 // Zwischensumme (nur bezahlte Artikel) + Gesamt serverseitig nachrechnen
