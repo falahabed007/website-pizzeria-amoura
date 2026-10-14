@@ -1658,7 +1658,8 @@ function generatePdf(buildFn) {
 const PDF_M  = 50;
 const PDF_W  = 495;
 const PDF_PW = 595;
-const PDF_FT = 810;
+const PDF_FT = 790; // Unterkante fuer Tabellenzeilen. Der Textbereich endet bei page.height-50 = 791,9;
+                    // reicht eine Zeile darueber, bricht pdfkit selbst um und jede Zelle landet auf eigener Seite.
 const PDF_SV = 0.99;
 const PDF_BASE = 150; // monatliche Grundgebühr (Fixmodell: 150 € + Servicegebühr/Bestellung)
 const pdfFmt = n => n.toFixed(2).replace('.', ',') + ' €';
@@ -1704,6 +1705,8 @@ function pdfTableRow(doc, cells, shade, bold = false) {
 function pdfKundenliste(doc, orders) {
   function drawGroup(label, color, list) {
     if (!list.length) return;
+    // Gruppenkopf + Spaltenkopf + erste Zeilen zusammenhalten
+    if (doc.y > PDF_FT - 90) { doc.addPage(); doc.y = PDF_M; }
     const gy = doc.y;
     doc.rect(PDF_M, gy, PDF_W, 22).fill(color);
     doc.font('Helvetica-Bold').fontSize(10).fillColor('#fff').text(label, PDF_M + 8, gy + 6, { width: PDF_W - 16 });
@@ -1716,7 +1719,8 @@ function pdfKundenliste(doc, orders) {
     doc.y = hy + 16 + 2;
     let sub = 0;
     list.forEach((o, i) => {
-      if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
+      // letzte Zeile nicht ohne ihre Summenzeile (20 pt) auf der alten Seite lassen
+      if (doc.y > PDF_FT - (i === list.length - 1 ? 44 : 24)) { doc.addPage(); doc.y = PDF_M; }
       const date = new Date(o.createdAt).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit' }) + '.';
       const name = `${o.customer?.first||''} ${o.customer?.last||''}`.trim().substring(0, 28);
       const modeStr = o.mode === 'lieferung' ? 'Lieferung' : 'Abholung';
@@ -1732,6 +1736,7 @@ function pdfKundenliste(doc, orders) {
       doc.y = ry + 18;
       sub += (o.total||0);
     });
+    if (doc.y > PDF_FT - 24) { doc.addPage(); doc.y = PDF_M; }
     const sy = doc.y;
     doc.rect(PDF_M, sy, PDF_W, 20).fill(color + '28');
     doc.font('Helvetica').fontSize(9).fillColor('#333').text(`Summe ${label}:`, PDF_M+8, sy+5);
@@ -1786,6 +1791,8 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
     doc.font('Helvetica-Bold').fontSize(8.5).fillColor('#1a1a2e').text(pdfFmt(sf), PDF_M+2, ry+4, { width:PDF_W-4, align:'right' });
     doc.y = ry + 16;
   });
+  // Summenblock (Linie, Servicegebuehren, Summe, Hinweis, ca. 80 pt) zusammenhalten
+  if (doc.y > PDF_FT - 80) { doc.addPage(); doc.y = PDF_M; }
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
   const s1y = doc.y;
   doc.rect(PDF_M, s1y, PDF_W, 18).fill('#f0f4f8');
@@ -1998,8 +2005,11 @@ cron.schedule('0 22 * * 0', async () => {
       if (barOrders.length > 0) {
         pdfBarRechnung(doc, barOrders, { barSvc, barNetto, barBetrag }, vonBis);
       }
+      // y=820 liegt unter dem Textbereich (791,9) - Rand kurz auf 0, sonst haengt pdfkit eine leere Seite an
+      const _mb = doc.page.margins.bottom; doc.page.margins.bottom = 0;
       doc.font('Helvetica').fontSize(7).fillColor('#bbb')
-        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Wochenbericht KW ${kw} / ${now.getFullYear()}`, PDF_M, 820, { width: PDF_W, align: 'center' });
+        .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Wochenbericht KW ${kw} / ${now.getFullYear()}`, PDF_M, doc.page.height - 28, { width: PDF_W, align: 'center', lineBreak: false });
+      doc.page.margins.bottom = _mb;
     });
 
     // ── E-Mail 1: Restaurant bekommt Wochenbericht als PDF-Anhang ────────
@@ -2098,8 +2108,11 @@ function buildMonatsberichtPdf(doc, d) {
   if (barOrdersM.length > 0) {
     pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barBetrag: barBetragM }, vonBis);
   }
+  // y=820 liegt unter dem Textbereich (791,9) - Rand kurz auf 0, sonst haengt pdfkit eine leere Seite an
+  const _mb = doc.page.margins.bottom; doc.page.margins.bottom = 0;
   doc.font('Helvetica').fontSize(7).fillColor('#bbb')
-    .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, 820, { width: PDF_W, align: 'center' });
+    .text(`FlueVate · Abed Rachman Falah · Zur Goldbrede 30 · 59269 Beckum  ·  Monatsbericht ${monat}`, PDF_M, doc.page.height - 28, { width: PDF_W, align: 'center', lineBreak: false });
+  doc.page.margins.bottom = _mb;
 }
 
 // MONATSBERICHT (Cron – täglich 22:00, nur am letzten Tag des Monats)
@@ -2145,11 +2158,15 @@ cron.schedule('0 22 * * *', async () => {
       barOrdersM, barSvcM, barNettoM, barBetragM, weekRows,
     }));
 
-    // ── E-Mail: Restaurant ────────────────────────────────────────────────
-    if (process.env.RESTAURANT_EMAIL) {
-      await getResend()?.emails.send({
+    // ── E-Mail: Restaurant + Inhaber ──────────────────────────────────────
+    // INHABER_EMAIL bekommt nur den Monatsbericht; RESTAURANT_EMAIL bleibt fuer
+    // Bestell-Mails und Berichte zustaendig. Je Adresse eine eigene Mail.
+    const versandt = [];
+    for (const [rolle, an] of [['restaurant', process.env.RESTAURANT_EMAIL], ['inhaber', process.env.INHABER_EMAIL]]) {
+      if (!an) continue;
+      const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
-        to:   process.env.RESTAURANT_EMAIL,
+        to:   an,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;color:#222">
   <div style="background:#8b1d1d;padding:24px 28px;color:#fff">
@@ -2168,11 +2185,13 @@ cron.schedule('0 22 * * *', async () => {
 </div>`,
         attachments: [{ filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') }],
       });
+      if (!antwort || antwort.error) console.error(`Monatsbericht an ${rolle} nicht versendet:`, antwort?.error || 'kein RESEND_API_KEY');
+      else versandt.push(rolle);
     }
 
     // ── E-Mail: Owner ─────────────────────────────────────────────────────
     if (process.env.OWNER_EMAIL) {
-      await getResend()?.emails.send({
+      const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
@@ -2183,8 +2202,10 @@ cron.schedule('0 22 * * *', async () => {
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
         ],
       });
+      if (!antwort || antwort.error) console.error('Monatsbericht an owner nicht versendet:', antwort?.error || 'kein RESEND_API_KEY');
+      else versandt.push('owner');
     }
-    console.log(`📅 Monatsbericht ${monat} versendet`);
+    console.log(`📅 Monatsbericht ${monat} an: ` + (versandt.join(', ') || 'NIEMANDEN'));
   } catch(e) { console.error('Monatsbericht Fehler:', e); }
 });
 
@@ -2228,17 +2249,23 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
       barOrdersM, barSvcM, barNettoM, barBetragM, weekRows,
     }));
 
-    if (process.env.RESTAURANT_EMAIL) {
-      await getResend()?.emails.send({
+    // ?nur=owner oder ?nur=inhaber: Probelauf, ohne das Restaurant anzuschreiben
+    const nur = req.query.nur;
+    const versandt = [];
+    for (const [rolle, an] of [['restaurant', process.env.RESTAURANT_EMAIL], ['inhaber', process.env.INHABER_EMAIL]]) {
+      if (!an || (nur && nur !== rolle)) continue;
+      const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
-        to: process.env.RESTAURANT_EMAIL,
+        to: an,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
-        html: `<p style="font-family:Arial,sans-serif">Manuell ausgelöster Monatsbericht für <b>${monat}</b>.<br>${orders.length} Bestellungen · Auszahlung: ${auszahlung.toFixed(2).replace('.',',')} €</p>`,
+        html: `<p style="font-family:Arial,sans-serif">Monatsbericht für <b>${monat}</b>.<br>${orders.length} Bestellungen · Auszahlung: ${auszahlung.toFixed(2).replace('.',',')} €</p>`,
         attachments: [{ filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') }],
       });
+      if (!antwort || antwort.error) console.error(`Monatsbericht an ${rolle} nicht versendet:`, antwort?.error || 'kein RESEND_API_KEY');
+      else versandt.push(rolle);
     }
-    if (process.env.OWNER_EMAIL) {
-      await getResend()?.emails.send({
+    if (process.env.OWNER_EMAIL && (!nur || nur === 'owner')) {
+      const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
@@ -2248,10 +2275,20 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
         ],
       });
+      if (!antwort || antwort.error) console.error('Monatsbericht an owner nicht versendet:', antwort?.error || 'kein RESEND_API_KEY');
+      else versandt.push('owner');
     }
-    console.log(`📅 Monatsbericht ${monat} manuell versendet (${orders.length} Bestellungen)`);
+    console.log(`📅 Monatsbericht ${monat} manuell an: ` + (versandt.join(', ') || 'NIEMANDEN') + ` (${orders.length} Bestellungen)`);
     res.json({
       success: true, monat, orders: orders.length,
+      empfaenger: versandt,
+      konfig: {
+        RESEND_API_KEY:   !!process.env.RESEND_API_KEY,
+        RESTAURANT_EMAIL: !!process.env.RESTAURANT_EMAIL,
+        INHABER_EMAIL:    !!process.env.INHABER_EMAIL,
+        OWNER_EMAIL:      !!process.env.OWNER_EMAIL,
+      },
+      warnung: versandt.length ? undefined : 'Es wurde nichts verschickt. Siehe konfig: was auf false steht, fehlt in Coolify.',
       monatsPdfBase64: monatsPdf.toString('base64'),
     });
   } catch(e) {
