@@ -371,7 +371,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'aktion-pizzabroetchen-unbefristet-2026-10-06'
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'monatsbericht-inhaber-2026-10-14'
 }));
 
 app.get('/api/config', (req, res) => res.json({
