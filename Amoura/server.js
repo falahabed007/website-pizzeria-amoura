@@ -371,7 +371,7 @@ app.post('/api/account/redeem-stamp', customerAuth, async (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 
 app.get('/api/health', (req, res) => res.json({
-  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'monatsbericht-inhaber-2026-10-14'
+  status: 'ok', restaurant: 'Pizzeria Amoura', time: new Date(), build: 'monatsbericht-inhaber-cc-2026-10-15'
 }));
 
 app.get('/api/config', (req, res) => res.json({
@@ -1810,13 +1810,6 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
   doc.y = uy + 14;
 }
 
-// Rechnungsnummer fortlaufend in MongoDB speichern
-async function getNextRechnungNum() {
-  const c = await Counter.findByIdAndUpdate('rechnungNum', { $inc: { seq: 1 } }, { new: true, upsert: true });
-  const year = new Date().getFullYear();
-  return `RE-${year}-${String(c.seq).padStart(4,'0')}`;
-}
-
 // TAGESBERICHT (täglich um 22:00 Uhr)
 cron.schedule('0 22 * * *', async () => {
   try {
@@ -2159,14 +2152,17 @@ cron.schedule('0 22 * * *', async () => {
     }));
 
     // ── E-Mail: Restaurant + Inhaber ──────────────────────────────────────
-    // INHABER_EMAIL bekommt nur den Monatsbericht; RESTAURANT_EMAIL bleibt fuer
+    // INHABER_EMAIL bekommt nur den Monatsbericht (INHABER_CC, z.B. Steuerberater, in CC);
+    // RESTAURANT_EMAIL bleibt fuer
     // Bestell-Mails und Berichte zustaendig. Je Adresse eine eigene Mail.
     const versandt = [];
-    for (const [rolle, an] of [['restaurant', process.env.RESTAURANT_EMAIL], ['inhaber', process.env.INHABER_EMAIL]]) {
+    const inhaberCc = (process.env.INHABER_CC || '').split(',').map(a => a.trim()).filter(Boolean);
+    for (const [rolle, an, cc] of [['restaurant', process.env.RESTAURANT_EMAIL, []], ['inhaber', process.env.INHABER_EMAIL, inhaberCc]]) {
       if (!an) continue;
       const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to:   an,
+        ...(cc.length ? { cc } : {}),
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;color:#222">
   <div style="background:#8b1d1d;padding:24px 28px;color:#fff">
@@ -2186,7 +2182,7 @@ cron.schedule('0 22 * * *', async () => {
         attachments: [{ filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') }],
       });
       if (!antwort || antwort.error) console.error(`Monatsbericht an ${rolle} nicht versendet:`, antwort?.error || 'kein RESEND_API_KEY');
-      else versandt.push(rolle);
+      else versandt.push(rolle + (cc.length ? ` (cc ${cc.length})` : ''));
     }
 
     // ── E-Mail: Owner ─────────────────────────────────────────────────────
@@ -2252,17 +2248,19 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
     // ?nur=owner oder ?nur=inhaber: Probelauf, ohne das Restaurant anzuschreiben
     const nur = req.query.nur;
     const versandt = [];
-    for (const [rolle, an] of [['restaurant', process.env.RESTAURANT_EMAIL], ['inhaber', process.env.INHABER_EMAIL]]) {
+    const inhaberCc = (process.env.INHABER_CC || '').split(',').map(a => a.trim()).filter(Boolean);
+    for (const [rolle, an, cc] of [['restaurant', process.env.RESTAURANT_EMAIL, []], ['inhaber', process.env.INHABER_EMAIL, inhaberCc]]) {
       if (!an || (nur && nur !== rolle)) continue;
       const antwort = await getResend()?.emails.send({
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: an,
+        ...(cc.length ? { cc } : {}),
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif">Monatsbericht für <b>${monat}</b>.<br>${orders.length} Bestellungen · Auszahlung: ${auszahlung.toFixed(2).replace('.',',')} €</p>`,
         attachments: [{ filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') }],
       });
       if (!antwort || antwort.error) console.error(`Monatsbericht an ${rolle} nicht versendet:`, antwort?.error || 'kein RESEND_API_KEY');
-      else versandt.push(rolle);
+      else versandt.push(rolle + (cc.length ? ` (cc ${cc.length})` : ''));
     }
     if (process.env.OWNER_EMAIL && (!nur || nur === 'owner')) {
       const antwort = await getResend()?.emails.send({
@@ -2286,6 +2284,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
         RESEND_API_KEY:   !!process.env.RESEND_API_KEY,
         RESTAURANT_EMAIL: !!process.env.RESTAURANT_EMAIL,
         INHABER_EMAIL:    !!process.env.INHABER_EMAIL,
+        INHABER_CC:       !!process.env.INHABER_CC,
         OWNER_EMAIL:      !!process.env.OWNER_EMAIL,
       },
       warnung: versandt.length ? undefined : 'Es wurde nichts verschickt. Siehe konfig: was auf false steht, fehlt in Coolify.',
