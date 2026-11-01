@@ -1961,10 +1961,6 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
   doc.font('Helvetica-Bold').fontSize(11).fillColor('#fff').text('Summe Servicegebühren (Bar)', PDF_M+10, gy+9, { width:PDF_W*0.6 });
   doc.font('Helvetica-Bold').fontSize(13).fillColor('#ffd700').text(pdfFmt(barStats.barBetrag), PDF_M+2, gy+8, { width:PDF_W-4, align:'right' });
   doc.y = gy + 30 + 8;
-  const uy = doc.y;
-  doc.rect(PDF_M, uy, PDF_W, 14).fill('#fef9e7');
-  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('Grundlage für die separate Gebühren-Rechnung (Lexware) – dieses Dokument ist keine Rechnung.', PDF_M+6, uy+3, { width:PDF_W-12 });
-  doc.y = uy + 14;
 }
 
 // TAGESBERICHT (täglich um 22:00 Uhr)
@@ -2186,8 +2182,7 @@ cron.schedule('0 22 * * 0', async () => {
         to: process.env.OWNER_EMAIL,
         subject: `📊 Wochenbericht KW ${kw} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei der Wochenbericht KW ${kw} / ${now.getFullYear()} für Pizzeria Amoura.</p>
-               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €</p>
-               <p style="font-family:Arial,sans-serif;color:#999;font-size:12px">Die Gebühren-Rechnung wird separat über Lexware gestellt.</p>`,
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br><b>Servicegebühren:</b> ${svcFees.toFixed(2).replace('.',',')} €</p>`,
         attachments: [
           { filename: `KW${kw}_${now.getFullYear()}_Amoura_Wochenbericht.pdf`, content: berichtPdf.toString('base64') },
         ],
@@ -2337,8 +2332,7 @@ cron.schedule('0 22 * * *', async () => {
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
         html: `<p style="font-family:Arial,sans-serif;color:#555">Anbei der Monatsbericht <b>${monat}</b> für Pizzeria Amoura.</p>
-               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br>${abrechnungOwnerText(a)}</p>
-               <p style="font-family:Arial,sans-serif;color:#999;font-size:12px">Die Gebühren-Rechnung wird separat über Lexware gestellt.</p>`,
+               <p style="font-family:Arial,sans-serif;color:#555"><b>Zeitraum:</b> ${vonBis}<br>${abrechnungOwnerText(a)}</p>`,
         attachments: [
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
         ],
@@ -2415,8 +2409,7 @@ app.post('/api/admin/send-monthly', auth, async (req, res) => {
         from: process.env.EMAIL_FROM || 'system@pizzeria-amoura.de',
         to: process.env.OWNER_EMAIL,
         subject: `📅 Monatsbericht ${monat} · Pizzeria Amoura`,
-        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Monatsbericht <b>${monat}</b>.<br>${abrechnungOwnerText(a)}</p>
-               <p style="font-family:Arial,sans-serif;color:#999;font-size:12px">Die Gebühren-Rechnung wird separat über Lexware gestellt.</p>`,
+        html: `<p style="font-family:Arial,sans-serif;color:#555">Manuell ausgelöst: Monatsbericht <b>${monat}</b>.<br>${abrechnungOwnerText(a)}</p>`,
         attachments: [
           { filename: `${monat.replace(' ','_')}_Amoura_Monatsbericht.pdf`, content: monatsPdf.toString('base64') },
         ],
