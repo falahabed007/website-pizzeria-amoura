@@ -20,6 +20,10 @@ function getStripe() {
   return Stripe(key);
 }
 
+// Direct Charges auf dem eigenen Stripe-Konto des Ladens (STRIPE_DIREKT_KONTO).
+// Ohne diese Variable bleibt alles wie bisher. Erklaerung in stripe-direkt.js.
+const stripeDirekt = require('./stripe-direkt');
+
 // ─── PayPal (REST v2, lazy) ──────────────────────────────────────
 // Unabhängig von Stripe: eigene ENV-Keys, eigene Endpunkte.
 // PAYPAL_ENV=live → Produktion, sonst Sandbox.
@@ -137,6 +141,13 @@ const orderSchema = new mongoose.Schema({
   // und macht im Nachhinein sichtbar, dass die Zahlkette geklemmt hat.
   nachgeholt:          { type: Boolean, default: false },
   stripePaymentIntentId:String,
+  // Nur bei Direct Charges gesetzt: das Stripe-Konto des Ladens, auf dem Sitzung,
+  // Zahlung und Erstattung liegen. Jeder Stripe-Aufruf zu dieser Bestellung braucht
+  // es als Option { stripeAccount }. Alte Bestellungen haben es nicht.
+  stripeAccount:        String,
+  // Echte Stripe-Gebuehr in Cent (nur Direct Charges), nach der Zahlung nachgelesen.
+  // Fehlt sie, ist sie noch nicht bekannt; die Berichte schaetzen sie nicht.
+  stripeGebuehrCent:    Number,
   paypalOrderId:        String,
   paypalCaptureId:      String,
   prepTime:             Number,
@@ -396,6 +407,43 @@ app.get('/api/config', (req, res) => res.json({
   }
 }));
 
+// ── Stripe-Einrichtung fuer den Inhaber (nach Nordkirchen, 25.10.2026) ──
+// Fester Link: /api/stripe/einrichten?t=<STRIPE_ONBOARDING_TOKEN>. Ziel ist das eigene
+// Stripe-Konto des Ladens (STRIPE_DIREKT_KONTO); ohne das gibt es die Route nicht.
+// Stripe-Onboarding-Links (Account Links) gelten nur Minuten, darum erzeugt jeder Aufruf
+// einen frischen und leitet dorthin weiter. Ohne gueltigen Token gibt es nichts: Wer den
+// Link oeffnet, kann die Bankverbindung des Ladens eintragen. Sind alle Angaben bei
+// Stripe, zeigt er nur noch den Stand.
+app.get('/api/stripe/einrichten', async (req, res) => {
+  const token = process.env.STRIPE_ONBOARDING_TOKEN, konto = process.env.STRIPE_DIREKT_KONTO;
+  if (!token || !konto || !stripeDirekt.gleichSicher(String(req.query.t || ''), token)) return res.status(404).send('Nicht gefunden');
+  res.setHeader('Cache-Control', 'no-store');
+  const seite = (titel, text) => res.send(`<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>${titel}</title></head>
+<body style="font-family:Arial,sans-serif;max-width:520px;margin:60px auto;padding:0 16px;color:#222">
+<h2>${titel}</h2><p style="line-height:1.5">${text}</p></body></html>`);
+  try {
+    const stripe = getStripe();
+    const acc = await stripe.accounts.retrieve(konto);
+    if (acc.details_submitted && !(acc.requirements?.currently_due || []).length) {
+      // Fertig ist erst, wenn Stripe auch Zahlungen freigibt (charges_enabled)
+      return acc.charges_enabled === true
+        ? seite('Stripe ist eingerichtet', 'Alle Angaben sind bei Stripe. Ihr Konto ist freigeschaltet. Online-Zahlungen gehen automatisch auf Ihr eigenes Stripe-Konto.')
+        : seite('Angaben vollständig', 'Alle Angaben sind bei Stripe und werden geprüft. Sobald Stripe Ihr Konto freischaltet, gehen Online-Zahlungen automatisch auf Ihr eigenes Stripe-Konto.');
+    }
+    const hier = `https://${req.get('host')}${req.path}?t=${encodeURIComponent(token)}`;
+    const link = await stripe.accountLinks.create({
+      account: konto, type: 'account_onboarding', refresh_url: hier, return_url: hier,
+      collection_options: { fields: 'eventually_due' },
+    });
+    res.redirect(303, link.url);
+  } catch (e) {
+    console.error('Stripe-Einrichtung:', e.message);
+    res.status(502);
+    seite('Gerade nicht erreichbar', 'Stripe antwortet gerade nicht. Bitte öffnen Sie den Link in ein paar Minuten noch einmal.');
+  }
+});
+
 // ── Restaurant Status (öffentlich) ───────────────────────────────
 app.get('/api/status', async (req, res) => {
   try {
@@ -653,8 +701,10 @@ app.post('/api/orders', async (req, res) => {
     }
 
     const orderNum = await getNextOrderNum();
+    // Stripe-Konto und Stripe-Gebuehr setzt nur der Server, nie der Aufrufer
+    const { stripeAccount: _konto, stripeGebuehrCent: _gebuehr, ...body } = req.body;
     const order    = new Order({
-      ...req.body, orderNum, userId,
+      ...body, orderNum, userId,
       ...(pricing ? { subtotal: pricing.paidSubtotal, deliveryFee: pricing.deliveryFee, serviceFee: pricing.serviceFee, total: pricing.total } : {}),
       status: isPOS ? 'confirmed' : 'pending'
     });
@@ -696,6 +746,60 @@ app.get('/api/orders/status/:token', async (req, res) => {
     res.status(500).json({ message: 'Fehler' });
   }
 });
+
+// ── Stripe Direct Charges: Hilfen ─────────────────────────────────
+// "Bereit" heisst charges_enabled. Das Ergebnis haelt 5 Minuten, damit nicht jede
+// Bestellung einen Zusatzaufruf macht. Fehler oder Zeitlimit heissen "nicht bereit".
+const direktKontoBereit = stripeDirekt.erstelleKontoPruefer({
+  abrufen: async konto => (await getStripe().accounts.retrieve(konto)).charges_enabled === true,
+  melden:  e => console.warn('Stripe-Direktkonto nicht abfragbar, alter Weg:', e.message),
+});
+
+// acct_... wenn dieser Checkout als Direct Charge laufen soll, sonst null (alter Weg).
+function direktKontoFuerCheckout() {
+  return stripeDirekt.direktKontoWaehlen({
+    konto: process.env.STRIPE_DIREKT_KONTO, ab: process.env.STRIPE_DIREKT_AB,
+    jetzt: new Date(), istBereit: direktKontoBereit,
+  });
+}
+
+// Einmal beim Start sagen, was eingestellt ist (nur wenn ueberhaupt ein Direktkonto gesetzt ist)
+if (process.env.STRIPE_DIREKT_KONTO) {
+  const ab = process.env.STRIPE_DIREKT_AB;
+  if (stripeDirekt.stichtagAusText(ab) === null) {
+    console.error(`⚠️  STRIPE_DIREKT_AB "${ab}" ist kein Datum JJJJ-MM-TT: Online-Zahlungen bleiben auf dem alten Weg`);
+  } else {
+    console.log(`💳 Stripe Direct Charges: Konto …${process.env.STRIPE_DIREKT_KONTO.slice(-4)}${ab ? ' ab ' + ab : ''}, sobald Stripe es freigibt`);
+  }
+  if (!process.env.STRIPE_CONNECT_WEBHOOK_SECRET) {
+    console.warn('⚠️  STRIPE_CONNECT_WEBHOOK_SECRET fehlt: Zahlungen auf dem Direktkonto kommen nur ueber verify-payment und Wachhund an');
+  }
+}
+
+// Checkout-Sitzung einer Bestellung abrufen. Direct-Sitzungen liegen auf dem Konto
+// des Ladens; alte Bestellungen werden genau wie bisher ohne Option abgefragt.
+function sitzungAbrufen(stripe, sessionId, konto) {
+  return konto
+    ? stripe.checkout.sessions.retrieve(sessionId, {}, { stripeAccount: konto })
+    : stripe.checkout.sessions.retrieve(sessionId);
+}
+
+// Echte Stripe-Gebuehr einer bezahlten Direct-Bestellung nachlesen und speichern.
+// Bewusst ohne await aufrufen: Die Zahlungsbestaetigung wartet nie darauf und kann
+// daran nicht scheitern. Wirft nie; Fehler nur mit Bestellnummer ins Log.
+async function stripeGebuehrNachlesen(order) {
+  try {
+    if (!order || !order.stripeAccount || !order.stripePaymentIntentId) return;
+    if (Number.isInteger(order.stripeGebuehrCent)) return;
+    const pi = await getStripe().paymentIntents.retrieve(order.stripePaymentIntentId,
+      { expand: ['latest_charge.balance_transaction'] }, { stripeAccount: order.stripeAccount });
+    const cent = stripeDirekt.gebuehrCentAusPaymentIntent(pi);
+    if (cent === null) return;   // Stripe kennt sie noch nicht, der Nachhol-Lauf versucht es spaeter
+    await Order.updateOne({ _id: order._id, stripeGebuehrCent: { $exists: false } }, { $set: { stripeGebuehrCent: cent } });
+  } catch (e) {
+    console.warn(`Stripe-Gebuehr #${order?.orderNum} nicht gelesen: ${e.message}`);
+  }
+}
 
 // ── Stripe Checkout ───────────────────────────────────────────────
 app.post('/api/create-stripe-checkout', async (req, res) => {
@@ -761,21 +865,41 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       cancel_url:  `https://pizzeria-amoura.de?payment=cancelled`,
     };
 
-    // Stripe Connect wenn konfiguriert
-    if (process.env.STRIPE_CONNECT_ACCOUNT) {
-      // Mit Connect: payment_method_types explizit (Klarna nicht mit Connect kompatibel)
-      sessionOpts.payment_method_types = ['card'];
-      sessionOpts.payment_intent_data = {
-        application_fee_amount: appFee,
-        transfer_data: { destination: process.env.STRIPE_CONNECT_ACCOUNT }
-      };
-    } else {
-      // Ohne Connect: alle im Stripe-Dashboard aktivierten Methoden erlauben
-      // (Karte, Apple Pay, Google Pay, Klarna, etc.)
-      sessionOpts.automatic_payment_methods = { enabled: true };
+    // Direct Charge auf dem eigenen Konto des Ladens: keine application_fee, kein
+    // transfer_data. Der Gast zahlt denselben Betrag inkl. Servicegebuehr; FlueVate
+    // rechnet die Servicegebuehr per Rechnung und SEPA-Lastschrift ab.
+    // Zahlungsarten wie im Connect-Zweig (nur Karte), bewusst nicht erweitert.
+    let session = null, direktKonto = await direktKontoFuerCheckout();
+    if (direktKonto) {
+      try {
+        session = await getStripe().checkout.sessions.create(
+          { ...sessionOpts, payment_method_types: ['card'] }, { stripeAccount: direktKonto });
+      } catch (e) {
+        // Nie ein Fehler fuer den Gast: dann eben der alte Weg, und das Konto gilt kurz als nicht bereit
+        console.error('Direct-Checkout fehlgeschlagen, alter Weg:', e.message);
+        direktKontoBereit.alsNichtBereitMerken(direktKonto);
+        direktKonto = null;
+      }
     }
 
-    const session = await getStripe().checkout.sessions.create(sessionOpts);
+    // Alter Weg (Destination Charge), unveraendert
+    if (!session) {
+      // Stripe Connect wenn konfiguriert
+      if (process.env.STRIPE_CONNECT_ACCOUNT) {
+        // Mit Connect: payment_method_types explizit (Klarna nicht mit Connect kompatibel)
+        sessionOpts.payment_method_types = ['card'];
+        sessionOpts.payment_intent_data = {
+          application_fee_amount: appFee,
+          transfer_data: { destination: process.env.STRIPE_CONNECT_ACCOUNT }
+        };
+      } else {
+        // Ohne Connect: alle im Stripe-Dashboard aktivierten Methoden erlauben
+        // (Karte, Apple Pay, Google Pay, Klarna, etc.)
+        sessionOpts.automatic_payment_methods = { enabled: true };
+      }
+
+      session = await getStripe().checkout.sessions.create(sessionOpts);
+    }
 
     const order = new Order({
       items, subtotal, deliveryFee, serviceFee, total,
@@ -783,6 +907,7 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
       coupon: req.body.coupon || null,
       payment: 'stripe', paymentStatus: 'pending',
       stripeSessionId: session.id, status: 'awaiting_payment', statusToken,
+      ...(direktKonto ? { stripeAccount: direktKonto } : {}),
       stampRewardPending: !!free.hasStampReward
     });
     await order.save();
@@ -794,8 +919,18 @@ app.post('/api/create-stripe-checkout', async (req, res) => {
 app.post('/api/stripe-webhook', async (req, res) => {
   let event;
   try {
-    event = getStripe().webhooks.constructEvent(req.body, req.headers['stripe-signature'], process.env.STRIPE_WEBHOOK_SECRET);
+    // Erst das Geheimnis des Plattform-Endpunkts, dann (falls gesetzt) das des
+    // Connect-Endpunkts, ueber den die Ereignisse des Direktkontos kommen.
+    event = stripeDirekt.webhookEreignisPruefen(
+      geheimnis => getStripe().webhooks.constructEvent(req.body, req.headers['stripe-signature'], geheimnis),
+      [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_CONNECT_WEBHOOK_SECRET]);
   } catch(e) { return res.status(400).send('Webhook Error: '+e.message); }
+
+  // Der Connect-Endpunkt bekommt die Ereignisse ALLER Laeden der Plattform. Ereignisse
+  // fremder Konten quittieren und liegen lassen, sonst wiederholt Stripe sie tagelang.
+  if (!stripeDirekt.ereignisFuerUns(event, process.env.STRIPE_DIREKT_KONTO)) {
+    return res.json({ received: true });
+  }
 
   // Nur aus `awaiting_payment` heraus, und atomar. Stripe wiederholt eine
   // Zustellung bis zu drei Tage lang. Bis dahin ist die Bestellung laengst per
@@ -812,6 +947,7 @@ app.post('/api/stripe-webhook', async (req, res) => {
         { new: true });
       if (order) {
         console.log(`💳 Bezahlt: #${order.orderNum} → wartet auf Bestätigung`);
+        stripeGebuehrNachlesen(order);   // ohne await, nur Direct-Bestellungen
         await sendCouponRaffleEmail(order);
         await consumeStampRewardOnce(order);
       }
@@ -834,7 +970,9 @@ app.post('/api/verify-payment', async (req, res) => {
     const { sessionId } = req.body;
     if (!sessionId) return res.status(400).json({ ok: false, message: 'sessionId fehlt' });
 
-    const session = await getStripe().checkout.sessions.retrieve(sessionId);
+    // Direct-Sitzungen liegen auf dem Konto des Ladens: das Konto steht an der Bestellung
+    const vorab   = await Order.findOne({ stripeSessionId: sessionId }).select('stripeAccount');
+    const session = await sitzungAbrufen(getStripe(), sessionId, vorab?.stripeAccount);
     if (session.payment_status !== 'paid') {
       return res.json({ ok: false, message: 'Noch nicht bezahlt' });
     }
@@ -848,6 +986,7 @@ app.post('/api/verify-payment', async (req, res) => {
       order.stripePaymentIntentId = session.payment_intent;
       await order.save();
       console.log(`✅ Zahlung verifiziert (Fallback): #${order.orderNum}`);
+      stripeGebuehrNachlesen(order);   // ohne await, nur Direct-Bestellungen
       await sendCouponRaffleEmail(order);
       await consumeStampRewardOnce(order);
     }
@@ -1014,7 +1153,7 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
     const recovered = [];
     for (const order of stuck) {
       try {
-        const session = await getStripe().checkout.sessions.retrieve(order.stripeSessionId);
+        const session = await sitzungAbrufen(getStripe(), order.stripeSessionId, order.stripeAccount);
         if (session.payment_status === 'paid') {
           order.paymentStatus = 'paid';
           order.status = 'pending';
@@ -1022,6 +1161,7 @@ app.post('/api/admin/recover-stripe-orders', auth, async (_req, res) => {
           await order.save();
           recovered.push(order.orderNum);
           console.log(`🔁 Nachträglich eingebucht: #${order.orderNum}`);
+          stripeGebuehrNachlesen(order);   // ohne await, nur Direct-Bestellungen
           await consumeStampRewardOnce(order);
         }
       } catch(e) {
@@ -1228,7 +1368,10 @@ app.delete('/api/admin/orders/:id', auth, async (req, res) => {
     let refundStatus = null;
     if (order.payment === 'stripe' && order.paymentStatus === 'paid' && order.stripePaymentIntentId) {
       try {
-        const refund = await getStripe().refunds.create({ payment_intent: order.stripePaymentIntentId });
+        // Direct Charge: Erstattung auf dem Konto des Ladens (dort liegt die Zahlung)
+        const refund = order.stripeAccount
+          ? await getStripe().refunds.create({ payment_intent: order.stripePaymentIntentId }, { stripeAccount: order.stripeAccount })
+          : await getStripe().refunds.create({ payment_intent: order.stripePaymentIntentId });
         refundStatus = refund.status;
         await Order.findByIdAndUpdate(order._id, { paymentStatus:'refunded' });
         console.log(`💸 Stripe-Refund #${order.orderNum}: ${refund.status}`);
@@ -1584,7 +1727,7 @@ cron.schedule('*/5 * * * *', async () => {
     const geholt = [];
     for (const order of haengend) {
       try {
-        const sitzung = await stripe.checkout.sessions.retrieve(order.stripeSessionId);
+        const sitzung = await sitzungAbrufen(stripe, order.stripeSessionId, order.stripeAccount);
         if (sitzung.payment_status !== 'paid') continue;   // Gast hat abgebrochen
         // Atomar und nur aus awaiting_payment heraus: Hat verify-payment oder
         // der Webhook zwischen Suche und hier schon verbucht, gibt es nichts
@@ -1597,6 +1740,7 @@ cron.schedule('*/5 * * * *', async () => {
         if (!nachgeholt) continue;
         geholt.push(nachgeholt);
         console.error(`🚨 Wachhund: #${order.orderNum} war bezahlt und unsichtbar - jetzt auf pending`);
+        stripeGebuehrNachlesen(nachgeholt);   // ohne await, nur Direct-Bestellungen
         // Wie Webhook und verify-payment: eine eingeloeste Stempelpraemie verbuchen.
         await consumeStampRewardOnce(nachgeholt);
       } catch (e) {
@@ -1639,6 +1783,24 @@ async function wachhundMelden(bestellungen) {
   if (error) console.error('🚨 Wachhund: Alarm-Mail fehlgeschlagen:', error.message || error);
   else console.error(`🚨 Wachhund: Alarm an ${empfaenger.join(', ')} gesendet`);
 }
+
+// ── Echte Stripe-Gebuehr nachholen (nur mit STRIPE_DIREKT_KONTO) ──
+// Direkt nach der Zahlung kennt Stripe die Gebuehr manchmal noch nicht, oder die
+// Abfrage scheitert. Alle 30 Minuten werden bis zu 20 bezahlte Direct-Bestellungen
+// der letzten 14 Tage ohne Gebuehr nachgelesen. Ohne Treffer bleibt sie in den
+// Berichten "noch nicht bekannt".
+cron.schedule('*/30 * * * *', async () => {
+  if (!process.env.STRIPE_DIREKT_KONTO || mongoose.connection.readyState !== 1) return;
+  try {
+    const offen = await Order.find({
+      payment: 'stripe', stripeAccount: { $exists: true, $nin: [null, ''] },
+      stripePaymentIntentId: { $exists: true, $nin: [null, ''] },
+      stripeGebuehrCent: { $exists: false }, paymentStatus: { $in: ['paid', 'refunded'] },
+      createdAt: { $gt: new Date(Date.now() - 14 * 24 * 3600 * 1000) },
+    }).limit(20);
+    for (const o of offen) await stripeGebuehrNachlesen(o);
+  } catch (e) { console.error('Stripe-Gebuehr nachholen Fehler:', e.message); }
+});
 
 // Cleanup: verwaiste „awaiting_payment"-Bestellungen (abgebrochene Stripe-Zahlung) nach 1 h entfernen
 cron.schedule('*/15 * * * *', async () => {
@@ -1757,7 +1919,8 @@ function pdfKundenliste(doc, orders) {
     doc.y = sy + 20 + 10;
   }
   drawGroup('Barzahlung', '#8b1d1d', orders.filter(o => o.payment === 'bar'));
-  drawGroup('Online-Zahlung (Stripe)', '#276749', orders.filter(o => o.payment === 'stripe'));
+  drawGroup('Online-Zahlung (Stripe)', '#276749', orders.filter(o => o.payment === 'stripe' && !stripeDirekt.istDirektBestellung(o)));
+  drawGroup('Online-Zahlung (Ihr Stripe-Konto)', '#1f5f4a', orders.filter(stripeDirekt.istDirektBestellung));
   drawGroup('Online-Zahlung (PayPal)', '#003087', orders.filter(o => o.payment === 'paypal'));
   drawGroup('EC-Karte', '#555555', orders.filter(o => o.payment === 'karte'));
 }
@@ -1819,25 +1982,11 @@ function pdfStornoliste(doc, alle) {
 // den Laden ueberwiesen, reicht das Online-Geld nicht, bleibt ein offener Betrag. Grundgebuehr und Domain fallen
 // monatlich an und stehen nur im Monatsbericht. Die Stripe-Gebuehr ist dieselbe Pauschale, die der Checkout je
 // Online-Zahlung einbehaelt (1,5 % + 0,25 €; am 01.11. fuer Dream Oktober in Stripe nachgeprueft, centgenau).
-const stripePauschale = o => Math.round(((o.total || 0) * 0.015 + 0.25) * 100) / 100;
+// Die Rechnung selbst steht in stripe-direkt.js (mit Tests): fuer alle Bestellungen ausser
+// Direct Charges unveraendert, Direct-Bestellungen getrennt in a.nDirekt, a.umsatzDirekt,
+// a.stripeGebDirekt (nur echte, gespeicherte Werte), a.nStripeGebUnbekannt und a.svcDirekt.
 function berichtAbrechnung(orders, mitFixkosten) {
-  const summe  = (liste, f) => Math.round(liste.reduce((s, o) => s + f(o), 0) * 100) / 100;
-  const online = orders.filter(o => o.payment === 'stripe');
-  const laden  = orders.filter(o => o.payment !== 'stripe');
-  const a = {
-    n: orders.length, nOnline: online.length, nLaden: laden.length,
-    umsatzOnline: summe(online, o => o.total || 0), umsatzLaden: summe(laden, o => o.total || 0),
-    svc: summe(orders, o => o.serviceFee || PDF_SV), stripeGeb: summe(online, stripePauschale),
-    grund: mitFixkosten ? PDF_BASE : 0, domain: mitFixkosten ? PDF_DOMAIN : 0,
-  };
-  a.brutto    = a.umsatzOnline + a.umsatzLaden;
-  a.fluevate  = a.grund + a.domain + a.svc;
-  a.gebuehren = a.fluevate + a.stripeGeb;
-  a.bleibt    = a.brutto - a.gebuehren;
-  const rest  = Math.round((a.umsatzOnline - a.stripeGeb - a.fluevate) * 100) / 100;
-  a.ueberweisung = Math.max(0, rest);
-  a.offen        = Math.max(0, -rest);
-  return a;
+  return stripeDirekt.berichtAbrechnung(orders, mitFixkosten, { sv: PDF_SV, grund: PDF_BASE, domain: PDF_DOMAIN });
 }
 // "41 × 0,99 €", solange jede Bestellung die Standardgebuehr traegt, sonst nur die Anzahl
 const svcText = (n, betrag) => Math.abs(betrag - n * PDF_SV) < 0.005 ? `${n} × ${pdfFmt(PDF_SV)}` : `${n} Bestellungen`;
@@ -1858,6 +2007,7 @@ function pdfAbrechnung(doc, a) {
   block('UMSATZ');
   zeile(`Bar / EC-Karte  (${a.nLaden} Bestellungen)`, pdfFmt(a.umsatzLaden));
   if (a.nOnline) zeile(`Online über Stripe  (${a.nOnline} Bestellungen)`, pdfFmt(a.umsatzOnline));
+  if (a.nDirekt) zeile(`Online auf Ihrem Stripe-Konto  (${a.nDirekt} Bestellungen)`, pdfFmt(a.umsatzDirekt));
   zeile('Gesamtumsatz', pdfFmt(a.brutto), true);
   block('GEBÜHREN FLUEVATE');
   if (a.grund)  zeile('Grundgebühr (monatlich)', pdfFmt(a.grund));
@@ -1870,6 +2020,17 @@ function pdfAbrechnung(doc, a) {
   zeile('Gebühren FlueVate', minus(a.fluevate));
   zeile('Überweisung an Sie', pdfFmt(a.ueberweisung), true);
   if (a.offen) zeile('Offener Betrag  (wird eingezogen oder ist an FlueVate zu überweisen)', pdfFmt(a.offen), true);
+  if (a.nDirekt) {
+    // Direct Charges: das Geld liegt schon beim Laden, FlueVate behaelt nichts ein
+    if (doc.y > PDF_FT - 190) { doc.addPage(); doc.y = PDF_M; }
+    block('IHR EIGENES STRIPE-KONTO');
+    zeile(`Online-Umsatz  (${a.nDirekt} Bestellungen)`, pdfFmt(a.umsatzDirekt));
+    zeile(stripeGebDirektText(a), a.nStripeGebUnbekannt === a.nDirekt ? 'noch nicht bekannt' : minus(a.stripeGebDirekt));
+    zeile('Verbleibt auf Ihrem Stripe-Konto', pdfFmt(a.verbleibtDirekt), true);
+    zeile(`Servicegebühr FlueVate  (${svcText(a.nDirekt, a.svcDirekt)})`, pdfFmt(a.svcDirekt), true);
+    doc.font('Helvetica').fontSize(7.5).fillColor('#666').text(direktHinweis(a), PDF_M+8, doc.y + 4, { width: PDF_W-16 });
+    doc.y += 2;
+  }
   block('BAR / EC-KARTE – LIEGT IN IHRER KASSE');
   zeile(`${a.nLaden} Bestellungen`, pdfFmt(a.umsatzLaden), true);
   doc.y += 8;
@@ -1879,8 +2040,23 @@ function pdfAbrechnung(doc, a) {
   doc.font('Helvetica-Bold').fontSize(13).fillColor('#2e7d32').text(pdfFmt(a.bleibt), PDF_M+2, ay+8, { width: PDF_W-4, align: 'right' });
   doc.y = ay + 28 + 3;
   doc.font('Helvetica').fontSize(7.5).fillColor('#888')
-    .text(a.offen ? `Kasse ${pdfFmt(a.umsatzLaden)} – offener Betrag ${pdfFmt(a.offen)}` : `Überweisung ${pdfFmt(a.ueberweisung)} + Kasse ${pdfFmt(a.umsatzLaden)}`, PDF_M+10, doc.y, { width: PDF_W-20 });
+    .text((a.offen ? `Kasse ${pdfFmt(a.umsatzLaden)} – offener Betrag ${pdfFmt(a.offen)}` : `Überweisung ${pdfFmt(a.ueberweisung)} + Kasse ${pdfFmt(a.umsatzLaden)}`)
+      + (a.nDirekt ? ` + Stripe-Konto ${pdfFmt(a.verbleibtDirekt)} – Servicegebühr per Lastschrift ${pdfFmt(a.svcDirekt)}` : ''), PDF_M+10, doc.y, { width: PDF_W-20 });
   doc.y += 14;
+}
+
+// Texte fuer Direct-Bestellungen (nur wenn a.nDirekt > 0), gleich in PDF und Mail
+function stripeGebDirektText(a) {
+  const bekannt = a.nDirekt - a.nStripeGebUnbekannt;
+  return a.nStripeGebUnbekannt && bekannt
+    ? `Stripe-Gebühren  (bekannt für ${bekannt} von ${a.nDirekt} Zahlungen)`
+    : 'Stripe-Gebühren  (zieht Stripe dort selbst ab)';
+}
+function direktHinweis(a) {
+  const k = a.nStripeGebUnbekannt;
+  return 'Diese Zahlungen gehen vollständig auf Ihr eigenes Stripe-Konto. Stripe zieht seine Gebühren dort selbst ab. '
+    + 'FlueVate behält davon nichts ein. Die Servicegebühr für diese Bestellungen wird per Rechnung und SEPA-Lastschrift eingezogen.'
+    + (k ? ` Bei ${k === 1 ? 'einer Zahlung' : k + ' Zahlungen'} ist die Stripe-Gebühr noch nicht bekannt. Sie fehlt in den Summen.` : '');
 }
 
 // Dieselben Zahlen fuer die Mail an Inhaber (Tabellenzeilen) und an Abed (Fliesstext)
@@ -1893,6 +2069,12 @@ function abrechnungMailZeilen(a) {
     + (a.nOnline ? `<tr><td ${td}>Stripe-Gebühr (${a.nOnline} Online-Zahlungen)</td><td ${tdr}>${eur(a.stripeGeb)}</td></tr>` : '')
     + `<tr style="background:#f5f5f5"><td ${td}><b>Überweisung an Sie über Stripe</b> (Online-Umsatz abzüglich Gebühren)</td><td ${tdr}><b>${eur(a.ueberweisung)}</b></td></tr>`
     + (a.offen ? `<tr><td ${td}><b>Offener Betrag</b> (wird eingezogen oder ist an FlueVate zu überweisen)</td><td ${tdr}><b>${eur(a.offen)}</b></td></tr>` : '')
+    + (a.nDirekt
+      ? `<tr><td ${td}><b>Online-Umsatz auf Ihrem eigenen Stripe-Konto</b> (${a.nDirekt} Bestellungen)</td><td ${tdr}><b>${eur(a.umsatzDirekt)}</b></td></tr>`
+      + `<tr style="background:#f5f5f5"><td ${td}>${stripeGebDirektText(a).replace('  (', ' (')}</td><td ${tdr}>${a.nStripeGebUnbekannt === a.nDirekt ? 'noch nicht bekannt' : eur(a.stripeGebDirekt)}</td></tr>`
+      + `<tr><td ${td}>Servicegebühr FlueVate für diese Bestellungen</td><td ${tdr}>${eur(a.svcDirekt)}</td></tr>`
+      + `<tr><td colspan="2" style="padding:0 8px 8px;font-size:12px;color:#666">${direktHinweis(a)}</td></tr>`
+      : '')
     + `<tr><td ${td}>Bar / EC-Karte in Ihrer Kasse</td><td ${tdr}>${eur(a.umsatzLaden)}</td></tr>`
     + `<tr style="background:#e8f5e9"><td style="padding:10px;font-weight:bold;color:#2e7d32;font-size:15px">Ihnen bleiben nach allen Gebühren</td><td style="padding:10px;text-align:right;font-weight:bold;color:#2e7d32;font-size:15px">${eur(a.bleibt)}</td></tr>`;
 }
@@ -1903,10 +2085,13 @@ function abrechnungOwnerText(a) {
   return `<b>Gebühren FlueVate:</b> ${eur(a.fluevate)} (${teile})`
     + (a.nOnline ? `<br><b>Stripe-Gebühr:</b> ${eur(a.stripeGeb)} (${a.nOnline} Online-Zahlungen)` : '')
     + `<br><b>Überweisung an den Laden:</b> ${eur(a.ueberweisung)}`
-    + (a.offen ? `<br><b>Offener Betrag (einziehen):</b> ${eur(a.offen)}` : '');
+    + (a.offen ? `<br><b>Offener Betrag (einziehen):</b> ${eur(a.offen)}` : '')
+    + (a.nDirekt ? `<br><b>Eigenes Stripe-Konto des Ladens:</b> ${eur(a.umsatzDirekt)} (${a.nDirekt} Zahlungen), `
+      + `Stripe-Gebühren ${eur(a.stripeGebDirekt)}${a.nStripeGebUnbekannt ? `, bei ${a.nStripeGebUnbekannt} noch unbekannt` : ''}`
+      + `<br><b>Servicegebühr per SEPA einziehen:</b> ${eur(a.svcDirekt)} (${a.nDirekt} Bestellungen)` : '');
 }
 
-function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
+function pdfBarRechnung(doc, barOrders, barStats, zeitraum, mitDirekt = false) {
   if (!barOrders.length) return;
   doc.addPage(); doc.y = PDF_M;
   doc.rect(0, 0, PDF_PW, 50).fill('#1a1a2e');
@@ -1923,7 +2108,10 @@ function pdfBarRechnung(doc, barOrders, barStats, zeitraum) {
   doc.y += 12;
   const hy = doc.y;
   doc.rect(PDF_M, hy, PDF_W, 16).fill('#fef9e7');
-  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text('Interne Übersicht – keine Rechnung. Nur Barzahlungen; Stripe-Gebühren wurden bereits beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
+  // Bei Direct Charges behaelt der Checkout nichts mehr ein, der alte Satz waere dann falsch
+  doc.font('Helvetica').fontSize(7.5).fillColor('#7a5c00').text(mitDirekt
+    ? 'Interne Übersicht, keine Rechnung. Nur Barzahlungen.'
+    : 'Interne Übersicht – keine Rechnung. Nur Barzahlungen; Stripe-Gebühren wurden bereits beim Checkout einbehalten.', PDF_M+6, hy+4, { width:PDF_W-12 });
   doc.y = hy + 16 + 6;
   doc.moveTo(PDF_M, doc.y).lineTo(PDF_M+PDF_W, doc.y).strokeColor('#333').lineWidth(1).stroke(); doc.y += 4;
   const th = doc.y;
@@ -2143,7 +2331,7 @@ cron.schedule('0 22 * * 0', async () => {
       doc.y += 12;
       pdfKundenliste(doc, orders);
       if (barOrders.length > 0) {
-        pdfBarRechnung(doc, barOrders, { barSvc, barNetto, barBetrag }, vonBis);
+        pdfBarRechnung(doc, barOrders, { barSvc, barNetto, barBetrag }, vonBis, orders.some(stripeDirekt.istDirektBestellung));
       }
       // y=820 liegt unter dem Textbereich (791,9) - Rand kurz auf 0, sonst haengt pdfkit eine leere Seite an
       const _mb = doc.page.margins.bottom; doc.page.margins.bottom = 0;
@@ -2238,7 +2426,7 @@ function buildMonatsberichtPdf(doc, d) {
   pdfHr(doc, '#bbb');
   pdfStornoliste(doc, stornos);
   if (barOrdersM.length > 0) {
-    pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barBetrag: barBetragM }, vonBis);
+    pdfBarRechnung(doc, barOrdersM, { barSvc: barSvcM, barNetto: barNettoM, barBetrag: barBetragM }, vonBis, orders.some(stripeDirekt.istDirektBestellung));
   }
   // y=820 liegt unter dem Textbereich (791,9) - Rand kurz auf 0, sonst haengt pdfkit eine leere Seite an
   const _mb = doc.page.margins.bottom; doc.page.margins.bottom = 0;

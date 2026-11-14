@@ -3,6 +3,11 @@ MONGODB_URI=mongodb+srv://USER:PASS@cluster0.xxxxx.mongodb.net/pizzeria-amoura
 STRIPE_SECRET_KEY=sk_live_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_CONNECT_ACCOUNT=acct_...   # Stripe Connect ID des Restaurants (optional)
+# Direct Charges (optional; ohne STRIPE_DIREKT_KONTO bleibt alles wie oben)
+STRIPE_DIREKT_KONTO=acct_...              # eigenes Stripe-Konto des Restaurants: Zahlungen entstehen direkt dort, ohne Abzug durch FlueVate
+STRIPE_DIREKT_AB=2026-12-01               # optional: erst ab diesem Tag 00:00 (Europe/Berlin) direkt, leer = sobald Stripe das Konto freigibt
+STRIPE_CONNECT_WEBHOOK_SECRET=whsec_...   # Signaturgeheimnis des Connect-Webhook-Endpunkts (Ereignisse verbundener Konten), gleiche URL /api/stripe-webhook
+STRIPE_ONBOARDING_TOKEN=...               # langes Zufallsgeheimnis fuer den Einrichtungslink /api/stripe/einrichten?t=...
 # PayPal (REST API v2)
 PAYPAL_CLIENT_ID=AxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxL
 PAYPAL_CLIENT_SECRET=ExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxA
