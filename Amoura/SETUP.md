@@ -4,7 +4,6 @@
 | Datei | Beschreibung |
 |---|---|
 | `server.js` | Backend (Node.js/Express/MongoDB) |
-| `dashboard.html` | Admin Dashboard für den Wirt |
 | `printnode-helper.js` | Bondrucker-Logik |
 | `package.json` | Node.js Abhängigkeiten |
 | `env-example.txt` | Vorlage für Umgebungsvariablen |
@@ -106,21 +105,18 @@ Kunde zahlt 22,49 €
 
 ---
 
-## Schritt 6 – Dashboard konfigurieren
+## Schritt 6 – Admin-Zugang
 
-In `dashboard.html` oben im Script diese 3 Zeilen anpassen:
+Das Web-Dashboard (`dashboard.html`) gibt es nicht mehr. Der Laden arbeitet
+mit der App (Fluevate Kasse) über die Admin-Schnittstellen `/api/admin/...`;
+die Anmeldung läuft über `POST /api/admin/login` gegen `ADMIN_PASSWORD`.
 
-```javascript
-const API_BASE        = 'https://DEIN-BACKEND.onrender.com/api';
-const DASHBOARD_PW    = 'Amoura2025Admin!';       // gleich wie ADMIN_PASSWORD in Render
-const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025...'; // gleich wie ADMIN_TOKEN_SECRET in Render
-```
-
-> ⚠️ `ADMIN_TOKEN_SEC` muss **exakt gleich** sein wie `ADMIN_TOKEN_SECRET` in Render!
+> ⚠️ Niemals ein Passwort oder Token in eine HTML- oder JS-Datei oder in
+> diese Anleitung eintragen – das Repo ist öffentlich.
 
 ---
 
-## Schritt 7 – Render Static Site (Speisekarte + Dashboard)
+## Schritt 7 – Render Static Site (Speisekarte)
 
 1. render.com → New → **Static Site**
 2. Gleiches GitHub Repo
@@ -145,9 +141,8 @@ const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025...'; // gleich wie ADMIN_TOKEN_SE
 ## Schritt 9 – Testen
 
 - [ ] Speisekarte öffnen → Artikel in Warenkorb → Barzahlung bestellen
-- [ ] Dashboard öffnen → Alarm erscheint → Annehmen mit Zeit → E-Mail prüfen
+- [ ] App öffnen → Alarm erscheint → Annehmen mit Zeit → E-Mail prüfen
 - [ ] Test-Storno → Ablehnen mit Grund → Storno-E-Mail prüfen
-- [ ] POS-Bestellung → „Neue Bestellung" Button → Speisen auswählen → Speichern
 - [ ] Sold-Out Toggle → Artikel ausschalten → Speisekarte neu laden → „Ausverkauft" prüfen
 - [ ] Stripe Test: `pk_test_...` und `sk_test_...` für Tests verwenden
 
@@ -159,7 +154,7 @@ const ADMIN_TOKEN_SEC = 'AmouraGeheimToken2025...'; // gleich wie ADMIN_TOKEN_SE
 |---|---|
 | Backend startet nicht | `MONGODB_URI` prüfen – Datenbankname `/pizzeria-amoura` am Ende |
 | MongoDB Verbindung fehlgeschlagen | Network Access in Atlas: `0.0.0.0/0` erlauben |
-| Login fehlschlägt | `ADMIN_TOKEN_SECRET` in Render = `ADMIN_TOKEN_SEC` im Dashboard (exakt gleich!) |
+| Login fehlschlägt | `ADMIN_PASSWORD` in Render prüfen · `JWT_SECRET` muss gesetzt sein |
 | Stripe Webhook Fehler | URL: `.../api/stripe-webhook` · Event `checkout.session.completed` aktiv? |
 | E-Mails kommen nicht | Domain bei Resend verifiziert? · `EMAIL_FROM` muss verifizierte Domain nutzen |
 | Bon wird nicht gedruckt | PrintNode Client auf Restaurant-PC läuft und eingeloggt? |

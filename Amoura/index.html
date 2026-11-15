@@ -2435,16 +2435,6 @@ function updateSummary() {
     summary.innerHTML = html;
 }
 
-// ============================================================
-// AMOURA DATABASE – Echtzeit-Verbindung Website ↔ Dashboard
-//Methode 1 (gleicher Browser/PC): localStorage (automatisch)
-//Methode 2 (Tablet/anderes Gerät): JSONBin.io Zugangsdaten eintragen
-//
-// JSONBin.io kostenlos einrichten:
-//   1. Auf https://jsonbin.io registrieren
-//   2. Neuen Bin erstellen mit Inhalt: {"orders":[]}
-//   3. BIN_ID und API_KEY unten eintragen
-// ============================================================
 // Frueher stand hier AmouraDB.addOrder(): ein zweiter POST auf /api/orders mit
 // einem Legacy-Objekt (status:'neu', ohne mode). Der scheiterte serverseitig an
 // der Preispruefung, der Fehler verschwand in einem catch -- und es war unklar,
@@ -2683,7 +2673,7 @@ async function processOrder() {
 
 // ─── KUNDE: WARTEN AUF DIE ANNAHME DURCH DAS RESTAURANT ──────────
 // Nach dem Absenden sieht der Kunde einen Wartebildschirm. Das "Okay" gibt es
-// erst, wenn das Restaurant die Bestellung im Dashboard angenommen hat.
+// erst, wenn das Restaurant die Bestellung in der App angenommen hat.
 const KONTAKT_TEL_HREF = 'tel:025218290600';
 const KONTAKT_TEL_TEXT = '02521 / 829 06 00';
 const WARTE_INTERVALL  = 3000;           // Abstand zweier Statusabfragen
@@ -2845,7 +2835,7 @@ function warteWiederaufnehmen() {
 }
 
 // Mobile Browser drosseln Timer im Hintergrund stark -- beim Zurueckkehren
-// sofort einmal nachfragen. Das Dashboard macht es genauso.
+// sofort einmal nachfragen.
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible' && warteTimer) {
         clearInterval(warteTimer);
@@ -2869,7 +2859,7 @@ window.addEventListener('load', async () => {
         renderWarenkorb();
         window.history.replaceState({}, document.title, window.location.pathname);
         // Bis die Zahlung verbucht ist, steht die Bestellung auf 'awaiting_payment'
-        // und ist im Dashboard noch gar nicht sichtbar. Das sagen wir auch so.
+        // und ist in der App noch gar nicht sichtbar. Das sagen wir auch so.
         document.getElementById('dankeOrderId').textContent = orderNum ? '#' + orderNum : orderId;
         document.getElementById('dankeModal').style.display = 'flex';
         zeigeBestellZustand('', 'Zahlung wird geprüft…',

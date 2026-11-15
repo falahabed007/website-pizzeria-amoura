@@ -39,7 +39,7 @@ PAYPAL_ENV=sandbox          # zum Testen "sandbox", live dann "live"
 ## 4. Testen (Sandbox)
 1. `PAYPAL_ENV=sandbox` + Sandbox-Keys setzen, Server starten.
 2. Im Frontend "PayPal" wählen → durchbezahlen (Sandbox-Käufer).
-3. Order erscheint im Dashboard unter Online/PayPal, Status `paid`/`pending`.
+3. Order erscheint in der App unter Online/PayPal, Status `paid`/`pending`.
 4. Storno im Admin → Refund in Sandbox sichtbar, Status `refunded`.
 5. Stripe-Bestellung gegentesten (Regression) → unverändert.
 6. Dann `PAYPAL_ENV=live` + Live-Keys in Render, eine echte Klein-Bestellung testen.

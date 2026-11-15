@@ -8,6 +8,7 @@ const PDFDocument = require('pdfkit');
 const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
 const crypto     = require('crypto');
+const { webBestellungAusRequest } = require('./bestellung');
 require('dotenv').config();
 
 const app  = express();
@@ -668,8 +669,14 @@ async function consumeStampRewardOnce(order) {
   }
 }
 
+// Nur Barzahlung von der Bestellseite. Den früheren POS-Weg (source 'pos':
+// sofort bestätigt, Betrag aus dem Request, Mails und Druck) gibt es nicht
+// mehr – siehe bestellung.js.
 app.post('/api/orders', async (req, res) => {
   try {
+    const auswahl = webBestellungAusRequest(req.body);
+    if (auswahl.fehler) return res.status(400).json({ message: auswahl.fehler });
+
     // userId aus Kunden-JWT extrahieren falls vorhanden (Gastbestellung bleibt möglich)
     let userId = null;
     const authHeader = req.headers.authorization;
@@ -680,40 +687,30 @@ app.post('/api/orders', async (req, res) => {
       } catch {} // Gastbestellung – kein Fehler
     }
 
-    const isPOS = req.body.source === 'pos';
+    // Webbestellungen serverseitig absichern
+    let pricing, free;
+    try {
+      pricing = validateOrderPricing(req.body);
+      free    = classifyFreebies(req.body.items, pricing.paidSubtotal);
+    } catch (e) { return res.status(400).json({ message: e.message }); }
 
-    // Kunden-Webbestellungen serverseitig absichern (POS/Personal bleibt unangetastet)
-    let pricing = null;
-    if (!isPOS) {
-      let free;
-      try {
-        pricing = validateOrderPricing(req.body);
-        free    = classifyFreebies(req.body.items, pricing.paidSubtotal);
-      } catch (e) { return res.status(400).json({ message: e.message }); }
-
-      // Stempel-Prämie: nur eingeloggt & berechtigt – und hier verbuchen
-      if (free.hasStampReward) {
-        if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
-        const info = await getStampInfo(userId);
-        if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
-        await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
-      }
+    // Stempel-Prämie: nur eingeloggt & berechtigt – und hier verbuchen
+    if (free.hasStampReward) {
+      if (!userId) return res.status(401).json({ message: 'Für die Gratis-Prämie bitte einloggen' });
+      const info = await getStampInfo(userId);
+      if (info.rewardsAvailable <= 0) return res.status(400).json({ message: 'Keine Gratis-Prämie verfügbar' });
+      await User.findByIdAndUpdate(userId, { $inc: { stampsRedeemed: 1 } });
     }
 
     const orderNum = await getNextOrderNum();
-    // Stripe-Konto und Stripe-Gebuehr setzt nur der Server, nie der Aufrufer
-    const { stripeAccount: _konto, stripeGebuehrCent: _gebuehr, ...body } = req.body;
+    // Stripe-Konto, Stripe-Gebuehr, Status usw. setzt nur der Server, nie der
+    // Aufrufer (siehe bestellung.js).
     const order    = new Order({
-      ...body, orderNum, userId,
-      ...(pricing ? { subtotal: pricing.paidSubtotal, deliveryFee: pricing.deliveryFee, serviceFee: pricing.serviceFee, total: pricing.total } : {}),
-      status: isPOS ? 'confirmed' : 'pending'
+      ...auswahl.felder, orderNum, userId,
+      subtotal: pricing.paidSubtotal, deliveryFee: pricing.deliveryFee,
+      serviceFee: pricing.serviceFee, total: pricing.total,
     });
     await order.save();
-    if (isPOS) {
-      await sendConfirmationEmail(order, order.prepTime || 20);
-      await sendRestaurantEmail(order);
-      await triggerPrint(order);
-    }
     await sendCouponRaffleEmail(order);
 
     // Stempel-Stand für eingeloggte Kunden mitliefern (für Hinweis im Danke-Fenster)
@@ -1701,7 +1698,7 @@ const WACHHUND_MINUTEN = 10;
 // Obere Altersgrenze, und die ist nicht optional. Ohne sie greift der
 // Wachhund beim ersten Lauf nach JEDER haengenden Bestellung - bei Ararat,
 // Amoura und Vorhelm also nach allem seit April. Die Liste der eingehenden
-// Bestellungen im Dashboard hat keine Datumsgrenze und sortiert die aeltesten
+// Bestellungen (damals im Web-Dashboard) hat keine Datumsgrenze und sortiert die aeltesten
 // nach oben: Mitten im Betrieb stuende dort eine Wand aus Monate alten
 // "neuen" Bestellungen, jede mit Alarmton. Und weil "pending" im Umsatz
 // zaehlt, aenderten sich rueckwirkend Berichte und Gebuehren.
@@ -1769,10 +1766,10 @@ async function wachhundMelden(bestellungen) {
     to: empfaenger,
     subject: `🚨 ${bestellungen.length} bezahlte Bestellung${bestellungen.length > 1 ? 'en' : ''} war${bestellungen.length > 1 ? 'en' : ''} unsichtbar`,
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;color:#222">
-      <h2 style="font-size:18px;margin:0 0 8px">Bezahlt, aber nicht im Dashboard angekommen</h2>
+      <h2 style="font-size:18px;margin:0 0 8px">Bezahlt, aber nicht in der App angekommen</h2>
       <p style="margin:0 0 12px">Diese Bestellung${bestellungen.length > 1 ? 'en' : ''} stand${bestellungen.length > 1 ? 'en' : ''}
       laenger als ${WACHHUND_MINUTEN} Minuten auf "wartet auf Zahlung", obwohl bei Stripe bezahlt wurde.
-      Sie wurde${bestellungen.length > 1 ? 'n' : ''} soeben nachgeholt und ist jetzt im Dashboard sichtbar.</p>
+      Sie wurde${bestellungen.length > 1 ? 'n' : ''} soeben nachgeholt und ist jetzt in der App sichtbar.</p>
       <table style="font-size:14px;border-collapse:collapse">${zeilen}</table>
       <p style="margin:16px 0 0;font-size:13px;color:#666">
         Der Gast wartet entsprechend laenger. Ursache ist fast immer der Stripe-Webhook:
@@ -1878,7 +1875,7 @@ function pdfTableRow(doc, cells, shade, bold = false) {
 }
 
 // Ohne Gastnamen: Die Berichte gehen per Mail an Inhaber und teils an den Steuerberater, dafuer reicht die
-// Bestellnummer (Datenminimierung, Abed 01.11.2026). Name und Kontaktdaten stehen nur im Dashboard.
+// Bestellnummer (Datenminimierung, Abed 01.11.2026). Name und Kontaktdaten stehen nur in der App.
 function pdfKundenliste(doc, orders) {
   function drawGroup(label, color, list) {
     if (!list.length) return;
